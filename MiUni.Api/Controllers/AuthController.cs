@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MiUni.Api.Controllers;
 
@@ -44,7 +45,7 @@ public class AuthController : ControllerBase
             message = "Usuario registrado correctamente."
         });
     }
-    
+
 [HttpPost("login")]
 public async Task<IActionResult> Login(LoginRequest request)
 {
@@ -97,6 +98,26 @@ public async Task<IActionResult> Login(LoginRequest request)
     {
         token = tokenString,
         expires = token.ValidTo
+    });
+}
+
+[Authorize]
+[HttpGet("me")]
+public async Task<IActionResult> Me()
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    var user = await _userManager.FindByIdAsync(userId!);
+
+    if (user == null)
+    {
+        return Unauthorized();
+    }
+
+    return Ok(new
+    {
+        id = user.Id,
+        email = user.Email
     });
 }
 }
