@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MiUni.Api.Identity;
 
 namespace MiUni.Api.Models;
 
@@ -11,5 +12,5 @@ public partial class Carrera
 
     public string? Facultad { get; set; }
 
-    public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+    public virtual ICollection<ApplicationUser> Usuarios { get; set; } = new List<ApplicationUser>();
 }

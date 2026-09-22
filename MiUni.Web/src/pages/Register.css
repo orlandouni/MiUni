@@ -1,0 +1,67 @@
+/* Campus wayfinding: navy, signal yellow, paper, ink, slate, terracotta. */
+body:has(.registration) { background: #F5F2E9; }
+#root:has(.registration) { width: 100%; max-width: none; border: 0; }
+.registration { --navy: #1F3864; --signal: #F2C744; --paper: #F5F2E9; --ink: #182435; --slate: #657184; --terracotta: #AD432D; display: grid; min-height: 100svh; color: var(--ink); background: var(--paper); text-align: left; color-scheme: light; font-family: 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.5; letter-spacing: 0; }
+.registration * { box-sizing: border-box; }
+.registration a { color: inherit; }
+.campus-panel { background: var(--navy); color: var(--paper); padding: 24px; position: relative; overflow: hidden; }
+.campus-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 28px; font-weight: 750; letter-spacing: -1px; }
+.campus-brand svg { color: var(--signal); }
+.campus-brand span { margin-left: auto; font-size: 10px; letter-spacing: 1.8px; font-weight: 600; }
+.campus-intro { margin-top: 28px; }
+.wayfinding-label, .registration-topline, .registration-marker, .registration-footer, .map-caption { font-size: 10px; letter-spacing: 1.8px; font-weight: 700; }
+.wayfinding-label { color: var(--signal); }
+.campus-intro h2 { font-family: 'Barlow Condensed', sans-serif; color: var(--paper); font-size: 52px; font-weight: 600; line-height: .95; letter-spacing: -.5px; margin: 14px 0; }
+.campus-intro h2 span { color: var(--signal); }
+.campus-intro > p:last-child { font-size: 14px; line-height: 1.7; }
+.campus-map { display: none; width: 100%; height: auto; }
+.campus-services, .map-caption { display: none; }
+.registration-panel { display: flex; flex-direction: column; padding: 24px; }
+.registration-topline { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1F386433; padding-bottom: 14px; color: var(--navy); }
+.registration-content { width: 100%; max-width: 440px; margin: 30px auto 40px; }
+.registration-marker { display: flex; align-items: center; gap: 12px; color: var(--navy); }
+.registration-marker span { background: var(--signal); padding: 3px 8px; font-size: 12px; letter-spacing: 0; }
+.registration h1 { font-family: 'Barlow Condensed', sans-serif; color: var(--navy); font-size: clamp(52px, 6vw, 76px); font-weight: 700; line-height: 1; letter-spacing: -1.3px; margin: 16px 0; }
+.registration-lead { color: var(--slate); font-size: 14px; line-height: 1.7; }
+.registration-form { display: grid; gap: 18px; margin-top: 28px; }
+.registration-field { display: grid; gap: 6px; }
+.registration-field label { font-size: 13px; font-weight: 650; }
+.registration-field input { width: 100%; min-height: 48px; border: 1px solid #65718480; border-bottom: 2px solid var(--slate); border-radius: 3px 3px 0 0; background: #FFFFFF66; padding: 12px 14px; font: inherit; font-size: 16px; color: var(--ink); }
+.registration-field input::placeholder { color: var(--slate); opacity: 1; }
+.registration :is(input, button, a):focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+.campus-panel a:focus-visible { outline-color: var(--signal); }
+.registration-field p { color: var(--slate); font-size: 12px; line-height: 1.5; }
+.registration-password { position: relative; }
+.registration-password input { padding-right: 52px; }
+.registration-password button { position: absolute; right: 2px; top: 2px; min-width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; color: var(--navy); cursor: pointer; }
+.registration-submit { min-height: 52px; padding: 14px 18px; background: var(--navy); color: var(--paper) !important; border: 0; border-radius: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; font: inherit; font-size: 15px; font-weight: 650; text-decoration: none; cursor: pointer; }
+.registration-submit svg { color: var(--signal); }
+.registration-submit:hover { background: var(--ink); }
+.registration-submit:disabled { opacity: .65; cursor: wait; }
+.registration-error { color: var(--terracotta); border-left: 3px solid var(--terracotta); padding: 10px 12px; font-size: 13px; }
+.registration-login { font-size: 13px; margin-top: 24px; color: var(--slate); }
+.registration-login a { color: var(--navy); font-weight: 700; display: inline-flex; align-items: center; gap: 3px; text-underline-offset: 4px; }
+.registration-footer { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid #1F386433; color: var(--slate); font-size: 9px; letter-spacing: 1px; }
+.registration-success { margin-top: 30px; border-top: 4px solid var(--signal); padding-top: 24px; }
+.registration-success h2 { font-family: 'Barlow Condensed', sans-serif; color: var(--navy); font-size: 36px; margin-top: 12px; }
+.registration-success p { margin: 12px 0 24px; }
+@media (min-width: 850px) {
+  .registration { grid-template-columns: 1fr 1fr; }
+  .campus-panel { display: flex; flex-direction: column; padding: 40px clamp(32px, 4vw, 72px); }
+  .campus-intro { margin-top: 70px; }
+  .campus-intro h2 { font-size: clamp(72px, 7vw, 108px); margin: 20px 0 26px; }
+  .campus-intro > p:last-child { font-size: 16px; }
+  .campus-map { display: block; margin: 28px -20px 16px; width: calc(100% + 40px); }
+  .campus-services { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: auto; padding-top: 18px; border-top: 1px solid #F5F2E94D; font-size: 12px; }
+  .campus-services span { display: inline-flex; align-items: center; gap: 7px; }
+  .campus-services svg { color: var(--signal); }
+  .map-caption { display: block; opacity: .65; font-size: 8px; margin-top: 20px; }
+  .registration-panel { padding: 40px clamp(32px, 4vw, 72px) 24px; }
+  .registration-content { margin-top: 44px; }
+}
+@media (max-width: 849px) {
+  .campus-intro h2 br { display: none; }
+  .campus-intro h2 { font-size: 42px; }
+  .campus-intro > p:last-child { max-width: 300px; }
+  .campus-intro { margin-top: 20px; }
+}
