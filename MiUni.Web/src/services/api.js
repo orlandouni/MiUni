@@ -56,8 +56,9 @@ export async function loginRequest(email, password) {
 }
 
 // REGISTRO
-export async function registerRequest(email, password) {
+export async function registerRequest(email, password, nombre) {
   const { data } = await api.post("/api/Auth/register", {
+    nombre,
     email,
     password,
   });
