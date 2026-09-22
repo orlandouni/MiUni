@@ -2,3 +2,6 @@ appsettings.Development.json
 bin/
 obj/
 *.user
+# .NET
+bin/
+obj/

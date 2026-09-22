@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using MiUni.Api.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace MiUni.Api.Models;
 
-public partial class MiUniDbContext : DbContext
+public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
     public MiUniDbContext()
     {
@@ -49,6 +52,7 @@ public partial class MiUniDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder
             .HasPostgresEnum("estado_reporte", new[] { "Pendiente", "Revisado", "Descartado" })
             .HasPostgresEnum("rol_usuario", new[] { "Estudiante", "Administrador" })
