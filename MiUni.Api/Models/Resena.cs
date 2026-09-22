@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MiUni.Api.Identity;
 
 namespace MiUni.Api.Models;
 
@@ -21,5 +22,5 @@ public partial class Resena
 
     public virtual ICollection<Reporteusuario> Reporteusuarios { get; set; } = new List<Reporteusuario>();
 
-    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual ApplicationUser Usuario { get; set; } = null!;
 }

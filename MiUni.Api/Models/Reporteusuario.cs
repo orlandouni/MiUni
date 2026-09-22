@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MiUni.Api.Enums;
+using MiUni.Api.Identity;
 namespace MiUni.Api.Models;
 
 public partial class Reporteusuario
@@ -20,5 +21,5 @@ public partial class Reporteusuario
     public virtual Resena? Resena { get; set; }
     public EstadoReporte Estado { get; set; }
 
-    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual ApplicationUser Usuario { get; set; } = null!;
 }

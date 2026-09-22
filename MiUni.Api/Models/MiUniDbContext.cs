@@ -48,7 +48,6 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
 
     public virtual DbSet<Resena> Resenas { get; set; }
 
-    public virtual DbSet<Usuario> Usuarios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,26 +59,29 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
             .HasPostgresExtension("pgrouting")
             .HasPostgresExtension("postgis");
 
-        modelBuilder.Entity<Camino>(entity =>
+        modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("camino_pkey");
+            entity.Property(e => e.Nombre)
+                .HasColumnName("Nombre");
 
-            entity.ToTable("camino");
+            entity.Property(e => e.CarreraId)
+                .HasColumnName("CarreraId");
 
-            entity.HasIndex(e => e.Geometria, "idx_camino_geometria").HasMethod("gist");
+            entity.Property(e => e.Semestre)
+                .HasColumnName("Semestre");
 
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("gen_random_uuid()")
-                .HasColumnName("id");
-            entity.Property(e => e.Geometria)
-                .HasColumnType("geography(LineString,4326)")
-                .HasColumnName("geometria");
-            entity.Property(e => e.TipoSuperficie)
-                .HasColumnType("character varying")
-                .HasColumnName("tipo_superficie");
-            entity.Property(e => e.Transitable)
-                .HasDefaultValue(true)
-                .HasColumnName("transitable");
+            entity.Property(e => e.FechaRegistro)
+                .HasColumnName("FechaRegistro")
+                .HasDefaultValueSql("now()");
+
+            entity.Property(e => e.Rol)
+                .HasColumnName("Rol")
+                .HasConversion<string>();
+
+            entity.HasOne(e => e.Carrera)
+                .WithMany(c => c.Usuarios)
+                .HasForeignKey(e => e.CarreraId)
+                .HasConstraintName("AspNetUsers_CarreraId_fkey");
         });
 
         modelBuilder.Entity<Carrera>(entity =>
@@ -463,39 +465,6 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
                 .HasForeignKey(d => d.UsuarioId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("resena_usuario_id_fkey");
-        });
-
-        modelBuilder.Entity<Usuario>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("usuario_pkey");
-
-            entity.ToTable("usuario");
-
-            entity.HasIndex(e => e.CarreraId, "idx_usuario_carrera");
-
-            entity.HasIndex(e => e.CorreoInstitucional, "usuario_correo_institucional_key").IsUnique();
-
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("gen_random_uuid()")
-                .HasColumnName("id");
-            entity.Property(e => e.CarreraId).HasColumnName("carrera_id");
-            entity.Property(e => e.CorreoInstitucional)
-                .HasColumnType("character varying")
-                .HasColumnName("correo_institucional");
-            entity.Property(e => e.FechaRegistro)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("fecha_registro");
-            entity.Property(e => e.Nombre)
-                .HasColumnType("character varying")
-                .HasColumnName("nombre");
-            entity.Property(e => e.PasswordHash)
-                .HasColumnType("character varying")
-                .HasColumnName("password_hash");
-            entity.Property(e => e.Semestre).HasColumnName("semestre");
-
-            entity.HasOne(d => d.Carrera).WithMany(p => p.Usuarios)
-                .HasForeignKey(d => d.CarreraId)
-                .HasConstraintName("usuario_carrera_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

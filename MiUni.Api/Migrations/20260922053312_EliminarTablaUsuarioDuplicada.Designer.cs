@@ -3,6 +3,7 @@ using System;
 using MiUni.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiUni.Api.Migrations
 {
     [DbContext(typeof(MiUniDbContext))]
-    partial class MiUniDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260922053312_EliminarTablaUsuarioDuplicada")]
+    partial class EliminarTablaUsuarioDuplicada
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,6 +61,9 @@ namespace MiUni.Api.Migrations
                     b.Property<Guid?>("CarreraId")
                         .HasColumnType("uuid")
                         .HasColumnName("CarreraId");
+
+                    b.Property<Guid?>("CarreraId1")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -126,6 +132,8 @@ namespace MiUni.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarreraId");
+
+                    b.HasIndex("CarreraId1");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -794,9 +802,13 @@ namespace MiUni.Api.Migrations
             modelBuilder.Entity("MiUni.Api.Identity.ApplicationUser", b =>
                 {
                     b.HasOne("MiUni.Api.Models.Carrera", "Carrera")
-                        .WithMany("Usuarios")
+                        .WithMany()
                         .HasForeignKey("CarreraId")
                         .HasConstraintName("AspNetUsers_CarreraId_fkey");
+
+                    b.HasOne("MiUni.Api.Models.Carrera", null)
+                        .WithMany("Usuarios")
+                        .HasForeignKey("CarreraId1");
 
                     b.Navigation("Carrera");
                 });

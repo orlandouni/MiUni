@@ -3,6 +3,7 @@ using System;
 using MiUni.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MiUni.Api.Migrations
 {
     [DbContext(typeof(MiUniDbContext))]
-    partial class MiUniDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260921182739_AddUserProfileToIdentity")]
+    partial class AddUserProfileToIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,8 +128,6 @@ namespace MiUni.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CarreraId");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -141,21 +142,33 @@ namespace MiUni.Api.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<LineString>("Geometria")
                         .IsRequired()
-                        .HasColumnType("geometry");
+                        .HasColumnType("geography(LineString,4326)")
+                        .HasColumnName("geometria");
 
                     b.Property<string>("TipoSuperficie")
-                        .HasColumnType("text");
+                        .HasColumnType("character varying")
+                        .HasColumnName("tipo_superficie");
 
                     b.Property<bool>("Transitable")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("transitable");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("camino_pkey");
 
-                    b.ToTable("Caminos");
+                    b.HasIndex(new[] { "Geometria" }, "idx_camino_geometria");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Geometria" }, "idx_camino_geometria"), "gist");
+
+                    b.ToTable("camino", (string)null);
                 });
 
             modelBuilder.Entity("MiUni.Api.Models.Carrera", b =>
@@ -646,6 +659,57 @@ namespace MiUni.Api.Migrations
                     b.ToTable("resena", (string)null);
                 });
 
+            modelBuilder.Entity("MiUni.Api.Models.Usuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid?>("CarreraId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("carrera_id");
+
+                    b.Property<string>("CorreoInstitucional")
+                        .IsRequired()
+                        .HasColumnType("character varying")
+                        .HasColumnName("correo_institucional");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_registro")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("character varying")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("character varying")
+                        .HasColumnName("password_hash");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("integer");
+
+                    b.Property<short?>("Semestre")
+                        .HasColumnType("smallint")
+                        .HasColumnName("semestre");
+
+                    b.HasKey("Id")
+                        .HasName("usuario_pkey");
+
+                    b.HasIndex(new[] { "CarreraId" }, "idx_usuario_carrera");
+
+                    b.HasIndex(new[] { "CorreoInstitucional" }, "usuario_correo_institucional_key")
+                        .IsUnique();
+
+                    b.ToTable("usuario", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -791,16 +855,6 @@ namespace MiUni.Api.Migrations
                         .HasConstraintName("lugartag_tag_id_fkey");
                 });
 
-            modelBuilder.Entity("MiUni.Api.Identity.ApplicationUser", b =>
-                {
-                    b.HasOne("MiUni.Api.Models.Carrera", "Carrera")
-                        .WithMany("Usuarios")
-                        .HasForeignKey("CarreraId")
-                        .HasConstraintName("AspNetUsers_CarreraId_fkey");
-
-                    b.Navigation("Carrera");
-                });
-
             modelBuilder.Entity("MiUni.Api.Models.Eventotemporal", b =>
                 {
                     b.HasOne("MiUni.Api.Models.Lugar", "Lugar")
@@ -819,7 +873,7 @@ namespace MiUni.Api.Migrations
                         .IsRequired()
                         .HasConstraintName("favorito_lugar_id_fkey");
 
-                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "Usuario")
+                    b.HasOne("MiUni.Api.Models.Usuario", "Usuario")
                         .WithMany("Favoritos")
                         .HasForeignKey("UsuarioId")
                         .IsRequired()
@@ -843,7 +897,7 @@ namespace MiUni.Api.Migrations
 
             modelBuilder.Entity("MiUni.Api.Models.Historialchat", b =>
                 {
-                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "Usuario")
+                    b.HasOne("MiUni.Api.Models.Usuario", "Usuario")
                         .WithMany("Historialchats")
                         .HasForeignKey("UsuarioId")
                         .IsRequired()
@@ -908,7 +962,7 @@ namespace MiUni.Api.Migrations
                         .HasForeignKey("ResenaId")
                         .HasConstraintName("reporteusuario_resena_id_fkey");
 
-                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "Usuario")
+                    b.HasOne("MiUni.Api.Models.Usuario", "Usuario")
                         .WithMany("Reporteusuarios")
                         .HasForeignKey("UsuarioId")
                         .IsRequired()
@@ -929,7 +983,7 @@ namespace MiUni.Api.Migrations
                         .IsRequired()
                         .HasConstraintName("resena_lugar_id_fkey");
 
-                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "Usuario")
+                    b.HasOne("MiUni.Api.Models.Usuario", "Usuario")
                         .WithMany("Resenas")
                         .HasForeignKey("UsuarioId")
                         .IsRequired()
@@ -938,6 +992,16 @@ namespace MiUni.Api.Migrations
                     b.Navigation("Lugar");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("MiUni.Api.Models.Usuario", b =>
+                {
+                    b.HasOne("MiUni.Api.Models.Carrera", "Carrera")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("CarreraId")
+                        .HasConstraintName("usuario_carrera_id_fkey");
+
+                    b.Navigation("Carrera");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -991,17 +1055,6 @@ namespace MiUni.Api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MiUni.Api.Identity.ApplicationUser", b =>
-                {
-                    b.Navigation("Favoritos");
-
-                    b.Navigation("Historialchats");
-
-                    b.Navigation("Reporteusuarios");
-
-                    b.Navigation("Resenas");
-                });
-
             modelBuilder.Entity("MiUni.Api.Models.Carrera", b =>
                 {
                     b.Navigation("Usuarios");
@@ -1034,6 +1087,17 @@ namespace MiUni.Api.Migrations
             modelBuilder.Entity("MiUni.Api.Models.Resena", b =>
                 {
                     b.Navigation("Reporteusuarios");
+                });
+
+            modelBuilder.Entity("MiUni.Api.Models.Usuario", b =>
+                {
+                    b.Navigation("Favoritos");
+
+                    b.Navigation("Historialchats");
+
+                    b.Navigation("Reporteusuarios");
+
+                    b.Navigation("Resenas");
                 });
 #pragma warning restore 612, 618
         }

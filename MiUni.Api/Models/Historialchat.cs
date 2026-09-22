@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MiUni.Api.Identity;
 
 namespace MiUni.Api.Models;
 
@@ -19,5 +20,5 @@ public partial class Historialchat
 
     public DateTime FechaCreacion { get; set; }
 
-    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual ApplicationUser Usuario { get; set; } = null!;
 }

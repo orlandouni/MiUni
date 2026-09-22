@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MiUni.Api.Identity;
 
 namespace MiUni.Api.Models;
 
@@ -13,5 +14,5 @@ public partial class Favorito
 
     public virtual Lugar Lugar { get; set; } = null!;
 
-    public virtual Usuario Usuario { get; set; } = null!;
+    public virtual ApplicationUser Usuario { get; set; } = null!;
 }

@@ -6,8 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
-
+using MiUni.Api.Enums;
 namespace MiUni.Api.Controllers;
+using System.ComponentModel.DataAnnotations;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -27,11 +28,20 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var user = new ApplicationUser
-        {
-            UserName = request.Email,
-            Email = request.Email
-        };
+         if (!request.Email.EndsWith("@unison.mx", StringComparison.OrdinalIgnoreCase))
+    {
+        return BadRequest(new { message = "Debes registrarte con tu correo institucional (@unison.mx)." });
+    }
+    var user = new ApplicationUser
+    {
+        UserName = request.Email,
+        Email = request.Email,
+        Nombre = request.Nombre,
+        CarreraId = request.CarreraId,
+        Semestre = request.Semestre,
+        FechaRegistro = DateTime.UtcNow,
+        Rol = RolUsuario.Estudiante
+    };
 
         var result = await _userManager.CreateAsync(user, request.Password);
 
@@ -117,19 +127,41 @@ public async Task<IActionResult> Me()
     return Ok(new
     {
         id = user.Id,
-        email = user.Email
+        nombre = user.Nombre,
+        email = user.Email,
+        carreraId = user.CarreraId,
+        semestre = user.Semestre,
+        fechaRegistro = user.FechaRegistro,
+        rol = user.Rol.ToString()
     });
 }
 }
 
+
 public class RegisterRequest
 {
+    [Required(ErrorMessage = "El nombre es obligatorio.")]
+    public string Nombre { get; set; } = null!;
+
+    [Required(ErrorMessage = "El correo es obligatorio.")]
+    [EmailAddress(ErrorMessage = "El correo no tiene un formato válido.")]
     public string Email { get; set; } = null!;
+
+    [Required(ErrorMessage = "La contraseña es obligatoria.")]
+    [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
     public string Password { get; set; } = null!;
+
+    public Guid? CarreraId { get; set; }
+
+    public short? Semestre { get; set; }
 }
 
 public class LoginRequest
 {
+    [Required(ErrorMessage = "El correo es obligatorio.")]
+    [EmailAddress(ErrorMessage = "El correo no tiene un formato válido.")]
     public string Email { get; set; } = null!;
+
+    [Required(ErrorMessage = "La contraseña es obligatoria.")]
     public string Password { get; set; } = null!;
 }
