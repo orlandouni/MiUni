@@ -1,0 +1,61 @@
+@baseUrl = http://localhost:5124
+@token = REEMPLAZAR_CON_JWT_DEL_LOGIN
+@lugarId = 00000000-0000-0000-0000-000000000000
+@resenaId = 00000000-0000-0000-0000-000000000000
+
+### Consultar reseñas de un lugar (sin token)
+GET {{baseUrl}}/api/Resena?lugarId={{lugarId}}
+
+### Consultar una reseña
+GET {{baseUrl}}/api/Resena/{{resenaId}}
+
+### Crear reseña (el autor se obtiene del JWT)
+POST {{baseUrl}}/api/Resena
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "lugarId": "{{lugarId}}",
+  "calificacion": 5,
+  "comentario": "Buen lugar para estudiar."
+}
+
+### Editar la reseña propia, sin cambiar autor, lugar ni fecha
+PUT {{baseUrl}}/api/Resena/{{resenaId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "calificacion": 4,
+  "comentario": "Comentario actualizado."
+}
+
+### Eliminar reseña propia (409 si tiene reportes asociados)
+DELETE {{baseUrl}}/api/Resena/{{resenaId}}
+Authorization: Bearer {{token}}
+
+### Consultar mis favoritos
+GET {{baseUrl}}/api/Favorito
+Authorization: Bearer {{token}}
+
+### Consultar si tengo guardado un lugar
+GET {{baseUrl}}/api/Favorito/{{lugarId}}
+Authorization: Bearer {{token}}
+
+### Agregar favorito (409 si ya existe)
+POST {{baseUrl}}/api/Favorito
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "lugarId": "{{lugarId}}"
+}
+
+### Asegurar que el lugar está guardado (201 nuevo, 204 existente)
+# Favorito no tiene campos editables: PUT no modifica la clave ni la fecha.
+PUT {{baseUrl}}/api/Favorito/{{lugarId}}
+Authorization: Bearer {{token}}
+
+### Eliminar mi favorito
+DELETE {{baseUrl}}/api/Favorito/{{lugarId}}
+Authorization: Bearer {{token}}
