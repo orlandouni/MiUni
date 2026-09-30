@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiUni.Api.Models;
+using MiUni.Api.DTOs;
 
 namespace MiUni.Api.Controllers;
 
@@ -19,7 +20,11 @@ public class CategoriaController : ControllerBase
   [HttpGet]
 public async Task<IActionResult> GetAll()
 {
-    var categorias = await _context.Categoria.ToListAsync();
+    var categorias = await _context.Categoria
+        .AsNoTracking()
+        .OrderBy(c => c.Nombre)
+        .Select(c => new CategoriaDto { Id = c.Id, Nombre = c.Nombre, Icono = c.Icono })
+        .ToListAsync();
     return Ok(categorias);
 }
 }

@@ -17,11 +17,14 @@ public class LugarController : ControllerBase
     }
 
     // GET /api/Lugar
-    // GET /api/Lugar?categoria=Comida
-   [HttpGet]
-public async Task<IActionResult> GetAll([FromQuery] string? categoria)
+// GET /api/Lugar?categoria=Comida
+// GET /api/Lugar?q=5k
+// GET /api/Lugar?q=biblio&categoria=Biblioteca
+[HttpGet]
+public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuery] string? q)
 {
     var query = _context.Lugars
+        .AsNoTracking()
         .Include(l => l.Categoria)
         .Where(l => l.Activo);
 
@@ -30,10 +33,18 @@ public async Task<IActionResult> GetAll([FromQuery] string? categoria)
         query = query.Where(l => l.Categoria.Nombre == categoria);
     }
 
-    // Primero traemos las entidades completas (aquí SÍ se ejecuta el SQL)
-    var lugaresEntidades = await query.ToListAsync();
+    if (!string.IsNullOrWhiteSpace(q))
+    {
+        var patron = $"%{q.Trim()}%";
+        query = query.Where(l =>
+            EF.Functions.ILike(l.Nombre, patron) ||
+            (l.Descripcion != null && EF.Functions.ILike(l.Descripcion, patron)));
+    }
 
-    // Y luego mapeamos a DTO en memoria (esto ya no es SQL, es C# puro)
+    // Aquí SÍ se ejecuta el SQL (filtros de nombre/categoría se traducen bien)
+    var lugaresEntidades = await query.OrderBy(l => l.Nombre).ToListAsync();
+
+    // Mapeo a DTO en memoria (evita el problema de st_y con geography)
     var lugares = lugaresEntidades.Select(l => new LugarDto
     {
         Id = l.Id,
