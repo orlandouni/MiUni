@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Link } from "react-router-dom";
 
 const CENTRO_INICIAL = [29.0833, -110.9627];
 const ZOOM_INICIAL = 17;
@@ -169,6 +170,11 @@ function CampusMap() {
                   {lugar.descripcion}
                 </>
               )}
+              <div style={{ marginTop: 12 }}>
+                <Link to={`/lugares/${lugar.id}`}>
+                Ver reseñas y guardar favorito
+                </Link>
+              </div>
             </Popup>
           </Marker>
         ))}

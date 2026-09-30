@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, ArrowRight, Eye, EyeOff, Check } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Check,
+  GraduationCap,
+  LockKeyhole,
+  Mail,
+  User,
+} from "lucide-react";
+
 import { registerRequest } from "../services/api";
 import { authErrorMessage } from "../services/authErrors";
-import "@fontsource/barlow-condensed/600.css";
-import "@fontsource/barlow-condensed/700.css";
-import "./Register.css";
 import CampusPanel from "./CampusPanel";
 
 export default function Register() {
@@ -50,29 +57,195 @@ export default function Register() {
     }
   }
 
-  return (
-    <main className="registration">
-      <CampusPanel />
+    return (
+    <CampusPanel>
+      <section
+        className="ma-card ma-register"
+        aria-labelledby="register-title"
+      >
+        <div className="ma-heading">
+          <div className="ma-emblem">
+            <GraduationCap aria-hidden="true" />
+          </div>
 
-      <section className="registration-panel" aria-labelledby="registration-title">
-        <div className="registration-topline"><span>COMUNIDAD UNIVERSITARIA</span><ArrowUpRight size={24} aria-hidden="true" /></div>
-        <div className="registration-content">
-          <p className="registration-marker"><span>01</span> PUNTO DE PARTIDA</p>
-          <h1 id="registration-title">Crear cuenta</h1>
-          <p className="registration-lead">El primer paso para conocer tu campus.<br />Regístrate con tu correo institucional.</p>
-          {success ? <div className="registration-success" role="status"><Check size={32} /><h2>Ya tienes un lugar.</h2><p>Tu cuenta está lista. Inicia sesión para comenzar a explorar.</p><Link className="registration-submit" to="/login">Iniciar sesión <ArrowRight size={20} /></Link></div> :
-            <form className="registration-form" onSubmit={handleSubmit} aria-busy={loading}>
-              <div className="registration-field"><label htmlFor="nombre">Nombre completo</label><input id="nombre" name="nombre" autoComplete="name" placeholder="¿Cómo te llamas?" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></div>
-              <div className="registration-field"><label htmlFor="correo">Correo institucional</label><input id="correo" name="email" type="email" autoComplete="email" placeholder="tu.nombre@unison.mx" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-              <div className="registration-field"><label htmlFor="contrasena">Contraseña</label><div className="registration-password"><input id="contrasena" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" placeholder="Crea tu contraseña" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} aria-describedby="password-help" required /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={showPassword}>{showPassword ? <EyeOff size={19} /> : <Eye size={19} />}</button></div><p id="password-help">Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.</p></div>
-              <div className="registration-field"><label htmlFor="confirmar">Confirmar contraseña</label><div className="registration-password"><input id="confirmar" name="confirmPassword" type={showConfirm ? "text" : "password"} autoComplete="new-password" placeholder="Escríbela una vez más" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required /><button type="button" onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? "Ocultar confirmación de contraseña" : "Mostrar confirmación de contraseña"} aria-pressed={showConfirm}>{showConfirm ? <EyeOff size={19} /> : <Eye size={19} />}</button></div></div>
-              {error && <p className="registration-error" role="alert">{error}</p>}
-              <button type="submit" className="registration-submit" disabled={loading}>{loading ? "Creando tu cuenta…" : "Crear mi cuenta"}<ArrowRight size={21} aria-hidden="true" /></button>
-            </form>}
-          <p className="registration-login">¿Ya eres parte? <Link to="/login">Inicia sesión <ArrowUpRight size={15} /></Link></p>
+          <h1 id="register-title">Crear cuenta</h1>
+          <p>Regístrate para comenzar a usar MIUNI</p>
         </div>
-        <footer className="registration-footer"><span>MENOS VUELTAS. MÁS CAMPUS.</span><span>MIUNI ↗</span></footer>
+
+        {success ? (
+          <div className="ma-success" role="status">
+            <Check size={34} aria-hidden="true" />
+            <h2>Cuenta creada correctamente</h2>
+            <p>Ya puedes iniciar sesión con tus credenciales.</p>
+
+            <Link className="ma-submit" to="/login">
+              <span>Iniciar sesión</span>
+              <ArrowRight size={20} aria-hidden="true" />
+            </Link>
+          </div>
+        ) : (
+          <>
+            <form
+              className="ma-form"
+              onSubmit={handleSubmit}
+              aria-busy={loading}
+            >
+              <div className="ma-field">
+                <label htmlFor="nombre">Nombre completo</label>
+
+                <div className="ma-input-wrap">
+                  <User
+                    className="ma-input-icon"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <input
+                    id="nombre"
+                    name="nombre"
+                    autoComplete="name"
+                    placeholder="Ej. Ana López Torres"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="ma-field">
+                <label htmlFor="correo">Correo institucional</label>
+
+                <div className="ma-input-wrap">
+                  <Mail
+                    className="ma-input-icon"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <input
+                    id="correo"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="ejemplo@unison.mx"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="ma-field">
+                <label htmlFor="contrasena">Contraseña</label>
+
+                <div className="ma-input-wrap">
+                  <LockKeyhole
+                    className="ma-input-icon"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <input
+                    id="contrasena"
+                    name="password"
+                    className="ma-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    minLength={8}
+                    aria-describedby="password-help"
+                    disabled={loading}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="ma-eye"
+                    onClick={() => setShowPassword((value) => !value)}
+                    aria-label={
+                      showPassword
+                        ? "Ocultar contraseña"
+                        : "Mostrar contraseña"
+                    }
+                    aria-pressed={showPassword}
+                    disabled={loading}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <p id="password-help" className="ma-help">
+                  Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.
+                </p>
+              </div>
+
+              <div className="ma-field">
+                <label htmlFor="confirmar">Confirmar contraseña</label>
+
+                <div className="ma-input-wrap">
+                  <LockKeyhole
+                    className="ma-input-icon"
+                    size={19}
+                    aria-hidden="true"
+                  />
+
+                  <input
+                    id="confirmar"
+                    name="confirmPassword"
+                    className="ma-password"
+                    type={showConfirm ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="ma-eye"
+                    onClick={() => setShowConfirm((value) => !value)}
+                    aria-label={
+                      showConfirm
+                        ? "Ocultar confirmación de contraseña"
+                        : "Mostrar confirmación de contraseña"
+                    }
+                    aria-pressed={showConfirm}
+                    disabled={loading}
+                  >
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p className="ma-error" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                className="ma-submit"
+                disabled={loading}
+              >
+                <span>{loading ? "Creando cuenta…" : "Registrarme"}</span>
+                <ArrowRight size={20} aria-hidden="true" />
+              </button>
+            </form>
+
+            <p className="ma-alternative">
+              ¿Ya tienes cuenta?{" "}
+              <Link to="/login">Inicia sesión</Link>
+            </p>
+          </>
+        )}
       </section>
-    </main>
+    </CampusPanel>
   );
 }
