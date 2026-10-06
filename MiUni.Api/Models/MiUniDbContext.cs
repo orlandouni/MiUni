@@ -294,6 +294,12 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
 
             entity.ToTable("lugar");
 
+            entity.Property(e => e.PropietarioId).HasColumnName("propietario_id");
+            entity.Property(e => e.EstadoSolicitud).HasColumnName("estado_solicitud").HasMaxLength(20)
+                .IsConcurrencyToken();
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.PropietarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(e => e.CategoriaId, "idx_lugar_categoria");
 
             entity.HasIndex(e => e.Ubicacion, "idx_lugar_ubicacion").HasMethod("gist");

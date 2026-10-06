@@ -15,7 +15,7 @@ export function setSession(token, expires) {
 
   if (expires) {
     localStorage.setItem(EXPIRES_KEY, expires);
-  }
+  } else localStorage.removeItem(EXPIRES_KEY);
 }
 
 // Obtiene el token guardado
@@ -31,6 +31,11 @@ export function clearSession() {
 
 // Saber si existe una sesión
 export function isAuthenticated() {
+  const expires = localStorage.getItem(EXPIRES_KEY);
+  if (expires && Date.parse(expires) <= Date.now()) {
+    clearSession();
+    return false;
+  }
   return !!getToken();
 }
 
@@ -43,6 +48,11 @@ api.interceptors.request.use((config) => {
   }
 
   return config;
+});
+
+api.interceptors.response.use(response => response, error => {
+  if (error.response?.status === 401) clearSession();
+  return Promise.reject(error);
 });
 
 // LOGIN

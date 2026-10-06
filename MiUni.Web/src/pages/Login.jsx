@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { loginRequest, setSession } from "../services/api";
+import { landingFor } from "../services/roles";
 import CampusPanel from "./CampusPanel";
 
 export default function Login() {
@@ -37,7 +38,7 @@ export default function Login() {
 
       setSession(data.token, data.expires);
 
-      navigate("/");
+      navigate(landingFor(data.roles), { replace: true });
     } catch (err) {
       if (err.response?.status === 401) {
         setError(

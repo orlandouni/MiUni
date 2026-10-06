@@ -1,0 +1,11 @@
+@MiUni.Api_HostAddress = http://localhost:5124
+
+### RF-03: sustituir por coordenadas próximas a los nodos de la red cargada
+POST {{MiUni.Api_HostAddress}}/api/Ruta
+Content-Type: application/json
+
+{
+  "a": { "latitud": 29.0838, "longitud": -110.9610 },
+  "b": { "latitud": 29.0845, "longitud": -110.9590 },
+  "radioConexionMetros": 100
+}
