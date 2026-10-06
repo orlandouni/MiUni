@@ -644,3 +644,34 @@
     object-position: center;
   }
 }
+
+/* Mantiene el diseño original y lo ajusta a la altura disponible. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .ma-layout { height: 100svh; min-height: 0; }
+  .ma-left { height: 100%; min-height: 0; padding: 12px 24px; overflow: visible; }
+  .ma-brand { flex-shrink: 0; align-items: center; padding: 0; }
+  .ma-brand a { width: 140px; max-width: 34%; }
+  .ma-brand img { max-height: 50px; object-position: left center; }
+  .ma-brand > p { margin: 0; font-size: 10px; line-height: 1.25; }
+  .ma-center { flex: 1; min-height: 0; padding: 8px 0; }
+  .ma-card, .ma-card.ma-register { max-width: 440px; margin: 0; padding: 18px 26px; }
+  .ma-emblem, .ma-register .ma-emblem { width: 48px; height: 48px; border-radius: 12px; }
+  .ma-emblem svg, .ma-register .ma-emblem svg { width: 29px; height: 29px; }
+  .ma-heading h1, .ma-register .ma-heading h1 { margin-top: 9px; font-size: 24px; }
+  .ma-heading > p, .ma-register .ma-heading > p { margin-top: 4px; font-size: 12px; }
+  .ma-form, .ma-register .ma-form { margin-top: 14px; gap: 10px; }
+  .ma-field, .ma-register .ma-field { gap: 4px; }
+  .ma-field label, .ma-register .ma-field label { font-size: 11px; }
+  .ma-input-wrap input, .ma-register .ma-input-wrap input { height: 39px; font-size: 13px; }
+  .ma-help { font-size: 10px; line-height: 1.3; }
+  .ma-submit, .ma-register .ma-submit { min-height: 40px; padding: 8px 16px; font-size: 13px; }
+  .ma-divider { margin: 13px 0; }
+  .ma-alternative, .ma-register .ma-alternative { font-size: 12px; }
+  .ma-register .ma-alternative { margin-top: 10px; }
+  .ma-footer { flex-shrink: 0; padding-top: 0; }
+  .ma-footer > img { width: auto; max-width: 90%; max-height: 45px; object-fit: contain; }
+  .ma-motto { margin-top: 2px; gap: 10px; }
+  .ma-motto p { font-size: 7px; letter-spacing: .18em; }
+  .ma-right { height: 100%; min-height: 0; padding: 8px; }
+  .ma-right img { width: 100%; height: 100%; object-fit: contain; }
+}
