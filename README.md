@@ -1,6 +1,45 @@
 # MiUni
 
+## Reportes y administración — RF-05d / RF-13
+
+Implementados CRUD de reportes, listado administrativo con datos relacionados y
+contadores, y creación/edición/baja de lugares y categorías restringidas a
+Administrador. [Contratos, permisos y ejemplos](docs/administracion-api.md).
+Peticiones listas para probar: `MiUni.Api/Administracion.http`.
+
 ## Login y permisos por roles
+
+### Administrador compartido para desarrollo
+
+Después de descargar el proyecto, cada integrante configura su conexión local
+`ConnectionStrings:MiUniDb` y ejecuta desde `MiUni.Api`:
+
+```powershell
+dotnet ef database update
+dotnet run
+```
+
+Al arrancar en **Development**, el seed crea automáticamente esta cuenta local:
+
+- Correo: `admin.dev@unison.mx`
+- Contraseña de prueba: `MiUni.Dev2026!`
+- Roles: `Estudiante` y `Administrador`
+
+Todos usan las mismas credenciales de prueba en sus propias bases. El seed usa
+Identity para generar el hash de contraseña y una transacción para crear cuenta
+y permisos. Es repetible: no duplica cuentas ni restablece la contraseña o el
+perfil en cada arranque. Las instancias concurrentes se coordinan con un bloqueo
+transaccional PostgreSQL. No promueve otras cuentas si el correo ya está ocupado.
+
+Los valores están versionados en `appsettings.json`, sección `DevelopmentAdmin`.
+Para desactivarlo, establecer `DevelopmentAdmin__Enabled=false`. Puede configurarse
+otro correo/contraseña **antes de la primera creación** usando variables de entorno
+`DevelopmentAdmin__Email` y `DevelopmentAdmin__Password`. Si la cuenta ya existe,
+cambiar estos valores no la modifica.
+
+El seed nunca se ejecuta fuera de Development, aunque Enabled sea true. Estas
+credenciales públicas son sólo de desarrollo; no reutilizar esa base como producción.
+Para asignar administradores reales se conserva el comando local `--asignar-admin`.
 
 Un solo login para todos. Los roles se almacenan en las tablas de ASP.NET Identity
 (`AspNetRoles` y `AspNetUserRoles`), se incluyen en el JWT y se devuelven en
@@ -51,9 +90,9 @@ o revocación surte efecto incluso con un token anterior. Recargar la pantalla
 actualiza las opciones visibles. El backend devuelve 401 sin sesión y 403 sin
 permiso. Ocultar botones en el frontend no es la barrera de autorización.
 
-Esta entrega incluye autenticación, solicitudes/aprobaciones y edición básica de
-negocios. La edición de menús/horarios y la moderación de reportes requieren sus
-propias pantallas y endpoints; no forman parte del panel inicial.
+El panel visual inicial incluye solicitudes/aprobaciones y edición básica de
+negocios. El backend de reportes y administración está documentado arriba; su
+interfaz visual y la edición de menús/horarios quedan pendientes.
 
 Pruebas HTTP de permisos: definir `MIUNI_AUTH_TEST_URL` con la URL de una API
 actualizada y `MIUNI_ROUTING_TEST_CONNECTION` con su misma base migrada, y ejecutar

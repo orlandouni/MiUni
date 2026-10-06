@@ -18,13 +18,15 @@ public class MiUniDbContextFactory : IDesignTimeDbContextFactory<MiUniDbContext>
         var connectionString = config.GetConnectionString("MiUniDb");
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        var enumNameTranslator = new Npgsql.NameTranslation.NpgsqlNullNameTranslator();
         dataSourceBuilder.MapEnum<RolUsuario>("rol_usuario");
-        dataSourceBuilder.MapEnum<EstadoReporte>("estado_reporte");
+        dataSourceBuilder.MapEnum<EstadoReporte>("estado_reporte", enumNameTranslator);
         dataSourceBuilder.UseNetTopologySuite();
         var dataSource = dataSourceBuilder.Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<MiUniDbContext>();
-        optionsBuilder.UseNpgsql(dataSource, o => o.UseNetTopologySuite());
+        optionsBuilder.UseNpgsql(dataSource, o => o.UseNetTopologySuite()
+            .MapEnum<EstadoReporte>("estado_reporte", nameTranslator: enumNameTranslator));
 
         return new MiUniDbContext(optionsBuilder.Options);
     }

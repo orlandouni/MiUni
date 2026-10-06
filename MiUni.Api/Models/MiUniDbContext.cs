@@ -409,7 +409,15 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
         {
             entity.HasKey(e => e.Id).HasName("reporteusuario_pkey");
 
-            entity.ToTable("reporteusuario");
+            entity.ToTable("reporteusuario", table => table.HasCheckConstraint(
+                "ck_reporte_destino", "(lugar_id IS NOT NULL) <> (resena_id IS NOT NULL)"));
+            entity.Property(e => e.FechaCreacion).HasColumnName("fecha_creacion");
+            entity.Property(e => e.Estado).HasColumnName("estado").HasColumnType("estado_reporte")
+                .IsConcurrencyToken();
+            entity.HasIndex(e => new { e.UsuarioId, e.LugarId }, "uq_reporte_usuario_lugar")
+                .IsUnique().HasFilter("lugar_id IS NOT NULL");
+            entity.HasIndex(e => new { e.UsuarioId, e.ResenaId }, "uq_reporte_usuario_resena")
+                .IsUnique().HasFilter("resena_id IS NOT NULL");
 
             entity.HasIndex(e => e.LugarId, "idx_reporte_lugar");
 

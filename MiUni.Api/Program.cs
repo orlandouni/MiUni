@@ -16,15 +16,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("MiUniDb");
 var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+var enumNameTranslator = new Npgsql.NameTranslation.NpgsqlNullNameTranslator();
 dataSourceBuilder.MapEnum<RolUsuario>("rol_usuario");
-dataSourceBuilder.MapEnum<EstadoReporte>("estado_reporte");
+dataSourceBuilder.MapEnum<EstadoReporte>("estado_reporte", enumNameTranslator);
 dataSourceBuilder.UseNetTopologySuite();
 var dataSource = dataSourceBuilder.Build();
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddScoped<IRutaService, RutaService>();
 
 builder.Services.AddDbContext<MiUniDbContext>(options =>
-    options.UseNpgsql(dataSource, o => o.UseNetTopologySuite())
+    options.UseNpgsql(dataSource, o => o.UseNetTopologySuite()
+        .MapEnum<EstadoReporte>("estado_reporte", nameTranslator: enumNameTranslator))
 );
 
 builder.Services
@@ -74,7 +76,9 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(
+        new System.Text.Json.Serialization.JsonStringEnumConverter(allowIntegerValues: false)));
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient<IRagClient, RagClient>(client =>
 {
@@ -129,6 +133,7 @@ if (!string.IsNullOrWhiteSpace(adminEmail))
 
 if (app.Environment.IsDevelopment())
 {
+    await DevelopmentAdminSeeder.SeedAsync(app.Services, app.Environment, app.Configuration);
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
