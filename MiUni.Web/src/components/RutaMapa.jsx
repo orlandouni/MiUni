@@ -8,16 +8,15 @@ const etiqueta = punto => punto?.nombre ?? (punto ? `${punto.latitud.toFixed(5)}
 export function PanelRuta({ estado }) {
   const { origen, destino, seleccion, setSeleccion, ruta, error, cargando, calcular, limpiar } = estado;
   return (
-    <section aria-label="Ruta por el campus" style={{ padding: 12, marginBottom: 12, border: "1px solid #94a3b8", borderRadius: 8 }}>
-      <h2>Ruta por el campus</h2>
-      <p>Elige los puntos en el mapa o utiliza los botones de un lugar.</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <button type="button" aria-pressed={seleccion === "origen"} onClick={() => setSeleccion(seleccion === "origen" ? null : "origen")}>Elegir origen</button>
-        <button type="button" aria-pressed={seleccion === "destino"} onClick={() => setSeleccion(seleccion === "destino" ? null : "destino")}>Elegir destino</button>
-        <button type="button" disabled={!origen || !destino || cargando} onClick={calcular}>{cargando ? "Calculando…" : "Calcular ruta"}</button>
-        <button type="button" onClick={limpiar}>Limpiar ruta</button>
+    <section className="ruta-panel" aria-label="Ruta por el campus">
+      <div className="ruta-panel-heading"><div><span className="ruta-kicker">ASISTENTE DE RUTA</span><h2>Ruta por el campus</h2></div><button className="ruta-clear" type="button" onClick={limpiar}>Limpiar</button></div>
+      <p className="ruta-help">Elige los puntos en el mapa o utiliza los botones de un lugar.</p>
+      <div className="ruta-actions">
+        <button type="button" className={seleccion === "origen" ? "ruta-selected" : ""} aria-pressed={seleccion === "origen"} onClick={() => setSeleccion(seleccion === "origen" ? null : "origen")}>Elegir origen</button>
+        <button type="button" className={seleccion === "destino" ? "ruta-selected" : ""} aria-pressed={seleccion === "destino"} onClick={() => setSeleccion(seleccion === "destino" ? null : "destino")}>Elegir destino</button>
+        <button type="button" className="ruta-calculate" disabled={!origen || !destino || cargando} onClick={calcular}>{cargando ? "Calculando…" : "Calcular ruta"}</button>
       </div>
-      <p>Origen: {etiqueta(origen)}<br />Destino: {etiqueta(destino)}</p>
+      <div className="ruta-points"><span><b>Origen</b>{etiqueta(origen)}</span><span><b>Destino</b>{etiqueta(destino)}</span></div>
       <div role="status" aria-live="polite">
         {seleccion && <p>Haz clic en el mapa para marcar el {seleccion}.</p>}
         {cargando && <p>Buscando una ruta transitable…</p>}
@@ -27,7 +26,7 @@ export function PanelRuta({ estado }) {
           <p>Separación hasta la red: origen {Math.round(ruta.distanciaConexionAMetros)} m; destino {Math.round(ruta.distanciaConexionBMetros)} m. Estos accesos no están incluidos en la distancia ni representan caminos verificados.</p>
         </>}
       </div>
-      {error && <p role="alert">{error}</p>}
+      {error && <p className="ruta-error" role="alert">{error}</p>}
     </section>
   );
 }

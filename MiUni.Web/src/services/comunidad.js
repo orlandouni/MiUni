@@ -80,3 +80,8 @@ export function mensajeError(error) {
 
   return "No se pudo completar la operación. Intenta nuevamente.";
 }
+
+export async function obtenerReportes() {
+  const { data } = await api.get("/api/ReporteUsuario", { params: { pagina: 1, tamanoPagina: 100 } });
+  return data.items ?? [];
+}

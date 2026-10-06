@@ -8,11 +8,12 @@ import {
   Eye,
   MessageSquare,
   Pencil,
+  Flag,
   Star,
   Trash2,
 } from "lucide-react";
 
-import { getMe, getToken } from "../services/api";
+import api, { getMe, getToken } from "../services/api";
 import {
   obtenerLugares,
   obtenerResenas,
@@ -20,6 +21,7 @@ import {
   editarResena,
   eliminarResena,
   obtenerFavoritos,
+  obtenerReportes,
   guardarFavorito,
   quitarFavorito,
   mensajeError,
@@ -148,6 +150,7 @@ function Pantalla({ titulo, subtitulo, children }) {
           <Link to="/">Mapa</Link>
           <Link to="/favoritos">Mis favoritos</Link>
           <Link to="/resenas">Mis reseñas</Link>
+          <Link to="/resenas-reportes">Mis reportes</Link>
         </nav>
 
         {children}
@@ -270,10 +273,26 @@ function FormularioResena({ inicial, alGuardar, alCancelar }) {
   );
 }
 
-function TarjetaResena({ resena, titulo, propia, alCambiar }) {
+function TarjetaResena({ resena, titulo, propia, puedeReportar = false, alCambiar }) {
   const [editando, setEditando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [error, setError] = useState("");
+  const [reportando, setReportando] = useState(false);
+  const [motivo, setMotivo] = useState("");
+  const [enviandoReporte, setEnviandoReporte] = useState(false);
+  const [reporteEnviado, setReporteEnviado] = useState(false);
+
+  async function reportar(evento) {
+    evento.preventDefault();
+    setEnviandoReporte(true);
+    setError("");
+    try {
+      await api.post("/api/ReporteUsuario", { resenaId: resena.id, motivo });
+      setReporteEnviado(true);
+      setReportando(false);
+    } catch (e) { setError(mensajeError(e)); }
+    finally { setEnviandoReporte(false); }
+  }
 
   async function borrar() {
     if (!window.confirm("¿Quieres eliminar esta reseña?")) return;
@@ -331,6 +350,7 @@ function TarjetaResena({ resena, titulo, propia, alCambiar }) {
             </button>
           </div>
         )}
+        {puedeReportar && !propia && <button className="com-icono" type="button" aria-label="Reportar reseña" onClick={() => setReportando(value => !value)}><Flag size={17} /></button>}
       </div>
 
       {editando ? (
@@ -347,6 +367,15 @@ function TarjetaResena({ resena, titulo, propia, alCambiar }) {
           <p className="com-fecha">{fechaLegible(resena.fechaCreacion)}</p>
         </>
       )}
+
+      {reportando && <form className="com-formulario com-reporte-form" onSubmit={reportar}>
+        <label>¿Por qué reportas esta reseña?
+          <textarea required minLength={3} maxLength={2000} rows={3} value={motivo} onChange={event => setMotivo(event.target.value)} placeholder="Describe el problema" />
+        </label>
+        <div className="com-acciones"><button className="com-boton" disabled={enviandoReporte}>{enviandoReporte ? "Enviando…" : "Enviar reporte"}</button><button className="com-boton com-secundario" type="button" onClick={() => setReportando(false)}>Cancelar</button></div>
+      </form>}
+      {reportando && error && <p className="com-error" role="alert">{error}</p>}
+      {reporteEnviado && <p className="com-exito" role="status">Gracias. El equipo revisará tu reporte.</p>}
 
       {error && <p className="com-error" role="alert">{error}</p>}
     </article>
@@ -607,6 +636,11 @@ function ContenidoLugar({ lugarId }) {
   const sesion = useSesion();
   const [mostrarResenas, setMostrarResenas] = useState(true);
   const [aviso, setAviso] = useState("");
+  const [reportandoLugar, setReportandoLugar] = useState(false);
+  const [motivoLugar, setMotivoLugar] = useState("");
+  const [reporteLugarEnviado, setReporteLugarEnviado] = useState(false);
+  const [errorReporteLugar, setErrorReporteLugar] = useState("");
+  const [enviandoReporteLugar, setEnviandoReporteLugar] = useState(false);
 
   const consultar = useCallback(async () => {
     const [lugares, resenas] = await Promise.all([
@@ -635,6 +669,16 @@ function ContenidoLugar({ lugarId }) {
     await crearResena(lugarId, calificacion, comentario);
     setAviso("Tu reseña se publicó correctamente.");
     consulta.actualizar();
+  }
+
+  async function reportarLugar(evento) {
+    evento.preventDefault();
+    setEnviandoReporteLugar(true); setErrorReporteLugar("");
+    try {
+      await api.post("/api/ReporteUsuario", { lugarId, motivo: motivoLugar });
+      setReporteLugarEnviado(true); setReportandoLugar(false);
+    } catch (error) { setErrorReporteLugar(mensajeError(error)); }
+    finally { setEnviandoReporteLugar(false); }
   }
 
   return (
@@ -673,7 +717,12 @@ function ContenidoLugar({ lugarId }) {
             <p>{lugar.descripcion}</p>
 
             {sesion.datos && (
-              <BotonFavorito key={sesion.datos.id} lugarId={lugarId} />
+              <><BotonFavorito key={sesion.datos.id} lugarId={lugarId} />
+                <div className="com-reporte-lugar"><button className="com-boton com-secundario" type="button" onClick={() => setReportandoLugar(value => !value)}><Flag size={16} /> Reportar lugar</button>
+                  {reporteLugarEnviado && <p className="com-exito" role="status">Gracias. El equipo revisará tu reporte.</p>}
+                  {reportandoLugar && <form className="com-formulario" onSubmit={reportarLugar}><label>Motivo del reporte<textarea required minLength={3} maxLength={2000} rows={3} value={motivoLugar} onChange={event => setMotivoLugar(event.target.value)} /></label>{errorReporteLugar && <p role="alert" className="com-error">{errorReporteLugar}</p>}<div className="com-acciones"><button className="com-boton" disabled={enviandoReporteLugar}>{enviandoReporteLugar ? "Enviando…" : "Enviar reporte"}</button><button className="com-boton com-secundario" type="button" onClick={() => setReportandoLugar(false)}>Cancelar</button></div></form>}
+                </div>
+              </>
             )}
           </section>
 
@@ -703,6 +752,7 @@ function ContenidoLugar({ lugarId }) {
                       resena={resena}
                       titulo={propia ? "Tú" : "Usuario de MiUni"}
                       propia={propia}
+                      puedeReportar={Boolean(sesion.datos)}
                       alCambiar={consulta.actualizar}
                     />
                   );
@@ -743,4 +793,26 @@ export function FichaLugar() {
 
   // Cambiar de lugar reinicia formularios y mensajes del anterior.
   return <ContenidoLugar key={lugarId} lugarId={lugarId} />;
+}
+
+function estadoReporte(estado) {
+  return estado === "Pendiente" ? "Pendiente" : estado === "Revisado" ? "Revisado" : "Descartado";
+}
+
+function ListaReportes() {
+  const consulta = useConsulta(obtenerReportes);
+  return <>
+    <EstadoConsulta consulta={consulta} />
+    {consulta.datos && <div className="com-lista">
+      {consulta.datos.map(reporte => <article className="com-tarjeta com-reporte-card" key={reporte.id}>
+        <div className="com-fila"><div className="com-crecer"><span className="com-etiqueta">{reporte.resenaId ? "Reseña" : "Lugar"}</span><h2>{reporte.nombreLugar || "Lugar reportado"}</h2></div><span className={`com-estado-reporte estado-${reporte.estado?.toLowerCase()}`}>{estadoReporte(reporte.estado)}</span></div>
+        <p className="com-reporte-motivo">{reporte.motivo}</p><p className="com-fecha">{fechaLegible(reporte.fechaCreacion)}</p>
+      </article>)}
+      {consulta.datos.length === 0 && <p className="com-vacio">Todavía no has enviado reportes.</p>}
+    </div>}
+  </>;
+}
+
+export function Reportes() {
+  return <Pantalla titulo="Mis reportes" subtitulo="Consulta el estado de tus reportes enviados"><ListaReportes /></Pantalla>;
 }

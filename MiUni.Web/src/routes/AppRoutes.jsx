@@ -1,9 +1,4 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -16,6 +11,7 @@ import {
   Favoritos,
   MisResenas,
   FichaLugar,
+  Reportes,
 } from "../pages/Comunidad";
 
 function AppRoutes() {
@@ -32,10 +28,7 @@ function AppRoutes() {
         <Route path="/admin" element={<ProtectedRoute role="Administrador"><Admin /></ProtectedRoute>} />
         <Route path="/lugares/:lugarId" element={<FichaLugar />} />
 
-        <Route
-          path="/resenas-reportes"
-          element={<Navigate to="/resenas" replace />}
-        />
+        <Route path="/resenas-reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

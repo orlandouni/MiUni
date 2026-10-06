@@ -5,6 +5,8 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "react-router-dom";
 import { CapaRuta, PanelRuta } from "./RutaMapa";
 import { useRuta } from "../services/useRuta";
+import { Search, SlidersHorizontal } from "lucide-react";
+import "./CampusMap.css";
 
 const CENTRO_INICIAL = [29.0833, -110.9627];
 const ZOOM_INICIAL = 17;
@@ -106,18 +108,19 @@ function CampusMap() {
   const sinResultados = hayFiltro && !cargando && !error && lugares.length === 0;
 
   return (
-    <div>
-      <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+    <div className="campus-map-shell">
+      <div className="campus-controls">
+        <div className="campus-search"><Search size={17} />
         <input
           type="search"
           placeholder="Buscar edificio o lugar (ej. 5K, biblioteca)"
           aria-label="Buscar lugar"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          style={{ padding: 8 }}
         />
+        </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="campus-filters"><button className="campus-filter-toggle" type="button" onClick={() => document.querySelector(".campus-category-list")?.classList.toggle("visible")}><SlidersHorizontal size={15} /> Filtros</button><div className="campus-category-list">
           {categorias.map((c) => (
             <button
               key={c.id}
@@ -126,6 +129,7 @@ function CampusMap() {
               onClick={() => setCategoria(categoria === c.nombre ? null : c.nombre)}
             >
               <span
+                className="campus-dot"
                 style={{
                   display: "inline-block",
                   width: 10,
@@ -137,20 +141,17 @@ function CampusMap() {
               />
               {c.nombre}
             </button>
-          ))}
+          ))}</div>
         </div>
 
-        {!hayFiltro && <p>Busca un lugar o elige una categoría para verlo en el mapa.</p>}
-        {cargando && <p>Buscando...</p>}
-        {error && <p role="alert">No se pudieron cargar los lugares del campus</p>}
-        {sinResultados && <p>No encontramos lugares con esa búsqueda.</p>}
+        {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? "No se pudieron cargar los lugares del campus" : "No encontramos lugares con esa búsqueda."}</p>}
       </div>
 
       <PanelRuta estado={ruta} />
       <MapContainer
         center={CENTRO_INICIAL}
         zoom={ZOOM_INICIAL}
-        style={{ height: "500px", width: "100%" }}
+        className="campus-leaflet"
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
