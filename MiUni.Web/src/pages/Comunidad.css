@@ -413,3 +413,5 @@
   .com-categoria-icono { width: 38px; height: 38px; }
   .com-ficha { padding: 18px; }
 }
+.com-navegacion a[aria-current="page"] { color: var(--com-azul); font-weight: 700; }
+.com-reporte-card { border-left: 4px solid var(--com-dorado); }.com-estado-reporte { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }.estado-pendiente { color:#89691c; background:#fcf4de; }.estado-revisado { color:#17603a; background:#eaf7ef; }.estado-descartado { color:#8d251c; background:#fff0ee; }.com-reporte-motivo { margin-top:12px; color:var(--com-texto); white-space:pre-wrap; }
