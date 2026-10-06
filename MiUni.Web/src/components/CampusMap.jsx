@@ -3,6 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Link } from "react-router-dom";
+import { CapaRuta, PanelRuta } from "./RutaMapa";
+import { useRuta } from "../services/useRuta";
 
 const CENTRO_INICIAL = [29.0833, -110.9627];
 const ZOOM_INICIAL = 17;
@@ -52,6 +54,7 @@ function AjustarVista({ lugares, hayFiltro }) {
 }
 
 function CampusMap() {
+  const ruta = useRuta();
   const [categorias, setCategorias] = useState([]);
   const [texto, setTexto] = useState("");
   const [categoria, setCategoria] = useState(null); // nombre de la categoría
@@ -143,6 +146,7 @@ function CampusMap() {
         {sinResultados && <p>No encontramos lugares con esa búsqueda.</p>}
       </div>
 
+      <PanelRuta estado={ruta} />
       <MapContainer
         center={CENTRO_INICIAL}
         zoom={ZOOM_INICIAL}
@@ -153,6 +157,7 @@ function CampusMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <AjustarVista lugares={lugares} hayFiltro={hayFiltro} />
+        <CapaRuta estado={ruta} />
 
         {lugares.map((lugar) => (
           <Marker
@@ -162,6 +167,10 @@ function CampusMap() {
           >
             <Popup>
               <strong>{lugar.nombre}</strong>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <button type="button" onClick={() => ruta.elegir("origen", lugar)}>Usar como origen</button>
+                <button type="button" onClick={() => ruta.elegir("destino", lugar)}>Usar como destino</button>
+              </div>
               <br />
               Categoría: {lugar.categoria.nombre}
               {lugar.descripcion && (
