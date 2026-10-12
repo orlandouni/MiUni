@@ -2,7 +2,7 @@ namespace MiUni.Api.Services;
 
 public interface IRagClient
 {
-    Task<string> GetAnswerAsync(string question, CancellationToken ct);
+    Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct);
 
-    IAsyncEnumerable<string> StreamAnswerAsync(string question, CancellationToken ct);
+    IAsyncEnumerable<string> StreamAnswerAsync(string question, string? authorizationHeader, CancellationToken ct);
 }

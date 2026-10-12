@@ -30,7 +30,7 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         string answer;
         try
         {
-            answer = await ragClient.GetAnswerAsync(validation.Mensaje, ct);
+            answer = await ragClient.GetAnswerAsync(validation.Mensaje, GetAuthorizationHeader(), ct);
         }
         catch (Exception)
         {
@@ -64,7 +64,7 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
 
         try
         {
-            await foreach (var chunk in ragClient.StreamAnswerAsync(validation.Mensaje, ct))
+            await foreach (var chunk in ragClient.StreamAnswerAsync(validation.Mensaje, GetAuthorizationHeader(), ct))
             {
                 if (string.IsNullOrEmpty(chunk)) continue;
 
@@ -162,6 +162,12 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
 
     private bool TryGetUsuario(out Guid usuarioId) =>
         Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out usuarioId);
+
+    private string? GetAuthorizationHeader()
+    {
+        var authorizationHeader = Request.Headers.Authorization.ToString();
+        return string.IsNullOrWhiteSpace(authorizationHeader) ? null : authorizationHeader;
+    }
 
     private async Task<ValidatedChatRequest> ValidateRequest(ChatRequest request, CancellationToken ct)
     {

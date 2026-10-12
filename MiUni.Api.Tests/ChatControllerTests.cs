@@ -17,16 +17,20 @@ public class ChatControllerTests
     private static MiUniDbContext Database() => new(new DbContextOptionsBuilder<MiUniDbContext>()
         .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
-    private static ChatController AsUser(ChatController controller, Guid user)
+    private static ChatController AsUser(ChatController controller, Guid user, string? authorizationHeader = null)
     {
-        controller.ControllerContext = new ControllerContext
+        var httpContext = new DefaultHttpContext
         {
-            HttpContext = new DefaultHttpContext
-            {
-                User = new ClaimsPrincipal(new ClaimsIdentity(
-                    [new Claim(ClaimTypes.NameIdentifier, user.ToString())], "test"))
-            }
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(ClaimTypes.NameIdentifier, user.ToString())], "test"))
         };
+
+        if (!string.IsNullOrWhiteSpace(authorizationHeader))
+        {
+            httpContext.Request.Headers.Authorization = authorizationHeader;
+        }
+
+        controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         return controller;
     }
 
@@ -50,6 +54,25 @@ public class ChatControllerTests
         Assert.All(response.Messages, message => Assert.Equal(response.SesionId, message.SesionId));
         Assert.Equal(["Donde esta biblioteca?", "Respuesta"],
             await db.Historialchats.OrderBy(h => h.FechaCreacion).Select(h => h.Contenido).ToListAsync());
+    }
+
+    [Fact]
+    public async Task SendPassesAuthorizationHeaderToRagClient()
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Prueba" });
+        await db.SaveChangesAsync();
+
+        var ragClient = new FakeRagClient("Respuesta");
+        var controller = AsUser(
+            new ChatController(db, ragClient),
+            user,
+            "Bearer token-de-prueba");
+
+        await controller.Send(new ChatRequest { Mensaje = "Hola" }, default);
+
+        Assert.Equal("Bearer token-de-prueba", ragClient.LastAuthorizationHeader);
     }
 
     [Fact]
@@ -145,12 +168,20 @@ public class ChatControllerTests
 
     private class FakeRagClient(string answer) : IRagClient
     {
-        public Task<string> GetAnswerAsync(string question, CancellationToken ct) => Task.FromResult(answer);
+        public string? LastAuthorizationHeader { get; private set; }
+
+        public Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct)
+        {
+            LastAuthorizationHeader = authorizationHeader;
+            return Task.FromResult(answer);
+        }
 
         public async IAsyncEnumerable<string> StreamAnswerAsync(
             string question,
+            string? authorizationHeader,
             [EnumeratorCancellation] CancellationToken ct)
         {
+            LastAuthorizationHeader = authorizationHeader;
             await Task.Yield();
             yield return answer;
         }
