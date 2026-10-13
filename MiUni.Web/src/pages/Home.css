@@ -456,6 +456,9 @@
 }
 
 .home-chip-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 11px;
   border: 1px solid #d8e1ef;
   border-radius: 999px;
@@ -466,9 +469,17 @@
   text-decoration: none;
 }
 
+.home-chip-list a svg {
+  color: var(--home-blue);
+}
+
 .home-chip-list a:hover {
   border-color: var(--home-gold);
   background: #fff8df;
+}
+
+.home-chip-list a:hover svg {
+  color: #8c6811;
 }
 
 .home-map-panel {
