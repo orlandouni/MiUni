@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, ChevronRight, Clock3, Menu, Plus, Send, Sparkles, UserRound } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronRight, Clock3, Menu, Plus, Send, Sparkles } from "lucide-react";
 import api, { getMe } from "../services/api";
 import "./Chat.css";
 
