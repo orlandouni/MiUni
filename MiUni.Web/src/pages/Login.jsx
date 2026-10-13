@@ -65,7 +65,7 @@ export default function Login() {
   }
 
     return (
-    <CampusPanel>
+    <CampusPanel animateIllustration>
       <section className="ma-card" aria-labelledby="login-title">
         <div className="ma-heading">
           <div className="ma-emblem">

@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import LugarDesdeChat from "./LugarDesdeChat";
+import { useLugarDesdeChat } from "../services/useLugarDesdeChat";
 import { CapaRuta, PanelRuta } from "./RutaMapa";
 import { useRuta } from "../services/useRuta";
 import { Search, SlidersHorizontal } from "lucide-react";
@@ -41,9 +43,10 @@ function useDebounce(value, delay = 300) {
 }
 
 // Sin filtro: vuelve a la vista del campus. Con resultados: los encuadra.
-function AjustarVista({ lugares, hayFiltro }) {
+function AjustarVista({ lugares, hayFiltro, lugarSeleccionado }) {
   const map = useMap();
   useEffect(() => {
+    if (lugarSeleccionado) return;
     if (!hayFiltro) {
       map.setView(CENTRO_INICIAL, ZOOM_INICIAL);
       return;
@@ -51,11 +54,22 @@ function AjustarVista({ lugares, hayFiltro }) {
     if (lugares.length === 0) return;
     const bounds = L.latLngBounds(lugares.map((l) => [l.latitud, l.longitud]));
     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 18 });
-  }, [lugares, hayFiltro, map]);
+  }, [lugares, hayFiltro, lugarSeleccionado, map]);
   return null;
 }
 
 function CampusMap() {
+  const [params, setParams] = useSearchParams();
+  const lugarId = params.get("lugar");
+  const { lugar: lugarChat, error: errorChat } = useLugarDesdeChat(lugarId);
+  const salirDeLugarChat = () => {
+    if (!lugarId) return;
+    setParams(actuales => {
+      const siguientes = new URLSearchParams(actuales);
+      siguientes.delete("lugar");
+      return siguientes;
+    });
+  };
   const ruta = useRuta();
   const [categorias, setCategorias] = useState([]);
   const [texto, setTexto] = useState("");
@@ -116,7 +130,7 @@ function CampusMap() {
           placeholder="Buscar edificio o lugar (ej. 5K, biblioteca)"
           aria-label="Buscar lugar"
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => { salirDeLugarChat(); setTexto(e.target.value); }}
         />
         </div>
 
@@ -126,7 +140,7 @@ function CampusMap() {
               key={c.id}
               type="button"
               aria-pressed={categoria === c.nombre}
-              onClick={() => setCategoria(categoria === c.nombre ? null : c.nombre)}
+              onClick={() => { salirDeLugarChat(); setCategoria(categoria === c.nombre ? null : c.nombre); }}
             >
               <span
                 className="campus-dot"
@@ -145,6 +159,10 @@ function CampusMap() {
         </div>
 
         {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? "No se pudieron cargar los lugares del campus" : "No encontramos lugares con esa búsqueda."}</p>}
+        {lugarId && <p className="campus-status" role={errorChat ? "alert" : "status"}>
+          {errorChat || (lugarChat ? `Lugar del chat: ${lugarChat.nombre}` : "Cargando lugar del chat…")}{" "}
+          <button type="button" onClick={salirDeLugarChat}>Volver a la búsqueda</button>
+        </p>}
       </div>
 
       <PanelRuta estado={ruta} />
@@ -157,10 +175,11 @@ function CampusMap() {
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <AjustarVista lugares={lugares} hayFiltro={hayFiltro} />
+        <AjustarVista lugares={lugares} hayFiltro={hayFiltro} lugarSeleccionado={lugarId} />
         <CapaRuta estado={ruta} />
+        {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} />}
 
-        {lugares.map((lugar) => (
+        {lugares.filter(lugar => lugar.id !== lugarChat?.id).map((lugar) => (
           <Marker
             key={lugar.id}
             position={[lugar.latitud, lugar.longitud]}

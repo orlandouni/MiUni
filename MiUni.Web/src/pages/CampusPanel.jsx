@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
+import LoginIllustration from "../components/LoginIllustration";
 import "./Auth.css";
 
-export default function CampusPanel({ children }) {
+export default function CampusPanel({ children, animateIllustration = false }) {
   return (
     <main className="miuni-auth">
       <div className="ma-layout">
@@ -38,10 +39,10 @@ export default function CampusPanel({ children }) {
         </section>
 
         <section className="ma-right" aria-label="Conoce MIUNI">
-          <img
+          {animateIllustration ? <LoginIllustration /> : <img
             src="/auth/miuni-auth-showcase.png"
             alt="MIUNI: buscador, mapa del campus y asistente universitario"
-          />
+          />}
         </section>
       </div>
     </main>
