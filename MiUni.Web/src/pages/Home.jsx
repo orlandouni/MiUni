@@ -169,7 +169,7 @@ function Home() {
           <section className="home-hero" aria-labelledby="home-title">
             <div className="home-hero-copy">
               <span className="home-kicker"><Sparkles size={14} /> Universidad de Sonora</span>
-              <h1 id="home-title">Hola, {nombre}. ¿A dónde quieres ir hoy?</h1>
+              <h1 id="home-title">Hola, {nombre}. ¿Qué quieres hacer hoy?</h1>
               <p>Encuentra lugares del campus, calcula rutas y entra rápido a las herramientas que más usas.</p>
               <Link className="home-search-link" to="/mapa">
                 <Search size={18} />
