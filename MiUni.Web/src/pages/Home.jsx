@@ -11,6 +11,7 @@ import {
   Compass,
   Flag,
   GraduationCap,
+  House,
   LogOut,
   Map,
   Menu,
@@ -28,8 +29,9 @@ import {
 import "./Home.css";
 
 const accesos = [
-  { icon: Search, label: "Buscar lugares", text: "Edificios, aulas y servicios", href: "#mapa" },
-  { icon: Route, label: "Calcular ruta", text: "Elige origen y destino en el mapa", href: "#mapa" },
+  { icon: Search, label: "Buscar lugares", text: "Edificios, aulas y servicios", href: "/mapa" },
+  { icon: Route, label: "Calcular ruta", text: "Elige origen y destino en el mapa", href: "/mapa" },
+  { icon: Compass, label: "Chat MIUNI", text: "Pregunta al asistente del campus", href: "/asistente" },
   { icon: Flag, label: "Reportar", text: "Avisa sobre lugares o reseñas", href: "/resenas-reportes" },
   { icon: Store, label: "Negocios", text: "Consulta y administra negocios", href: "/negocios" },
 ];
@@ -129,7 +131,8 @@ function Home() {
         </div>
         <div className="home-nav-group">
           <span className="home-nav-label">Navegación</span>
-          <Link to="/" className="home-nav-item activo"><Map size={17} /> Mapa del campus</Link>
+          <Link to="/" className="home-nav-item activo"><House size={17} /> Inicio</Link>
+          <Link to="/mapa" className="home-nav-item"><Map size={17} /> Mapa del campus</Link>
           <Link to="/asistente" className="home-nav-item"><Compass size={17} /> Asistente MIUNI</Link>
         </div>
         <div className="home-nav-group">
@@ -168,11 +171,11 @@ function Home() {
               <span className="home-kicker"><Sparkles size={14} /> Universidad de Sonora</span>
               <h1 id="home-title">Hola, {nombre}. ¿A dónde quieres ir hoy?</h1>
               <p>Encuentra lugares del campus, calcula rutas y entra rápido a las herramientas que más usas.</p>
-              <a className="home-search-link" href="#mapa">
+              <Link className="home-search-link" to="/mapa">
                 <Search size={18} />
                 Buscar en el mapa del campus
                 <ChevronRight size={17} />
-              </a>
+              </Link>
             </div>
 
             <MascotaMiuni />
@@ -203,10 +206,10 @@ function Home() {
             </div>
             <div className="home-chip-list">
               {populares.map(({ icon: Icon, label }) => (
-                <a href="#mapa" key={label}>
+                <Link to="/mapa" key={label}>
                   <Icon size={15} />
                   {label}
-                </a>
+                </Link>
               ))}
             </div>
           </section>
