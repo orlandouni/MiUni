@@ -238,7 +238,8 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
         {
             entity.HasKey(e => e.Id).HasName("historialchat_pkey");
 
-            entity.ToTable("historialchat");
+            entity.ToTable("historialchat", table => table.HasCheckConstraint(
+                "historialchat_rol_check", "rol IN ('user', 'assistant')"));
 
             entity.HasIndex(e => e.SesionId, "idx_historial_sesion");
 

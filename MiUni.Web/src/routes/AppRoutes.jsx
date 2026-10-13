@@ -7,6 +7,7 @@ import NotFound from "../pages/NotFound";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Negocios from "../pages/Negocios";
 import Admin from "../pages/Admin";
+import Chat from "../pages/Chat";
 import {
   Favoritos,
   MisResenas,
@@ -19,6 +20,7 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/asistente" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
 

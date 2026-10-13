@@ -405,7 +405,10 @@ namespace MiUni.Api.Migrations
 
                     b.HasIndex(new[] { "UsuarioId" }, "idx_historial_usuario");
 
-                    b.ToTable("historialchat", (string)null);
+                    b.ToTable("historialchat", null, t =>
+                        {
+                            t.HasCheckConstraint("historialchat_rol_check", "rol IN ('user', 'assistant')");
+                        });
                 });
 
             modelBuilder.Entity("MiUni.Api.Models.Horariooperacion", b =>
@@ -1074,4 +1077,3 @@ namespace MiUni.Api.Migrations
         }
     }
 }
-            
