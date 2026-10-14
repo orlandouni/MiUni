@@ -155,6 +155,37 @@ public class ChatControllerTests
         Assert.DoesNotContain(messages, m => m.Contenido == "No visible");
     }
 
+    [Fact]
+    public async Task DeleteSessionRemovesOnlyOwnersConversation()
+    {
+        await using var db = Database();
+        var owner = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var session = Guid.NewGuid();
+        db.Historialchats.AddRange(
+            Message(session, owner, "user", "Hola", DateTime.UtcNow),
+            Message(session, owner, "assistant", "Respuesta", DateTime.UtcNow),
+            Message(session, other, "user", "Ajeno", DateTime.UtcNow),
+            Message(Guid.NewGuid(), owner, "user", "Otra conversación", DateTime.UtcNow));
+        await db.SaveChangesAsync();
+        var controller = AsUser(new ChatController(db, new FakeRagClient("Respuesta")), owner);
+        Assert.IsType<NoContentResult>(await controller.DeleteSession(session, default));
+        Assert.Equal(2, await db.Historialchats.CountAsync());
+        Assert.IsType<NotFoundResult>(await controller.DeleteSession(session, default));
+        Assert.Equal(2, await db.Historialchats.CountAsync());
+    }
+
+    [Fact]
+    public async Task DeleteSessionRequiresAuthentication()
+    {
+        await using var db = Database();
+        var controller = new ChatController(db, new FakeRagClient("Respuesta"))
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        Assert.IsType<UnauthorizedResult>(await controller.DeleteSession(Guid.NewGuid(), default));
+    }
+
     private static Historialchat Message(Guid session, Guid user, string role, string content, DateTime createdAt) =>
         new()
         {

@@ -138,6 +138,19 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         return messages.Count == 0 ? NotFound() : Ok(messages);
     }
 
+    [HttpDelete("sessions/{sesionId:guid}")]
+    public async Task<IActionResult> DeleteSession(Guid sesionId, CancellationToken ct)
+    {
+        if (!TryGetUsuario(out var usuarioId)) return Unauthorized();
+        var messages = await context.Historialchats
+            .Where(h => h.SesionId == sesionId && h.UsuarioId == usuarioId)
+            .ToListAsync(ct);
+        if (messages.Count == 0) return NotFound();
+        context.Historialchats.RemoveRange(messages);
+        await context.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
     private async Task<bool> SessionBelongsToUser(Guid sesionId, Guid usuarioId, CancellationToken ct) =>
         await context.Historialchats.AsNoTracking()
             .AnyAsync(h => h.SesionId == sesionId && h.UsuarioId == usuarioId, ct);
