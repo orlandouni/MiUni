@@ -12,6 +12,10 @@ public partial class Lugar
 
     public Guid CategoriaId { get; set; }
 
+    public Guid? PropietarioId { get; set; }
+
+    public string? EstadoSolicitud { get; set; }
+
     public string? Descripcion { get; set; }
 
     public Point Ubicacion { get; set; } = null!;

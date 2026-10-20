@@ -30,7 +30,7 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         string answer;
         try
         {
-            answer = await ragClient.GetAnswerAsync(validation.Mensaje, ct);
+            answer = await ragClient.GetAnswerAsync(validation.Mensaje, GetAuthorizationHeader(), ct);
         }
         catch (Exception)
         {
@@ -64,7 +64,7 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
 
         try
         {
-            await foreach (var chunk in ragClient.StreamAnswerAsync(validation.Mensaje, ct))
+            await foreach (var chunk in ragClient.StreamAnswerAsync(validation.Mensaje, GetAuthorizationHeader(), ct))
             {
                 if (string.IsNullOrEmpty(chunk)) continue;
 
@@ -138,6 +138,19 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         return messages.Count == 0 ? NotFound() : Ok(messages);
     }
 
+    [HttpDelete("sessions/{sesionId:guid}")]
+    public async Task<IActionResult> DeleteSession(Guid sesionId, CancellationToken ct)
+    {
+        if (!TryGetUsuario(out var usuarioId)) return Unauthorized();
+        var messages = await context.Historialchats
+            .Where(h => h.SesionId == sesionId && h.UsuarioId == usuarioId)
+            .ToListAsync(ct);
+        if (messages.Count == 0) return NotFound();
+        context.Historialchats.RemoveRange(messages);
+        await context.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
     private async Task<bool> SessionBelongsToUser(Guid sesionId, Guid usuarioId, CancellationToken ct) =>
         await context.Historialchats.AsNoTracking()
             .AnyAsync(h => h.SesionId == sesionId && h.UsuarioId == usuarioId, ct);
@@ -162,6 +175,12 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
 
     private bool TryGetUsuario(out Guid usuarioId) =>
         Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out usuarioId);
+
+    private string? GetAuthorizationHeader()
+    {
+        var authorizationHeader = Request.Headers.Authorization.ToString();
+        return string.IsNullOrWhiteSpace(authorizationHeader) ? null : authorizationHeader;
+    }
 
     private async Task<ValidatedChatRequest> ValidateRequest(ChatRequest request, CancellationToken ct)
     {

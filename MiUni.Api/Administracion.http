@@ -1,0 +1,91 @@
+@host = http://localhost:5124
+@tokenUsuario = REEMPLAZAR_CON_JWT_USUARIO
+@tokenAdmin = REEMPLAZAR_CON_JWT_ADMIN
+@lugarId = 00000000-0000-0000-0000-000000000000
+@resenaId = 00000000-0000-0000-0000-000000000000
+@reporteId = 00000000-0000-0000-0000-000000000000
+@categoriaId = 00000000-0000-0000-0000-000000000000
+
+### Crear reporte de lugar (elegir sólo un destino)
+POST {{host}}/api/ReporteUsuario
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{"lugarId":"{{lugarId}}","motivo":"La información del lugar es incorrecta."}
+
+### Crear reporte de reseña
+POST {{host}}/api/ReporteUsuario
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{"resenaId":"{{resenaId}}","motivo":"El comentario contiene información incorrecta."}
+
+### Panel admin: lista paginada y datos relacionados
+GET {{host}}/api/ReporteUsuario?estado=Pendiente&pagina=1&tamanoPagina=20
+Authorization: Bearer {{tokenAdmin}}
+
+### Contadores para el panel
+GET {{host}}/api/ReporteUsuario/resumen
+Authorization: Bearer {{tokenAdmin}}
+
+### Detalle: sólo autor o admin
+GET {{host}}/api/ReporteUsuario/{{reporteId}}
+Authorization: Bearer {{tokenUsuario}}
+
+### Editar motivo pendiente
+PUT {{host}}/api/ReporteUsuario/{{reporteId}}
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: application/json
+
+{"motivo":"Motivo corregido."}
+
+### Resolver un reporte: Pendiente, Revisado o Descartado (texto)
+PATCH {{host}}/api/ReporteUsuario/{{reporteId}}/estado
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"estado":"Revisado"}
+
+### Eliminar reporte (autor: sólo pendiente; admin: cualquier estado)
+DELETE {{host}}/api/ReporteUsuario/{{reporteId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### Listado admin de lugares: incluye activos e inactivos
+GET {{host}}/api/Lugar/admin
+Authorization: Bearer {{tokenAdmin}}
+
+### Crear categoría
+POST {{host}}/api/Categoria
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"nombre":"Servicios","icono":"building"}
+
+### Actualizar categoría
+PUT {{host}}/api/Categoria/{{categoriaId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"nombre":"Servicios universitarios","icono":"building"}
+
+### Crear lugar
+POST {{host}}/api/Lugar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"nombre":"Oficina de servicios","descripcion":"Atención a estudiantes","categoriaId":"{{categoriaId}}","latitud":29.08311,"longitud":-110.96515,"piso":0,"activo":true}
+
+### Actualizar lugar (PUT reemplaza los campos del DTO)
+PUT {{host}}/api/Lugar/{{lugarId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{"nombre":"Oficina de servicios","descripcion":"Información actualizada","categoriaId":"{{categoriaId}}","latitud":29.08311,"longitud":-110.96515,"piso":0,"activo":true}
+
+### Baja lógica de lugar
+DELETE {{host}}/api/Lugar/{{lugarId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### Eliminar categoría: devuelve 409 si tiene lugares, incluso inactivos
+DELETE {{host}}/api/Categoria/{{categoriaId}}
+Authorization: Bearer {{tokenAdmin}}

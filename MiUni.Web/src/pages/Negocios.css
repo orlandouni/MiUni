@@ -1,0 +1,8 @@
+.negocios { max-width: 780px; margin: 0 auto; padding: 32px 20px; text-align: left; }
+.negocios article { border: 1px solid #9aa9b8; border-radius: 12px; padding: 20px; margin: 16px 0; }
+.negocios fieldset { border: 0; padding: 0; display: grid; gap: 16px; }
+.negocios label { display: grid; gap: 6px; }
+.negocios input, .negocios textarea, .negocios select { font: inherit; padding: 10px; width: 100%; box-sizing: border-box; }
+.negocios button { margin: 4px 8px 4px 0; padding: 10px 16px; cursor: pointer; }
+.negocios button:disabled { opacity: .6; cursor: wait; }
+.negocios [role="alert"] { color: #bc3030; }

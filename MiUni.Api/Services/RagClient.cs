@@ -5,9 +5,11 @@ namespace MiUni.Api.Services;
 
 public class RagClient(HttpClient httpClient) : IRagClient
 {
-    public async Task<string> GetAnswerAsync(string question, CancellationToken ct)
+    public async Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct)
     {
-        var response = await httpClient.PostAsJsonAsync("chat", new RagQueryRequest(question), ct);
+        using var request = CreateRequest(HttpMethod.Post, "chat", question, authorizationHeader);
+
+        using var response = await httpClient.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
         var body = await response.Content.ReadFromJsonAsync<RagQueryResponse>(cancellationToken: ct);
@@ -21,12 +23,10 @@ public class RagClient(HttpClient httpClient) : IRagClient
 
     public async IAsyncEnumerable<string> StreamAnswerAsync(
         string question,
+        string? authorizationHeader,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "chat/stream")
-        {
-            Content = JsonContent.Create(new RagQueryRequest(question))
-        };
+        using var request = CreateRequest(HttpMethod.Post, "chat/stream", question, authorizationHeader);
 
         using var response = await httpClient.SendAsync(
             request,
@@ -45,6 +45,25 @@ public class RagClient(HttpClient httpClient) : IRagClient
 
             yield return new string(buffer, 0, read);
         }
+    }
+
+    private static HttpRequestMessage CreateRequest(
+        HttpMethod method,
+        string requestUri,
+        string question,
+        string? authorizationHeader)
+    {
+        var request = new HttpRequestMessage(method, requestUri)
+        {
+            Content = JsonContent.Create(new RagQueryRequest(question))
+        };
+
+        if (!string.IsNullOrWhiteSpace(authorizationHeader))
+        {
+            request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
+        }
+
+        return request;
     }
 
     private record RagQueryRequest(string Question);

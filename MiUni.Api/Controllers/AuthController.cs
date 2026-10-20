@@ -50,6 +50,13 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
 
+        var roleResult = await _userManager.AddToRoleAsync(user, AppRoles.Usuario);
+        if (!roleResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            return Problem("No fue posible asignar los permisos de la cuenta.");
+        }
+
         return Ok(new
         {
             message = "Usuario registrado correctamente."
@@ -84,6 +91,8 @@ public async Task<IActionResult> Login(LoginRequest request)
         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
         new Claim(ClaimTypes.Email, user.Email!)
     };
+    var roles = await _userManager.GetRolesAsync(user);
+    claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
     var key = new SymmetricSecurityKey(
         Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)
@@ -107,7 +116,8 @@ public async Task<IActionResult> Login(LoginRequest request)
     return Ok(new
     {
         token = tokenString,
-        expires = token.ValidTo
+        expires = token.ValidTo,
+        roles
     });
 }
 
@@ -124,6 +134,8 @@ public async Task<IActionResult> Me()
         return Unauthorized();
     }
 
+    var roles = await _userManager.GetRolesAsync(user);
+
     return Ok(new
     {
         id = user.Id,
@@ -132,7 +144,9 @@ public async Task<IActionResult> Me()
         carreraId = user.CarreraId,
         semestre = user.Semestre,
         fechaRegistro = user.FechaRegistro,
-        rol = user.Rol.ToString()
+        rol = roles.Contains(AppRoles.Administrador) ? AppRoles.Administrador
+            : roles.Contains(AppRoles.Propietario) ? AppRoles.Propietario : AppRoles.Usuario,
+        roles
     });
 }
 }

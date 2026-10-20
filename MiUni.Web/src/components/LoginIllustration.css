@@ -1,0 +1,95 @@
+/* Only the Login illustration reaches the top and bottom of its panel. */
+.ma-right:has(.miuni-hero-fit) {
+  padding-block: 0;
+  padding-right: 0;
+}
+
+.miuni-hero-fit {
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+
+.miuni-hero {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0;
+  isolation: isolate;
+}
+
+.ma-right .miuni-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ma-right .miuni-hero img.miuni-hero-background {
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Percentages include the transparent padding of the original PNG files. */
+.miuni-hero-card { position: absolute; }
+.miuni-hero-busca { left: 5.05%; top: 17.7%; width: 48.45%; --entry-delay: 0ms; --float-delay: 800ms; --float-duration: 5s; --float-name: miuni-float-search; }
+.miuni-hero-ubicate { left: 42.3%; top: 20.1%; width: 51.7%; --entry-delay: 140ms; --float-delay: 940ms; --float-duration: 6s; --float-name: miuni-float-location; }
+.miuni-hero-pregunta { left: 10.8%; top: 51.9%; width: 46.55%; --entry-delay: 280ms; --float-delay: 1080ms; --float-duration: 4.5s; --float-name: miuni-float-question; }
+
+/* Show only the two connectors; the background already contains the underline. */
+.ma-right .miuni-hero-arrow { position: absolute; }
+.ma-right .miuni-hero img.miuni-hero-arrow-first { width: 33.5%; left: 29.7%; top: 20.8%; clip-path: inset(23% 31% 67% 47%); }
+.ma-right .miuni-hero img.miuni-hero-arrow-second { width: 41.9%; left: 30.7%; top: 30.3%; clip-path: inset(58% 40% 27% 47%); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .miuni-hero-entry {
+    animation: miuni-card-enter 800ms ease-out var(--entry-delay) both;
+  }
+  .miuni-hero-card img {
+    animation: var(--float-name) var(--float-duration) ease-in-out var(--float-delay) infinite alternate;
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .miuni-hero-parallax {
+    transform: translate(calc(var(--pointer-x, 0) * var(--depth)), calc(var(--pointer-y, 0) * var(--depth)));
+    transition: transform 450ms ease-out;
+  }
+}
+
+@keyframes miuni-card-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Start at rest, so floating begins without a jump after the entrance. */
+@keyframes miuni-float-search {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(5px); }
+}
+@keyframes miuni-float-location {
+  0% { transform: translate(0, 0) rotate(0); }
+  50% { transform: translate(2px, 6px) rotate(.5deg); }
+  100% { transform: translate(-2px, -6px) rotate(-.5deg); }
+}
+@keyframes miuni-float-question {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-1px, -4px); }
+  100% { transform: translate(2px, 5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .miuni-hero-entry, .miuni-hero-card img, .miuni-hero-parallax {
+    animation: none;
+    transition: none;
+    transform: none;
+    will-change: auto;
+  }
+}

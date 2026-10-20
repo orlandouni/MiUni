@@ -1,8 +1,12 @@
 appsettings.Development.json
+MiUni.Web/src/services/ApiKey.env
+# Configuración privada; conservar plantillas sin credenciales.
+.env
+.env.*
+*.env
+!.env.example
+!.env.sample
+!*.env.example
 bin/
 obj/
 *.user
-# .NET
-bin/
-obj/
-.env

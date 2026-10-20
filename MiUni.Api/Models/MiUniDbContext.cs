@@ -238,7 +238,8 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
         {
             entity.HasKey(e => e.Id).HasName("historialchat_pkey");
 
-            entity.ToTable("historialchat");
+            entity.ToTable("historialchat", table => table.HasCheckConstraint(
+                "historialchat_rol_check", "rol IN ('user', 'assistant')"));
 
             entity.HasIndex(e => e.SesionId, "idx_historial_sesion");
 
@@ -293,6 +294,12 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
             entity.HasKey(e => e.Id).HasName("lugar_pkey");
 
             entity.ToTable("lugar");
+
+            entity.Property(e => e.PropietarioId).HasColumnName("propietario_id");
+            entity.Property(e => e.EstadoSolicitud).HasColumnName("estado_solicitud").HasMaxLength(20)
+                .IsConcurrencyToken();
+            entity.HasOne<ApplicationUser>().WithMany().HasForeignKey(e => e.PropietarioId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.CategoriaId, "idx_lugar_categoria");
 
@@ -403,7 +410,15 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
         {
             entity.HasKey(e => e.Id).HasName("reporteusuario_pkey");
 
-            entity.ToTable("reporteusuario");
+            entity.ToTable("reporteusuario", table => table.HasCheckConstraint(
+                "ck_reporte_destino", "(lugar_id IS NOT NULL) <> (resena_id IS NOT NULL)"));
+            entity.Property(e => e.FechaCreacion).HasColumnName("fecha_creacion");
+            entity.Property(e => e.Estado).HasColumnName("estado").HasColumnType("estado_reporte")
+                .IsConcurrencyToken();
+            entity.HasIndex(e => new { e.UsuarioId, e.LugarId }, "uq_reporte_usuario_lugar")
+                .IsUnique().HasFilter("lugar_id IS NOT NULL");
+            entity.HasIndex(e => new { e.UsuarioId, e.ResenaId }, "uq_reporte_usuario_resena")
+                .IsUnique().HasFilter("resena_id IS NOT NULL");
 
             entity.HasIndex(e => e.LugarId, "idx_reporte_lugar");
 

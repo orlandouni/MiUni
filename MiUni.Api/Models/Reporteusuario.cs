@@ -16,6 +16,8 @@ public partial class Reporteusuario
 
     public string Motivo { get; set; } = null!;
 
+    public DateTime? FechaCreacion { get; set; }
+
     public virtual Lugar? Lugar { get; set; }
 
     public virtual Resena? Resena { get; set; }

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+  <title id="title">MiUni: campus, rutas y lugares</title>
+  <desc id="desc">Ilustración plana de un campus universitario con edificios, ruta y puntos de ubicación.</desc>
+  <style>
+    .route { stroke-dasharray: 14 12; animation: travel 4s linear infinite; }
+    .pin { transform-box: fill-box; transform-origin: center bottom; animation: pin 2.8s ease-in-out infinite; }
+    .pin.two { animation-delay: -1.2s; }
+    .pin.three { animation-delay: -2s; }
+    .window { fill: #dce7ff; }
+    @keyframes travel { to { stroke-dashoffset: -52; } }
+    @keyframes pin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  </style>
+
+  <path d="M94 468c72-122 222-186 383-164 164 22 256 90 327 165-79 77-225 119-387 112C255 575 151 539 94 468Z" fill="#edf3ff"/>
+  <circle cx="724" cy="117" r="54" fill="#f8dc62"/>
+  <path d="M104 468h686" stroke="#1237b8" stroke-opacity=".15" stroke-width="3" stroke-linecap="round"/>
+
+  <path class="route" d="M174 477c84-94 172-108 251-64 70 38 111 35 181-67 34-49 74-62 129-48" fill="none" stroke="#e2bb28" stroke-width="9" stroke-linecap="round"/>
+  <path d="M171 477c87-88 171-103 251-61" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+
+  <g transform="translate(147 298)">
+    <path d="M0 58 76 0l76 58v123H0Z" fill="#1237b8"/>
+    <path d="m0 58 76-48 76 48" fill="none" stroke="#e2bb28" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M61 181v-57c0-8 7-15 15-15s15 7 15 15v57" fill="#f8fbff"/>
+    <path class="window" d="M23 79h20v23H23zm86 0h20v23h-20z"/>
+  </g>
+
+  <g transform="translate(357 249)">
+    <path d="M0 92 94 0l94 92v177H0Z" fill="#fff" stroke="#1237b8" stroke-opacity=".72" stroke-width="5"/>
+    <path d="m0 92 94-68 94 68" fill="none" stroke="#e2bb28" stroke-width="11" stroke-linejoin="round"/>
+    <path d="M77 269V178c0-9 8-17 17-17s17 8 17 17v91" fill="#1237b8"/>
+    <path class="window" d="M25 111h29v34H25zm109 0h29v34h-29zM25 174h29v34H25zm109 0h29v34h-29z"/>
+  </g>
+
+  <g transform="translate(625 337)">
+    <path d="M0 44 64 0l64 44v119H0Z" fill="#e2bb28"/>
+    <path d="m0 44 64-34 64 34" fill="none" stroke="#1237b8" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M50 163v-48c0-8 6-14 14-14s14 6 14 14v48" fill="#fff"/>
+    <path class="window" d="M18 65h19v22H18zm73 0h19v22H91z"/>
+  </g>
+
+  <g class="pin" transform="translate(233 363)">
+    <path d="M28 0C12 0 0 12 0 27c0 22 28 52 28 52s28-30 28-52C56 12 44 0 28 0Z" fill="#1237b8"/>
+    <circle cx="28" cy="27" r="10" fill="#fff"/>
+  </g>
+  <g class="pin two" transform="translate(540 328)">
+    <path d="M25 0C11 0 0 11 0 25c0 20 25 46 25 46s25-26 25-46C50 11 39 0 25 0Z" fill="#1237b8"/>
+    <circle cx="25" cy="25" r="9" fill="#e2bb28"/>
+  </g>
+  <g class="pin three" transform="translate(725 391)">
+    <path d="M22 0C10 0 0 10 0 22c0 18 22 40 22 40s22-22 22-40C44 10 34 0 22 0Z" fill="#1237b8"/>
+    <path d="m22 10 3.7 7.5 8.3 1.2-6 5.8 1.4 8.2-7.4-3.9-7.4 3.9 1.4-8.2-6-5.8 8.3-1.2Z" fill="#e2bb28"/>
+  </g>
+
+  <g transform="translate(64 100)" fill="none" stroke="#1237b8" stroke-linecap="round" stroke-width="4" opacity=".32">
+    <path d="M0 0h52M26-26v52"/>
+    <circle cx="26" cy="0" r="21"/>
+  </g>
+  <g transform="translate(789 493)" fill="none" stroke="#e2bb28" stroke-linecap="round" stroke-width="4" opacity=".8">
+    <path d="M0 0h44M22-22v44"/>
+    <circle cx="22" cy="0" r="17"/>
+  </g>
+</svg>

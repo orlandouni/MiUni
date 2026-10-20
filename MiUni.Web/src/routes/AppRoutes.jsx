@@ -1,16 +1,39 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Home from "../pages/Home";
+import MapaCampus from "../pages/MapaCampus";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import NotFound from "../pages/NotFound";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Negocios from "../pages/Negocios";
+import Admin from "../pages/Admin";
+import Chat from "../pages/Chat";
+import {
+  Favoritos,
+  MisResenas,
+  FichaLugar,
+  Reportes,
+} from "../pages/Comunidad";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/mapa" element={<MapaCampus />} />
+        <Route path="/asistente" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
+
+        <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
+        <Route path="/resenas" element={<ProtectedRoute><MisResenas /></ProtectedRoute>} />
+        <Route path="/negocios" element={<ProtectedRoute><Negocios /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute role="Administrador"><Admin /></ProtectedRoute>} />
+        <Route path="/lugares/:lugarId" element={<FichaLugar />} />
+
+        <Route path="/resenas-reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

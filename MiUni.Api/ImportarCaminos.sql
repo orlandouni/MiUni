@@ -1,0 +1,12 @@
+BEGIN;
+WITH datos AS (
+ SELECT ST_SetSRID(ST_GeomFromGeoJSON(f->'geometry'),4326)::geography AS geom
+ FROM jsonb_array_elements('{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[-110.965159,29.083111],[-110.965203,29.083299],[-110.964998,29.083337],[-110.964008,29.083454],[-110.964303,29.083106]]}},{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[-110.964303,29.083106],[-110.964534,29.082752],[-110.964681,29.082456],[-110.964051,29.082533],[-110.964071,29.082669]]}},{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[-110.964071,29.082669],[-110.964026,29.08271],[-110.963858,29.082562],[-110.963821,29.082367],[-110.963587,29.082394],[-110.963599,29.082485],[-110.963488,29.082497],[-110.963441,29.082503]]}}]}'::jsonb->'features') AS f
+)
+INSERT INTO public.camino (geometria, transitable)
+SELECT geom, true FROM datos d
+WHERE NOT EXISTS (
+ SELECT 1 FROM public.camino c WHERE ST_Equals(c.geometria::geometry,d.geom::geometry)
+);
+COMMIT;
+SELECT count(*) AS caminos, count(*) FILTER (WHERE transitable) AS transitables FROM public.camino;
