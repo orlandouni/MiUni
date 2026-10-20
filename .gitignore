@@ -10,6 +10,3 @@ MiUni.Web/src/services/ApiKey.env
 bin/
 obj/
 *.user
-# .NET
-bin/
-obj/
