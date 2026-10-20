@@ -20,7 +20,7 @@ export function detectarLugares(texto, catalogo = []) {
 }
 
 export function enlaceLugar(id) {
-  return `/?${new URLSearchParams({ lugar: id })}`;
+  return `/mapa?${new URLSearchParams({ lugar: id })}`;
 }
 
 // Share an in-flight request between messages; failures remain retryable.

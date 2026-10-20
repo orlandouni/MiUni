@@ -17,8 +17,8 @@ test("renderiza enlaces reales al mapa para una respuesta y ninguno sin coincide
     const render = texto => renderToStaticMarkup(createElement(MemoryRouter, null,
       createElement(LugaresDelMensaje, { texto, lugares })));
     const html = render("Visita la BIBLIOTECA CENTRAL o rectoria.");
-    assert.match(html, /href="\/\?lugar=biblioteca-id"/);
-    assert.match(html, /href="\/\?lugar=rectoria-id"/);
+    assert.match(html, /href="\/mapa\?lugar=biblioteca-id"/);
+    assert.match(html, /href="\/mapa\?lugar=rectoria-id"/);
     assert.match(html, /Ver Biblioteca Central en el mapa/);
     assert.equal(render("Hola, ¿cómo puedo ayudarte?"), "");
     assert.equal(render(""), "");
