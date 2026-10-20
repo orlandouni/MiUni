@@ -5,3 +5,4 @@ obj/
 # .NET
 bin/
 obj/
+.env
