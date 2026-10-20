@@ -56,7 +56,6 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         context.Historialchats.Add(userMessage);
         await context.SaveChangesAsync(ct);
 
-        Response.ContentType = "text/plain; charset=utf-8";
         Response.Headers["X-Session-Id"] = validation.SesionId.ToString();
 
         var answer = new StringBuilder();
@@ -68,6 +67,7 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
             {
                 if (string.IsNullOrEmpty(chunk)) continue;
 
+                if (!wroteChunk) Response.ContentType = "text/plain; charset=utf-8";
                 wroteChunk = true;
                 answer.Append(chunk);
                 await Response.WriteAsync(chunk, ct);
@@ -83,6 +83,12 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
             }
 
             return new EmptyResult();
+        }
+
+        if (!wroteChunk)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway,
+                new { message = "El asistente devolvio una respuesta vacia." });
         }
 
         var fullAnswer = answer.ToString();
