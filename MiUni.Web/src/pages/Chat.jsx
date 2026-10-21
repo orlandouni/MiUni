@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, ChevronRight, Clock3, Menu, Plus, Send, Sparkles, Trash2, X } from "lucide-react";
+import { ArrowLeft, BookOpen, ChevronRight, Clock3, Menu, Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import api, { clearSession, getMe, getToken } from "../services/api";
 import { streamChat } from "../services/chatStream";
 import LugaresDelMensaje from "../components/LugaresDelMensaje";
@@ -29,7 +29,17 @@ export default function Chat() {
   useEffect(() => () => streamRef.current?.abort(), []);
   const [deleting, setDeleting] = useState(null);
   const [opening, setOpening] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia("(min-width: 701px)").matches);
+  const sidebarToggleRef = useRef(null);
+
+  function cerrarSidebar() {
+    setSidebarOpen(false);
+    sidebarToggleRef.current?.focus();
+  }
+
+  function cerrarSidebarEnMovil() {
+    if (window.matchMedia("(max-width: 700px)").matches) cerrarSidebar();
+  }
   const busy = sending || opening || deleting !== null;
 
   useEffect(() => {
@@ -46,14 +56,14 @@ export default function Chat() {
 
   async function abrirSesion(id) {
     if (busy) return;
-    setOpening(true); setSidebarOpen(false);
+    setOpening(true); cerrarSidebarEnMovil();
     setError("");
     try { const { data } = await api.get(`/api/Chat/sessions/${id}`); setSessionId(id); setMessages(data); }
     catch { setError("No se pudo abrir esta conversación."); }
     finally { setOpening(false); }
   }
 
-  function nuevaConversacion() { if (busy) return; setSidebarOpen(false); setSessionId(null); setMessages([]); setDraft(""); setError(""); }
+  function nuevaConversacion() { if (busy) return; cerrarSidebarEnMovil(); setSessionId(null); setMessages([]); setDraft(""); setError(""); }
 
   async function enviar(evento) {
     evento?.preventDefault();
@@ -122,8 +132,8 @@ export default function Chat() {
 
   const initials = (user?.nombre || user?.email || "U").slice(0, 2).toUpperCase();
   return <main className="chat-page">
-    <aside id="chat-sidebar" className={`chat-sidebar ${sidebarOpen ? "abierto" : ""}`}><button className="chat-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Cerrar conversaciones"><X size={18} /></button><div className="chat-side-brand"><span className="chat-side-logo"><BookOpen size={15} /></span><div><strong>MIUNI</strong><small>Tu campus, a la mano</small></div></div><Link to="/" className="chat-back"><ArrowLeft size={15} /> Volver al mapa</Link><button className="chat-new" disabled={busy} onClick={nuevaConversacion}><Plus size={17} /> Nueva conversación</button><div className="chat-history"><span className="chat-history-label">Conversaciones recientes</span>{loading ? <small>Cargando…</small> : sessions.length === 0 ? <small>Aún no tienes conversaciones.</small> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={14} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}</div></aside>
-    <section className="chat-main"><header className="chat-topbar"><button type="button" className="chat-mobile-back" aria-label="Abrir conversaciones" aria-controls="chat-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}><Menu size={19} /></button><span className="chat-top-icon"><BookOpen size={16} /></span><strong>MIUNI</strong><div className="chat-user"><span>{initials}</span><ChevronRight size={14} /></div></header><div className={`chat-content ${messages.length ? "chat-content-active" : ""}`}>{!messages.length && <div className="chat-intro"><div className="chat-hero-icon"><Sparkles size={25} /></div><h1>Asistente MIUNI</h1><p>Pregúntame sobre edificios, tienditas, horarios y servicios del campus.</p>{!messages.length && <div className="chat-suggestions">{sugerencias.map(sugerencia => <button key={sugerencia} onClick={() => { setDraft(sugerencia); }}>{sugerencia}</button>)}</div>}</div>}<div className="chat-messages" ref={messagesRef} tabIndex={0} aria-label="Mensajes de la conversación">{messages.map(message => <div className={`chat-message ${message.rol === "user" ? "usuario" : "asistente"}`} key={message.id}><div className="chat-bubble">{message.rol === "assistant" ? (
+    <aside id="chat-sidebar" className={`chat-sidebar ${sidebarOpen ? "abierto" : ""}`} inert={!sidebarOpen} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); cerrarSidebar(); } }}><div className="chat-side-brand"><span className="chat-side-logo"><BookOpen size={15} /></span><div><strong>MIUNI</strong><small>Tu campus, a la mano</small></div></div><Link to="/" className="chat-back"><ArrowLeft size={15} /> Volver al mapa</Link><button className="chat-new" disabled={busy} onClick={nuevaConversacion}><Plus size={17} /> Nueva conversación</button><div className="chat-history"><span className="chat-history-label">Conversaciones recientes</span>{loading ? <small>Cargando…</small> : sessions.length === 0 ? <small>Aún no tienes conversaciones.</small> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={14} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}</div></aside>
+    <section className="chat-main"><header className="chat-topbar"><button ref={sidebarToggleRef} type="button" className="chat-sidebar-toggle" aria-label={sidebarOpen ? "Ocultar conversaciones" : "Mostrar conversaciones"} title={sidebarOpen ? "Ocultar conversaciones" : "Mostrar conversaciones"} aria-controls="chat-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(open => !open)}><Menu size={19} /></button><span className="chat-top-icon"><BookOpen size={16} /></span><strong>MIUNI</strong><div className="chat-user"><span>{initials}</span><ChevronRight size={14} /></div></header><div className={`chat-content ${messages.length ? "chat-content-active" : ""}`}>{!messages.length && <div className="chat-intro"><div className="chat-hero-icon"><Sparkles size={25} /></div><h1>Asistente MIUNI</h1><p>Pregúntame sobre edificios, tienditas, horarios y servicios del campus.</p>{!messages.length && <div className="chat-suggestions">{sugerencias.map(sugerencia => <button key={sugerencia} onClick={() => { setDraft(sugerencia); }}>{sugerencia}</button>)}</div>}</div>}<div className="chat-messages" ref={messagesRef} tabIndex={0} aria-label="Mensajes de la conversación">{messages.map(message => <div className={`chat-message ${message.rol === "user" ? "usuario" : "asistente"}`} key={message.id}><div className="chat-bubble">{message.rol === "assistant" ? (
                 <ChatAnswer messageId={message.id} ownerId={user?.id} content={message.contenido} timestamp={fecha(message.fechaCreacion)} streaming={sending && message.id.startsWith("stream-")}>
                   {!message.id.startsWith("stream-") && <LugaresDelMensaje texto={message.contenido} />}
                 </ChatAnswer>

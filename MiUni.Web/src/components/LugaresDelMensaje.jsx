@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { cargarLugaresChat, detectarLugares, enlaceLugar } from "../services/lugaresChat";
+import { cargarLugaresChat, detectarLugares, enlaceLugar, lugaresEnlazados } from "../services/lugaresChat";
 
 // Render below assistant messages only. A shared catalog can be passed by the chat.
 export default function LugaresDelMensaje({ texto, lugares }) {
@@ -24,7 +24,9 @@ export default function LugaresDelMensaje({ texto, lugares }) {
     </p>
   );
 
-  const encontrados = detectarLugares(texto, lugares ?? catalogo);
+  const enlazados = lugaresEnlazados(texto);
+  const encontrados = detectarLugares(texto, lugares ?? catalogo)
+    .filter(lugar => !enlazados.has(String(lugar.id).toLowerCase()));
   if (!encontrados.length) return null;
   return (
     <nav aria-label="Lugares mencionados en esta respuesta">
