@@ -31,7 +31,7 @@ export default function Chat() {
   useEffect(() => () => streamRef.current?.abort(), []);
   const [deleting, setDeleting] = useState(null);
   const [opening, setOpening] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia("(min-width: 701px)").matches);
   const busy = sending || opening || deleting !== null;
 
   useEffect(() => {
@@ -48,14 +48,15 @@ export default function Chat() {
 
   async function abrirSesion(id) {
     if (busy) return;
-    setOpening(true); setSidebarOpen(false);
+    setOpening(true);
+    if (window.matchMedia("(max-width: 700px)").matches) setSidebarOpen(false);
     setError("");
     try { const { data } = await api.get(`/api/Chat/sessions/${id}`); setSessionId(id); setMessages(data); }
     catch { setError("No se pudo abrir esta conversación."); }
     finally { setOpening(false); }
   }
 
-  function nuevaConversacion() { if (busy) return; setSidebarOpen(false); setSessionId(null); setMessages([]); setDraft(""); setError(""); }
+  function nuevaConversacion() { if (busy) return; if (window.matchMedia("(max-width: 700px)").matches) setSidebarOpen(false); setSessionId(null); setMessages([]); setDraft(""); setError(""); }
 
   async function enviar(evento) {
     evento?.preventDefault();
@@ -127,10 +128,10 @@ export default function Chat() {
   const chooseSuggestion = value => { setDraft(value); composerRef.current?.focus(); };
   return <main className="chat-page">
     <a href="#chat-input" className="skip-link">Saltar a escribir un mensaje</a>
-    <aside className={`chat-sidebar ${sidebarOpen ? "abierta" : ""}`}>
+    <aside id="chat-sidebar" className={`chat-sidebar ${sidebarOpen ? "abierta" : ""}`}>
       <div className="chat-side-brand"><span className="chat-side-logo">M</span><div><strong>MIUNI</strong><small>Tu campus, a la mano</small></div><button className="chat-close" onClick={() => setSidebarOpen(false)} aria-label="Cerrar historial"><X size={18} /></button></div>
       <Link to="/" className="chat-back"><ArrowLeft size={16} /> Volver al inicio</Link>
-      <button className="chat-new" disabled={busy} onClick={() => {nuevaConversacion(); setSidebarOpen(false);}}><Plus size={17} /> Nueva conversación</button>
+      <button className="chat-new" disabled={busy} onClick={nuevaConversacion}><Plus size={17} /> Nueva conversación</button>
       <div className="chat-history"><span className="chat-history-label">Tus conversaciones</span>
         {loading ? <div className="chat-history-loading" role="status">Cargando historial…</div> : sessions.length === 0 ? <div className="chat-history-empty"><Clock3 size={20} /><p>Un nuevo comienzo.</p><small>Tus conversaciones aparecerán aquí.</small></div> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={15} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}
       </div>
@@ -138,7 +139,7 @@ export default function Chat() {
     </aside>
     {sidebarOpen && <button className="chat-sidebar-overlay" aria-label="Cerrar historial" onClick={() => setSidebarOpen(false)} />}
     <section className="chat-main">
-      <header className="chat-topbar"><button className="chat-mobile-back" aria-label="Abrir historial" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}><Menu size={20} /></button><span className="chat-top-icon"><Sparkles size={17} /></span><div><strong>Asistente MiUni</strong><span className="chat-top-subtitle">Tu guía para la vida en el campus</span></div><div className="chat-top-status"><span /> A tu lado</div><div className="chat-user"><span>{initials}</span><ChevronRight size={14} /></div></header>
+      <header className="chat-topbar"><button className="chat-mobile-back" aria-label={sidebarOpen ? "Ocultar historial" : "Abrir historial"} title={sidebarOpen ? "Ocultar historial" : "Abrir historial"} aria-controls="chat-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(open => !open)}><Menu size={20} /></button><span className="chat-top-icon"><Sparkles size={17} /></span><div><strong>Asistente MiUni</strong><span className="chat-top-subtitle">Tu guía para la vida en el campus</span></div><div className="chat-top-status"><span /> A tu lado</div><div className="chat-user"><span>{initials}</span><ChevronRight size={14} /></div></header>
       <div className="chat-content">
         <section className={`chat-intro ${messages.length ? "compacta" : ""}`}>
           <div className="chat-intro-copy"><span className="ui-eyebrow"><Sparkles size={13} /> Menos dudas, más campus</span><h1>{messages.length ? "Lo encontramos juntos." : <>¿Qué necesitas<br /><em>encontrar hoy?</em></>}</h1><p>Edificios, un buen café o ese horario que no recuerdas.<br className="chat-desktop-break" /> Pregúntame y empezamos.</p></div>
