@@ -186,6 +186,39 @@ public class ChatControllerTests
         Assert.IsType<UnauthorizedResult>(await controller.DeleteSession(Guid.NewGuid(), default));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ChatUsesCurrentActiveCatalogWithoutStoringItInHistory(bool streaming)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Prueba" });
+        var category = new Categorium { Id = Guid.NewGuid(), Nombre = "Deportes" };
+        db.Categoria.Add(category);
+        foreach (var active in new[] { true, false })
+            db.Lugars.Add(new Lugar
+            {
+                Id = Guid.NewGuid(), Nombre = active ? "Campo de beisbol" : "Lugar oculto",
+                Categoria = category, CategoriaId = category.Id, Activo = active,
+                Descripcion = "DESCRIPCION_PRIVADA_NO_ENVIAR",
+                Ubicacion = new NetTopologySuite.Geometries.Point(-110.96, 29.08)
+            });
+        await db.SaveChangesAsync();
+        var rag = new FakeRagClient("Campo de beisbol");
+        var controller = AsUser(new ChatController(db, rag), user);
+        controller.Response.Body = new MemoryStream();
+        var request = new ChatRequest { Mensaje = "Donde jugar baseball?" };
+        if (streaming) await controller.Stream(request, default);
+        else await controller.Send(request, default);
+        Assert.Contains("Campo de beisbol", rag.LastQuestion);
+        Assert.Contains("Deportes", rag.LastQuestion);
+        Assert.DoesNotContain("Lugar oculto", rag.LastQuestion);
+        Assert.DoesNotContain("DESCRIPCION_PRIVADA_NO_ENVIAR", rag.LastQuestion);
+        Assert.Contains(request.Mensaje, rag.LastQuestion);
+        Assert.Equal(request.Mensaje, (await db.Historialchats.SingleAsync(h => h.Rol == "user")).Contenido);
+    }
+
     private static Historialchat Message(Guid session, Guid user, string role, string content, DateTime createdAt) =>
         new()
         {
@@ -200,10 +233,12 @@ public class ChatControllerTests
     private class FakeRagClient(string answer) : IRagClient
     {
         public string? LastAuthorizationHeader { get; private set; }
+        public string LastQuestion { get; private set; } = "";
 
         public Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct)
         {
             LastAuthorizationHeader = authorizationHeader;
+            LastQuestion = question;
             return Task.FromResult(answer);
         }
 
@@ -213,6 +248,7 @@ public class ChatControllerTests
             [EnumeratorCancellation] CancellationToken ct)
         {
             LastAuthorizationHeader = authorizationHeader;
+            LastQuestion = question;
             await Task.Yield();
             yield return answer;
         }

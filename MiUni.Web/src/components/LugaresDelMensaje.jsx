@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cargarLugaresChat, detectarLugares, enlaceLugar, lugaresEnlazados } from "../services/lugaresChat";
+import { MapPin, ArrowUpRight } from "lucide-react";
+import "./LugaresDelMensaje.css";
 
 // Render below assistant messages only. A shared catalog can be passed by the chat.
 export default function LugaresDelMensaje({ texto, lugares }) {
@@ -29,9 +31,19 @@ export default function LugaresDelMensaje({ texto, lugares }) {
     .filter(lugar => !enlazados.has(String(lugar.id).toLowerCase()));
   if (!encontrados.length) return null;
   return (
-    <nav aria-label="Lugares mencionados en esta respuesta">
+    <nav className="chat-places" aria-label="Lugares mencionados en esta respuesta">
       <ul>{encontrados.map(lugar => (
-        <li key={lugar.id}><Link to={enlaceLugar(lugar.id)}>Ver {lugar.nombre} en el mapa</Link></li>
+        <li key={lugar.id}>
+          <Link className="chat-place-card" to={enlaceLugar(lugar.id)}
+            aria-label={`Ver ${lugar.nombre} en el mapa del campus`}>
+            <span className="chat-place-icon"><MapPin size={19} aria-hidden="true" /></span>
+            <span className="chat-place-text">
+              <strong>{lugar.nombre}</strong>
+              <span>Ver en el mapa del campus</span>
+            </span>
+            <ArrowUpRight className="chat-place-arrow" size={17} aria-hidden="true" />
+          </Link>
+        </li>
       ))}</ul>
     </nav>
   );

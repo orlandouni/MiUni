@@ -7,6 +7,18 @@ const direccion = { id: "direccion", nombre: "Dirección de Servicios Estudianti
 const edificio = { id: "edificio", nombre: "5K", latitud: 29.07, longitud: -110.95 };
 const catalogo = [biblioteca, direccion, edificio];
 
+test("genera enlaces para cada uno de los 51 lugares del catálogo inicial", () => {
+  const sql = readFileSync(new URL("../../../seed_lugares.sql", import.meta.url), "utf8");
+  const nombres = [...sql.matchAll(/\('([^']+)',\s*'[^']+',\s*29\./g)].map(match => match[1]);
+  assert.equal(nombres.length, 51);
+  const lugares = nombres.map((nombre, index) => ({ ...biblioteca, id: String(index), nombre }));
+  for (const lugar of lugares) {
+    const encontrados = detectarLugares(`Puedes ir a **${lugar.nombre}**.`, lugares);
+    assert.ok(encontrados.some(encontrado => encontrado.id === lugar.id), lugar.nombre);
+    assert.equal(new URL(enlaceLugar(lugar.id), "https://miuni.test").searchParams.get("lugar"), lugar.id);
+  }
+});
+
 test("reconoce varios nombres con acentos, mayúsculas y formato de chat", () => {
   assert.deepEqual(detectarLugares("Ve a **BIBLIOTECA CENTRAL**, luego a direccion de servicios estudiantiles.", catalogo), [biblioteca, direccion]);
 });
