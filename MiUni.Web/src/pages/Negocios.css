@@ -1,8 +1,22 @@
-.negocios { max-width: 780px; margin: 0 auto; padding: 32px 20px; text-align: left; }
-.negocios article { border: 1px solid #9aa9b8; border-radius: 12px; padding: 20px; margin: 16px 0; }
-.negocios fieldset { border: 0; padding: 0; display: grid; gap: 16px; }
-.negocios label { display: grid; gap: 6px; }
-.negocios input, .negocios textarea, .negocios select { font: inherit; padding: 10px; width: 100%; box-sizing: border-box; }
-.negocios button { margin: 4px 8px 4px 0; padding: 10px 16px; cursor: pointer; }
-.negocios button:disabled { opacity: .6; cursor: wait; }
-.negocios [role="alert"] { color: #bc3030; }
+.negocios { display: grid; grid-template-columns: 1fr 1.1fr; align-content: start; column-gap: 48px; row-gap: 18px; max-width: 1260px; margin: 0 auto; min-height: 100svh; padding: 48px 36px; text-align: left; color: var(--ink); font-size: 14px; }
+.negocios > a,.negocios > h1,.negocios > p { grid-column: 1/-1; }
+.negocios > a { font-size: 12px; text-decoration: none; }
+.negocios h1 { font: 600 48px/1 var(--font-display); margin: 10px 0 0; }
+.negocios > p { color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
+.negocios > section { grid-column: 1; grid-row: span 2; }
+.negocios > h2,.negocios > form { grid-column: 2; }
+.negocios > h2 { font: 600 30px/1 var(--font-display); }
+.negocios article { border: 1px solid var(--line); border-radius: var(--radius-md); background: white; padding: 24px; margin-bottom: 16px; }
+.negocios article h2 { font: 600 28px/1 var(--font-display); margin-bottom: 12px; }
+.negocios article p { color: var(--muted); line-height: 1.7; }
+.negocios form { padding: 24px; background: white; border: 1px solid var(--line); border-radius: var(--radius-md); }
+.negocios fieldset { border: 0; padding: 0; display: grid; gap: 18px; }
+.negocios label { display: grid; gap: 8px; font-size: 12px; font-weight: 600; }
+.negocios input,.negocios textarea,.negocios select { font: 14px var(--font-body); padding: 12px; width: 100%; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); }
+.negocios textarea { min-height: 90px; resize: vertical; }
+.negocios button { border: 0; border-radius: var(--radius-sm); padding: 12px 16px; background: var(--blue); color: white; font-size: 13px; margin: 4px 8px 4px 0; }
+.negocios button:hover:not(:disabled) { transform: translateY(-2px); }
+.negocios button:disabled { opacity: .5; }
+.negocios [role=alert] { color: var(--danger); background: var(--danger-soft); padding: 12px; border-radius: var(--radius-sm); }
+.negocios [role=status] { color: var(--green); }
+@media(max-width:850px) { .negocios { display: block; padding: 28px 20px; }.negocios h1 { margin: 20px 0 14px; font-size: 40px; }.negocios > section { margin: 24px 0; }.negocios > h2 { margin: 26px 0 16px; } }

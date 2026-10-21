@@ -1,0 +1,19 @@
+:root {
+  --navy: #102e50; --navy-deep: #0b233e; --blue: #245bdf; --blue-soft: #edf2ff;
+  --yellow: #f4ca64; --yellow-soft: #fff5d9; --green: #287967; --green-soft: #e9f4ef;
+  --ink: #182f48; --muted: #5e6f80; --line: #dce2e8; --canvas: #f7f6f2; --white: #ffffff;
+  --danger: #ae3b37; --danger-soft: #fff0ed;
+  --font-body: 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Segoe UI', sans-serif;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px; --space-16: 64px;
+  --radius-sm: 12px; --radius-md: 18px; --radius-lg: 24px; --radius-pill: 999px;
+  --shadow-sm: 0 3px 12px #102e5006; --shadow-md: 0 12px 32px #102e500b; --shadow-popover: 0 20px 60px #102e5021;
+  --motion-fast: 160ms; --motion-base: 240ms; --motion-page: 320ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1); --sidebar-width: 224px;
+}
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 12px 20px; border: 1px solid transparent; border-radius: var(--radius-sm); background: var(--blue); color: var(--white); font-weight: 600; text-decoration: none; font-size: 14px; }
+.ui-button:hover { transform: translateY(-2px); }
+.ui-button.secondary { background: var(--white); border-color: var(--line); color: var(--navy); }
+.ui-button.yellow { background: var(--yellow); color: var(--navy-deep); }
+.ui-eyebrow { display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--muted); }

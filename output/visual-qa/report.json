@@ -1,0 +1,112 @@
+{
+  "fixtures": true,
+  "note": "Pruebas de navegador aisladas con respuestas API simuladas. No se modificaron datos del servidor.",
+  "checks": [
+    {
+      "name": "home-1366",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "home-1920",
+      "width": 1920,
+      "scroll": 1920
+    },
+    {
+      "name": "map-route-1366",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "chat-empty-1366",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "chat-answer-1366",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "chat-1920",
+      "width": 1920,
+      "scroll": 1920
+    },
+    {
+      "name": "/login",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/registro",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/favoritos",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/resenas",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/negocios",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/admin",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/resenas-reportes",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "/no-existe",
+      "width": 1366,
+      "scroll": 1366
+    },
+    {
+      "name": "mobile-/",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/mapa",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/asistente",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/login",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/registro",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/favoritos",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "name": "mobile-/negocios",
+      "width": 390,
+      "scroll": 390
+    }
+  ],
+  "errors": []
+}

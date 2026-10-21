@@ -1,7 +1,12 @@
-/* Only the Login illustration reaches the top and bottom of its panel. */
+/* Fit the complete composition without cropping its lower banner. */
 .ma-right:has(.miuni-hero-fit) {
   padding-block: 0;
   padding-right: 0;
+}
+
+.miuni-auth .ma-right:has(.miuni-hero-fit) {
+  padding: 0;
+  background: var(--canvas);
 }
 
 .miuni-hero-fit {
@@ -9,13 +14,13 @@
   height: 100%;
   container-type: size;
   display: grid;
-  place-items: center;
+  place-items: center end;
 }
 
 .miuni-hero {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: min(100cqw, 115.0556cqh);
+  height: min(100cqh, 86.9145cqw);
   overflow: hidden;
   border-radius: 0;
   isolation: isolate;
@@ -32,7 +37,7 @@
 
 .ma-right .miuni-hero img.miuni-hero-background {
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -49,7 +54,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .miuni-hero-entry {
-    animation: miuni-card-enter 800ms ease-out var(--entry-delay) both;
+    animation: miuni-card-enter var(--motion-page) var(--ease-out) var(--entry-delay) both;
   }
   .miuni-hero-card img {
     animation: var(--float-name) var(--float-duration) ease-in-out var(--float-delay) infinite alternate;
@@ -60,7 +65,7 @@
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
   .miuni-hero-parallax {
     transform: translate(calc(var(--pointer-x, 0) * var(--depth)), calc(var(--pointer-y, 0) * var(--depth)));
-    transition: transform 450ms ease-out;
+    transition: transform var(--motion-page) var(--ease-out);
   }
 }
 

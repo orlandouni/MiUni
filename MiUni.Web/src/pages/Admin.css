@@ -1,5 +1,5 @@
 #root:has(.admin-page) { width: 100%; max-width: none; border: 0; text-align: left; }
-.admin-page { --navy:#123b56; --gold:#d5a53c; --ink:#1d3444; --muted:#748492; --line:#e4eaf0; min-height:100svh; background:#f4f7fa; color:var(--ink); font:14px/1.5 system-ui,"Segoe UI",sans-serif; letter-spacing:normal; }
+.admin-page { --gold:var(--yellow); min-height:100svh; background:#f4f7fa; color:var(--ink); font:14px/1.5 system-ui,"Segoe UI",sans-serif; letter-spacing:normal; }
 .admin-page * { box-sizing:border-box; }
 .admin-shell { max-width:1040px; margin:auto; padding:28px 24px 60px; }
 .admin-top,.admin-heading,.admin-content-head,.admin-card-top,.admin-actions { display:flex; align-items:center; justify-content:space-between; gap:16px; }
@@ -41,3 +41,15 @@
 .admin-alert,.admin-success { padding:11px 13px; border-radius:9px; margin:0 0 14px; }.admin-alert { color:#8d251c; background:#fff0ee; }.admin-success { color:#17603a; background:#eaf7ef; }
 .admin-page :is(button,select,a):focus-visible { outline:3px solid #e3bb61; outline-offset:2px; }
 @media(max-width:600px) { .admin-shell { padding:18px 14px 40px; }.admin-heading { align-items:flex-start; flex-direction:column; padding:26px 0 20px; }.admin-stats { gap:7px; }.admin-stats article { padding:10px 8px; gap:7px; }.admin-stat-icon { width:30px; height:30px; }.admin-stats small { font-size:10px; }.admin-content { padding:13px; }.admin-content-head { align-items:flex-start; flex-direction:column; }.admin-filter { width:100%; justify-content:space-between; }.admin-filter select { flex:1; }.admin-actions button { flex:1; } }
+
+.admin-page { background: var(--canvas); font-family: var(--font-body); }
+.admin-shell { max-width: 1360px; padding: 40px; }
+.admin-page h1 { font: 600 48px/1 var(--font-display); }
+.admin-content { border-radius: var(--radius-lg); padding: 26px; }
+.admin-card { border-radius: var(--radius-md); }
+.admin-page .admin-card h3 { font: 600 27px/1.1 var(--font-display); }
+.admin-content-head h2 { font: 600 30px/1.1 var(--font-display); }
+.admin-stats article { border-radius: var(--radius-md); box-shadow: none; }
+.admin-page button:hover:not(:disabled) { transform: translateY(-2px); }
+@media(min-width:1100px) { .admin-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) { .admin-shell { padding: 24px 16px; }.admin-page h1 { font-size: 38px; }.admin-content { padding: 18px; } }
