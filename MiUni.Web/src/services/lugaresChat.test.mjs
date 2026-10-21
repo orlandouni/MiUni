@@ -1,11 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { detectarLugares, enlaceLugar, ubicacionValida, cargarLugaresChat } from "./lugaresChat.js";
 
 const biblioteca = { id: "biblioteca", nombre: "Biblioteca Central", latitud: 29.08, longitud: -110.96 };
 const direccion = { id: "direccion", nombre: "Dirección de Servicios Estudiantiles", latitud: 29.09, longitud: -110.97 };
 const edificio = { id: "edificio", nombre: "5K", latitud: 29.07, longitud: -110.95 };
 const catalogo = [biblioteca, direccion, edificio];
+
+test("genera enlaces para cada uno de los 51 lugares del catálogo inicial", () => {
+  const sql = readFileSync(new URL("../../../seed_lugares.sql", import.meta.url), "utf8");
+  const nombres = [...sql.matchAll(/\('([^']+)',\s*'[^']+',\s*29\./g)].map(match => match[1]);
+  assert.equal(nombres.length, 51);
+  const lugares = nombres.map((nombre, index) => ({ ...biblioteca, id: String(index), nombre }));
+  for (const lugar of lugares) {
+    const encontrados = detectarLugares(`Puedes ir a **${lugar.nombre}**.`, lugares);
+    assert.ok(encontrados.some(encontrado => encontrado.id === lugar.id), lugar.nombre);
+    assert.equal(new URL(enlaceLugar(lugar.id), "https://miuni.test").searchParams.get("lugar"), lugar.id);
+  }
+});
 
 test("reconoce varios nombres con acentos, mayúsculas y formato de chat", () => {
   assert.deepEqual(detectarLugares("Ve a **BIBLIOTECA CENTRAL**, luego a direccion de servicios estudiantiles.", catalogo), [biblioteca, direccion]);
@@ -29,7 +42,7 @@ test("rechaza coordenadas ausentes o inválidas", () => {
 });
 test("el enlace transporta únicamente el identificador y lo codifica", () => {
   const url = new URL(enlaceLugar("id & otro"), "https://miuni.test");
-  assert.equal(url.pathname, "/");
+  assert.equal(url.pathname, "/mapa");
   assert.equal(url.searchParams.get("lugar"), "id & otro");
   assert.equal([...url.searchParams].length, 1);
 });
