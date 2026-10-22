@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import {
   Building2,
   ChevronRight,
@@ -14,10 +14,11 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import CampusMap from "../components/CampusMap";
 import { clearSession, getMe, isAuthenticated } from "../services/api";
 import { ROLES } from "../services/roles";
 import "./Home.css";
+
+const CampusMap = lazy(() => import("../components/CampusMap"));
 
 function MapaCampus() {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ function MapaCampus() {
             <p>Busca lugares, filtra categorías y calcula rutas dentro del campus.</p>
           </section>
           <section className="map-page-map" aria-label="Mapa del campus">
-            <CampusMap />
+            <Suspense fallback={<div className="campus-loading" role="status"><Map size={24} /> Preparando el mapa del campus…</div>}><CampusMap /></Suspense>
           </section>
         </main>
       </div>

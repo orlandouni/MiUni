@@ -415,3 +415,20 @@
 }
 .com-navegacion a[aria-current="page"] { color: var(--com-azul); font-weight: 700; }
 .com-reporte-card { border-left: 4px solid var(--com-dorado); }.com-estado-reporte { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }.estado-pendiente { color:#89691c; background:#fcf4de; }.estado-revisado { color:#17603a; background:#eaf7ef; }.estado-descartado { color:#8d251c; background:#fff0ee; }.com-reporte-motivo { margin-top:12px; color:var(--com-texto); white-space:pre-wrap; }
+
+/* Shared campus system; data and forms keep their original behavior. */
+.comunidad { --com-azul: var(--navy); --com-dorado: var(--yellow); --com-texto: var(--ink); --com-gris: var(--muted); --com-borde: var(--line); --com-fondo: var(--canvas); font-family: var(--font-body); }
+.com-contenedor { width: min(100%,1120px); padding: 48px 36px; }
+.comunidad .com-encabezado h1 { font: 600 46px/1 var(--font-display); }
+.com-encabezado > div > p { margin-top: 8px; font-size: 13px; }
+.com-navegacion { border-bottom: 1px solid var(--line); padding-bottom: 20px; gap: 24px; }
+.com-navegacion a { font-size: 12px; text-decoration: none; }.com-navegacion a:hover { transform: translateY(-2px); }
+.com-tarjeta { border-radius: var(--radius-md); padding: 22px; box-shadow: var(--shadow-sm); }
+.comunidad .com-tarjeta h2 { font: 600 27px/1.15 var(--font-display); }
+.com-seccion { border-radius: var(--radius-md); }
+.com-ficha { padding: 32px; border-radius: var(--radius-lg); }
+.comunidad .com-ficha h2 { font: 600 40px/1.1 var(--font-display); }
+.com-boton { border-radius: var(--radius-sm); }.com-boton:hover:not(:disabled) { transform: translateY(-2px); }
+.com-estado,.com-vacio { color: var(--muted); }
+@media(min-width:1100px) { .com-lista:not(.com-interior) { grid-template-columns: repeat(2,minmax(0,1fr)); }.com-lista > .com-vacio { grid-column: 1/-1; } }
+@media(max-width:700px) { .com-contenedor { padding: 28px 18px; }.comunidad .com-encabezado h1 { font-size: 36px; }.com-ficha { padding: 24px; }.comunidad .com-ficha h2 { font-size: 32px; } }

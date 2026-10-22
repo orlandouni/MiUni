@@ -675,3 +675,22 @@
   .ma-right { height: 100%; min-height: 0; padding: 8px; }
   .ma-right img { width: 100%; height: 100%; object-fit: contain; }
 }
+
+/* MiUni shared visual language */
+.miuni-auth { background: var(--canvas); color: var(--ink); font-family: var(--font-body); }
+.miuni-auth .ma-left { background: var(--canvas); }
+.miuni-auth .ma-card { border-color: var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+.miuni-auth .ma-heading h1 { font: 600 40px/1.05 var(--font-display); color: var(--navy); letter-spacing: -.01em; }
+.miuni-auth .ma-heading > p,.miuni-auth .ma-help,.miuni-auth .ma-alternative { color: var(--muted); }
+.miuni-auth .ma-emblem { background: var(--navy); box-shadow: none; border-radius: var(--radius-md); }
+.miuni-auth .ma-submit { background: var(--blue); border-radius: var(--radius-sm); box-shadow: none; }
+.miuni-auth .ma-submit:hover { transform: translateY(-2px); opacity: 1; }
+.miuni-auth .ma-input-wrap input { border-color: var(--line); border-radius: var(--radius-sm); color: var(--ink); }
+.miuni-auth .ma-field label { color: var(--ink); }
+.miuni-auth .ma-input-wrap input::placeholder { color: var(--muted); }
+.miuni-auth .ma-alternative a { color: var(--blue); }
+.miuni-auth .ma-right { background: var(--canvas); padding: 20px; }
+.miuni-auth .ma-right > img { border-radius: var(--radius-lg); }
+.miuni-auth .ma-error { color: var(--danger); background: var(--danger-soft); }
+@media(min-width:1366px) { .miuni-auth .ma-layout { grid-template-columns: 43% 57%; }.miuni-auth .ma-left { padding: 24px 40px; }.miuni-auth .ma-card { max-width: 470px; padding: 28px 32px; } }
+@media(max-width:480px) { .miuni-auth .ma-heading h1 { font-size: 34px; } }

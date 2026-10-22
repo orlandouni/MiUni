@@ -3,7 +3,7 @@ import { Marker, Popup, useMap } from "react-leaflet";
 import { Link } from "react-router-dom";
 
 
-export default function LugarDesdeChat({ lugar, elegir }) {
+export default function LugarDesdeChat({ lugar, elegir, icon }) {
   const map = useMap();
   const marker = useRef(null);
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function LugarDesdeChat({ lugar, elegir }) {
     marker.current?.openPopup();
   }, [lugar, map]);
   return (
-    <Marker ref={marker} position={[lugar.latitud, lugar.longitud]}>
+    <Marker ref={marker} icon={icon} title={lugar.nombre} position={[lugar.latitud, lugar.longitud]}>
       <Popup>
         <strong>{lugar.nombre}</strong>
         {lugar.descripcion && <p>{lugar.descripcion}</p>}

@@ -1,0 +1,19 @@
+.auth-explorer { display: flex; flex-direction: column; justify-content: center; width: 100%; height: 100%; border-radius: var(--radius-lg); padding: clamp(32px,4vw,72px); background: var(--navy); overflow: hidden; color: white; position: relative; isolation: isolate; }
+.ae-eyebrow { color: var(--yellow); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+.miuni-auth .auth-explorer h2 { color: white; font: 600 clamp(44px,4.5vw,76px)/1.02 var(--font-display); letter-spacing: -.01em; margin: 20px 0; }
+.auth-explorer h2 em { color: var(--yellow); font-style: normal; }
+.miuni-auth .auth-explorer > p { color: #c4d3e3; font-size: 14px; line-height: 1.8; margin: 0; }
+.ae-map { position: relative; width: min(100%,500px); height: clamp(220px,28vh,330px); margin: 42px auto 24px; background-color: #eceddf; border-radius: 30px; transform: rotate(-4deg); background-image: linear-gradient(90deg, transparent 47%,#fff 47% 53%,transparent 53%),linear-gradient(0deg,transparent 43%,#fff 43% 51%,transparent 51%); background-size: 110px 110px; }
+.ae-path { position: absolute; top: 42%; left: 10%; width: 65%; height: 40%; border: 3px dashed #bc8f24; border-top: 0; border-right: 0; border-radius: 0 0 0 20px; transform: rotate(-12deg); }
+.ae-building { position: absolute; display: grid; place-items: center; color: var(--navy); background: #d2dce9; border: 6px solid #e0e7ef; border-radius: 16px; transform: rotate(4deg); }
+.ae-building.first { width: 90px; height: 72px; top: 18px; left: 25px; }.ae-building.second { width: 95px; height: 70px; top: 36px; left: 44%; background: #e9d4ad; border-color: #f1e0c4; }.ae-building.third { width: 62px; height: 60px; bottom: 24px; left: 22%; background: #afccbd; border-color: #c6dfd2; }
+.ae-pin { position: absolute; left: 34%; top: 38%; color: var(--blue); transform: rotate(4deg); }
+.miuni-auth .ma-right .ae-mascot { position: absolute; right: -24px; bottom: -4px; width: 210px; height: 230px; object-fit: contain; transform: rotate(4deg); }
+.ae-map-note { position: absolute; bottom: -17px; left: -10px; display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 14px; transform: rotate(4deg); background: white; color: var(--blue); box-shadow: var(--shadow-md); }
+.ae-map-note > span { font-size: 11px; color: var(--muted); }.ae-map-note strong { display: block; font-size: 13px; color: var(--ink); margin-top: 3px; }
+.ae-features { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; padding-top: 24px; color: #c4d3e3; font-size: 11px; }.ae-features > span { display: flex; align-items: center; gap: 7px; }.ae-features svg { color: var(--yellow); }
+.miuni-auth .ma-brand a { display: flex; align-items: center; gap: 10px; width: auto; max-width: none; text-decoration: none; }
+.ma-brand-mark { display: grid; place-items: center; width: 38px; height: 42px; border-radius: 13px 13px 13px 3px; background: var(--yellow); color: var(--navy); font: 700 28px var(--font-display); }
+.ma-brand-name { color: var(--navy); font-size: 22px; font-weight: 700; letter-spacing: .03em; }.ma-brand-name small { display: block; font-size: 9px; font-weight: 400; letter-spacing: 0; margin-top: 2px; }
+@media(min-width:1024px) and (max-height:760px) { .auth-explorer { padding: 34px; }.miuni-auth .auth-explorer h2 { font-size: 58px; margin: 16px 0; }.ae-map { height: 210px; margin-top: 28px; }.ae-features { padding-top: 15px; } }
+@media(prefers-reduced-motion:no-preference) and (hover:hover) and (pointer:fine) { .auth-explorer .ae-map { transition: transform var(--motion-page) var(--ease-out); }.auth-explorer:hover .ae-map { transform: rotate(-2deg) translateY(-3px); } }

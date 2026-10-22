@@ -7,31 +7,13 @@ import LugarDesdeChat from "./LugarDesdeChat";
 import { useLugarDesdeChat } from "../services/useLugarDesdeChat";
 import { CapaRuta, PanelRuta } from "./RutaMapa";
 import { useRuta } from "../services/useRuta";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, ArrowUpRight, X, Route, Compass } from "lucide-react";
+import {crearIcono, categoryStyle} from "./mapMarkers";
 import "./CampusMap.css";
 
 const CENTRO_INICIAL = [29.0833, -110.9627];
 const ZOOM_INICIAL = 17;
 const SIN_LUGARES = []; // referencia estable para no re-disparar efectos
-
-const colorPorCategoria = {
-  Biblioteca: "#2563eb",
-  Comida: "#f97316",
-  "Edificio académico": "#16a34a",
-  Departamentos: "#7c3aed",
-  Oficinas: "#0891b2",
-  Deportes: "#dc2626",
-  Baños: "#64748b",
-};
-
-function crearIcono(categoria) {
-  const color = colorPorCategoria[categoria] ?? "#ef4444";
-  return L.divIcon({
-    className: "",
-    html: `<div style="background:${color};width:16px;height:16px;border-radius:50%;border:2px solid white;"></div>`,
-    iconSize: [16, 16],
-  });
-}
 
 function useDebounce(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -48,13 +30,26 @@ function AjustarVista({ lugares, hayFiltro, lugarSeleccionado }) {
   useEffect(() => {
     if (lugarSeleccionado) return;
     if (!hayFiltro) {
-      map.setView(CENTRO_INICIAL, ZOOM_INICIAL);
+      map.setView(CENTRO_INICIAL, ZOOM_INICIAL, {animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches});
       return;
     }
     if (lugares.length === 0) return;
     const bounds = L.latLngBounds(lugares.map((l) => [l.latitud, l.longitud]));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 18 });
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18, animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
   }, [lugares, hayFiltro, lugarSeleccionado, map]);
+  return null;
+}
+
+function VistaMapa({lugar}) {
+  const map = useMap();
+  useEffect(() => {
+    const resize = new ResizeObserver(() => map.invalidateSize({animate: false}));
+    resize.observe(map.getContainer());
+    return () => resize.disconnect();
+  }, [map]);
+  useEffect(() => {
+    if (lugar) map.flyTo([lugar.latitud, lugar.longitud], 18, {duration: .65, animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches});
+  }, [lugar, map]);
   return null;
 }
 
@@ -72,6 +67,8 @@ function CampusMap() {
   };
   const ruta = useRuta();
   const [categorias, setCategorias] = useState([]);
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(() => window.matchMedia("(min-width: 701px)").matches);
+  const [seleccionado, setSeleccionado] = useState(null);
   const [texto, setTexto] = useState("");
   const [categoria, setCategoria] = useState(null); // nombre de la categoría
   const [resultado, setResultado] = useState({
@@ -121,93 +118,63 @@ function CampusMap() {
   const error = hayFiltro && !cargando && resultado.error;
   const sinResultados = hayFiltro && !cargando && !error && lugares.length === 0;
 
+  const detalle = seleccionado || lugarChat;
   return (
     <div className="campus-map-shell">
-      <div className="campus-controls">
-        <div className="campus-search"><Search size={17} />
-        <input
-          type="search"
-          placeholder="Buscar edificio o lugar (ej. 5K, biblioteca)"
-          aria-label="Buscar lugar"
-          value={texto}
-          onChange={(e) => { salirDeLugarChat(); setTexto(e.target.value); }}
-        />
+      <aside className="campus-side" aria-label="Explorar lugares y rutas">
+        <div className="campus-controls">
+          <span className="ui-eyebrow"><Compass size={13} /> Encuentra tu lugar</span>
+          <h3>¿A dónde vamos?</h3>
+          <div className="campus-search"><Search size={18} aria-hidden="true" />
+            <input type="search" placeholder="Edificio, biblioteca, café…" aria-label="Buscar lugar" value={texto}
+              onChange={e => { salirDeLugarChat(); setSeleccionado(null); setTexto(e.target.value); }} />
+          </div>
+          <div className="campus-filters">
+            <button className="campus-filter-toggle" type="button" aria-expanded={filtrosAbiertos} onClick={() => setFiltrosAbiertos(actual => !actual)}><SlidersHorizontal size={14} /> Categorías {categoria && <span className="campus-filter-count">1</span>}</button>
+            <div className={`campus-category-list ${filtrosAbiertos ? "visible" : ""}`}>
+              {categorias.map(c => <button key={c.id} type="button" aria-pressed={categoria === c.nombre}
+                onClick={() => { salirDeLugarChat(); setSeleccionado(null); setCategoria(categoria === c.nombre ? null : c.nombre); }}>
+                <span className="campus-dot" style={{background: categoryStyle[c.nombre]?.color || "#52677f"}} />{c.nombre}
+              </button>)}
+              {!categorias.length && <span className="campus-status">Las categorías aparecerán al conectar con el campus.</span>}
+            </div>
+          </div>
+          {(texto || categoria) && <button className="campus-clear" type="button" onClick={() => {setTexto(""); setCategoria(null); setSeleccionado(null);}}>Limpiar búsqueda <X size={12} /></button>}
+          {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? "No se pudieron cargar los lugares del campus. Intenta otra búsqueda." : "No encontramos ese lugar. Prueba con otro nombre o categoría."}</p>}
+          {lugarId && <p className="campus-status" role={errorChat ? "alert" : "status"}>{errorChat || (lugarChat ? `Desde el chat: ${lugarChat.nombre}` : "Cargando lugar del chat…")} <button type="button" onClick={salirDeLugarChat}>Volver a la búsqueda</button></p>}
+          {hayFiltro && !cargando && !error && lugares.length > 0 && <div className="campus-results">
+            <p className="campus-result-count">{lugares.length} {lugares.length === 1 ? "lugar encontrado" : "lugares encontrados"}</p>
+            {lugares.map(lugar => <button key={lugar.id} className={detalle?.id === lugar.id ? "active" : ""} aria-pressed={detalle?.id === lugar.id} onClick={() => setSeleccionado(lugar)}>
+              <MapPin size={16} /><span><strong>{lugar.nombre}</strong><small>{lugar.categoria?.nombre}</small></span><ArrowUpRight size={14} />
+            </button>)}
+          </div>}
         </div>
-
-        <div className="campus-filters"><button className="campus-filter-toggle" type="button" onClick={() => document.querySelector(".campus-category-list")?.classList.toggle("visible")}><SlidersHorizontal size={15} /> Filtros</button><div className="campus-category-list">
-          {categorias.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={categoria === c.nombre}
-              onClick={() => { salirDeLugarChat(); setCategoria(categoria === c.nombre ? null : c.nombre); }}
-            >
-              <span
-                className="campus-dot"
-                style={{
-                  display: "inline-block",
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  marginRight: 6,
-                  background: colorPorCategoria[c.nombre] ?? "#ef4444",
-                }}
-              />
-              {c.nombre}
-            </button>
-          ))}</div>
-        </div>
-
-        {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? "No se pudieron cargar los lugares del campus" : "No encontramos lugares con esa búsqueda."}</p>}
-        {lugarId && <p className="campus-status" role={errorChat ? "alert" : "status"}>
-          {errorChat || (lugarChat ? `Lugar del chat: ${lugarChat.nombre}` : "Cargando lugar del chat…")}{" "}
-          <button type="button" onClick={salirDeLugarChat}>Volver a la búsqueda</button>
-        </p>}
+        {detalle ? <section className="campus-place-card" aria-label="Lugar seleccionado">
+          <span className="ui-eyebrow"><MapPin size={12} /> {detalle.categoria?.nombre || "En el campus"}</span>
+          <h3>{detalle.nombre}</h3>
+          {detalle.descripcion && <p>{detalle.descripcion}</p>}
+          <div className="campus-place-actions"><button type="button" onClick={() => ruta.elegir("origen", detalle)}>Desde aquí</button><button type="button" onClick={() => ruta.elegir("destino", detalle)}><Route size={13} /> Ir aquí</button></div>
+          <Link to={`/lugares/${detalle.id}`}>Reseñas y favoritos <ArrowUpRight size={13} /></Link>
+        </section> : !hayFiltro && <div className="campus-welcome"><MapPin size={23} /><p>El campus, sin perderte.</p><span>Busca un lugar o elige una categoría para empezar a explorar.</span></div>}
+        <PanelRuta estado={ruta} />
+      </aside>
+      <div className="campus-map-stage">
+        <div className="campus-map-label"><span /> Universidad de Sonora <small>Campus Hermosillo</small></div>
+        <MapContainer center={CENTRO_INICIAL} zoom={ZOOM_INICIAL} className="campus-leaflet" zoomControl={true}>
+          <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <AjustarVista lugares={lugares} hayFiltro={hayFiltro} lugarSeleccionado={lugarId || seleccionado?.id} />
+          <VistaMapa lugar={seleccionado} />
+          <CapaRuta estado={ruta} />
+          {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} icon={crearIcono(lugarChat.categoria?.nombre, true)} />}
+          {lugares.filter(lugar => lugar.id !== lugarChat?.id).map(lugar => <Marker key={lugar.id} position={[lugar.latitud, lugar.longitud]}
+            title={lugar.nombre} alt={lugar.nombre} icon={crearIcono(lugar.categoria?.nombre, seleccionado?.id === lugar.id)} eventHandlers={{click: () => setSeleccionado(lugar)}}>
+            <Popup><div className="campus-popup"><span>{lugar.categoria?.nombre}</span><strong>{lugar.nombre}</strong><p>{lugar.descripcion}</p>
+              <div><button type="button" onClick={() => ruta.elegir("origen", lugar)}>Desde aquí</button><button type="button" onClick={() => ruta.elegir("destino", lugar)}>Ir aquí</button></div>
+              <Link to={`/lugares/${lugar.id}`}>Ver ficha del lugar →</Link>
+            </div></Popup>
+          </Marker>)}
+        </MapContainer>
       </div>
-
-      <PanelRuta estado={ruta} />
-      <MapContainer
-        center={CENTRO_INICIAL}
-        zoom={ZOOM_INICIAL}
-        className="campus-leaflet"
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <AjustarVista lugares={lugares} hayFiltro={hayFiltro} lugarSeleccionado={lugarId} />
-        <CapaRuta estado={ruta} />
-        {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} />}
-
-        {lugares.filter(lugar => lugar.id !== lugarChat?.id).map((lugar) => (
-          <Marker
-            key={lugar.id}
-            position={[lugar.latitud, lugar.longitud]}
-            icon={crearIcono(lugar.categoria.nombre)}
-          >
-            <Popup>
-              <strong>{lugar.nombre}</strong>
-              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                <button type="button" onClick={() => ruta.elegir("origen", lugar)}>Usar como origen</button>
-                <button type="button" onClick={() => ruta.elegir("destino", lugar)}>Usar como destino</button>
-              </div>
-              <br />
-              Categoría: {lugar.categoria.nombre}
-              {lugar.descripcion && (
-                <>
-                  <br />
-                  {lugar.descripcion}
-                </>
-              )}
-              <div style={{ marginTop: 12 }}>
-                <Link to={`/lugares/${lugar.id}`}>
-                Ver reseñas y guardar favorito
-                </Link>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
     </div>
   );
 }

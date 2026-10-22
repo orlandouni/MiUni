@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import AuthExplorer from "../components/AuthExplorer";
 import LoginIllustration from "../components/LoginIllustration";
 import "./Auth.css";
 
@@ -9,10 +10,7 @@ export default function CampusPanel({ children, animateIllustration = false }) {
         <section className="ma-left">
           <header className="ma-brand">
             <Link to="/" aria-label="MIUNI, volver al mapa">
-              <img
-                src="/auth/miuni-logo-reference.png"
-                alt="MIUNI Universidad de Sonora"
-              />
+              <span className="ma-brand-mark">M</span><span className="ma-brand-name">MIUNI<small>Universidad de Sonora</small></span>
             </Link>
 
             <p>
@@ -39,10 +37,7 @@ export default function CampusPanel({ children, animateIllustration = false }) {
         </section>
 
         <section className="ma-right" aria-label="Conoce MIUNI">
-          {animateIllustration ? <LoginIllustration /> : <img
-            src="/auth/miuni-auth-showcase.png"
-            alt="MIUNI: buscador, mapa del campus y asistente universitario"
-          />}
+          {animateIllustration ? <LoginIllustration /> : <AuthExplorer />}
         </section>
       </div>
     </main>

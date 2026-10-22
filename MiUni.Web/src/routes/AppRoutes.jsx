@@ -1,24 +1,26 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {lazy, Suspense} from "react";
 
 import Home from "../pages/Home";
-import MapaCampus from "../pages/MapaCampus";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import NotFound from "../pages/NotFound";
 import ProtectedRoute from "../components/ProtectedRoute";
-import Negocios from "../pages/Negocios";
-import Admin from "../pages/Admin";
-import Chat from "../pages/Chat";
-import {
-  Favoritos,
-  MisResenas,
-  FichaLugar,
-  Reportes,
-} from "../pages/Comunidad";
+import PageMotion from "../components/PageMotion";
+const MapaCampus = lazy(() => import("../pages/MapaCampus"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+const Negocios = lazy(() => import("../pages/Negocios"));
+const Admin = lazy(() => import("../pages/Admin"));
+const Chat = lazy(() => import("../pages/Chat"));
+const Favoritos = lazy(() => import("../pages/Comunidad").then(module => ({default: module.Favoritos})));
+const MisResenas = lazy(() => import("../pages/Comunidad").then(module => ({default: module.MisResenas})));
+const FichaLugar = lazy(() => import("../pages/Comunidad").then(module => ({default: module.FichaLugar})));
+const Reportes = lazy(() => import("../pages/Comunidad").then(module => ({default: module.Reportes})));
 
 function AppRoutes() {
   return (
     <BrowserRouter>
+      <PageMotion>
+      <Suspense fallback={<div className="route-loading" role="status"><span>M</span> Preparando MiUni…</div>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/mapa" element={<MapaCampus />} />
@@ -36,6 +38,8 @@ function AppRoutes() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
+      </PageMotion>
     </BrowserRouter>
   );
 }

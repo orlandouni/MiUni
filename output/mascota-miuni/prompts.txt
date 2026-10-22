@@ -1,0 +1,7 @@
+Generated with the built-in image_gen tool. Preview assets; not integrated into app code.
+
+HOME
+Use case: style-transfer. Create a final transparent PNG full-body HOME HERO mascot asset based on the supplied approved robot owl. Preserve identity: masculine eccentric inventor owl robot, blue/ivory/gold, asymmetrical owl tufts, small crooked antenna, camera focus lens on viewer RIGHT eye with warm living amber iris, normal amber eye on viewer LEFT, central simple chest gear. Refine toward a softer, more relaxed contemporary 3D cartoon animated movie design. Rounded compact silhouette, simplified broad feather-like metal plates, fewer small screws, satin blue and ivory painted surfaces, soft warm gold accents with restrained reflections, broad diffuse studio lighting. Calm friendly gently smiling nearly closed beak, relaxed brows, both eyes attentive and warm. Quiet confident helpful university companion, no frantic excitement. Wings down relaxed, one wing slightly open in a modest welcoming gesture without pointing a finger. Slight charming head tilt, three-quarter front pose with both eyes visible looking at viewer. Full body and rounded feet entirely visible, ample 8% clear margins around antenna and feet. Single character centered on genuine TRANSPARENT background, no colored backdrop, no floor, no props, no text, no logos. Soft self shadows only. Must read cleanly at 250px high on a website. Not photorealistic, not steampunk, no distress, no rusty metal, no gritty texture. This is a static asset with soft animation-film styling.
+
+CHATBOT
+undefined

@@ -51,7 +51,7 @@ export function CapaRuta({ estado }) {
     if (seleccion) elegir(seleccion, { latitud: event.latlng.lat, longitud: event.latlng.lng });
   } });
   useEffect(() => {
-    if (ruta) map.fitBounds(posicionesRuta(ruta.geometria), { padding: [40, 40], maxZoom: 18 });
+    if (ruta) map.fitBounds(posicionesRuta(ruta.geometria), { padding: [40, 40], maxZoom: 18, animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
   }, [ruta, map]);
   useEffect(() => {
     const container = map.getContainer();
