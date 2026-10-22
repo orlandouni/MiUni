@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect } from "react";
 import { CircleMarker, Polyline, Tooltip, useMap, useMapEvents } from "react-leaflet";
 
 import { posicionesRuta } from "../services/rutas";
@@ -6,22 +6,10 @@ import { posicionesRuta } from "../services/rutas";
 const etiqueta = punto => punto?.nombre ?? (punto ? `${punto.latitud.toFixed(5)}, ${punto.longitud.toFixed(5)}` : "Sin seleccionar");
 
 export function PanelRuta({ estado }) {
-  const [abierto, setAbierto] = useState(true);
-  const contenidoId = useId();
   const { origen, destino, seleccion, setSeleccion, ruta, error, cargando, calcular, limpiar } = estado;
   return (
-    <section className={`ruta-panel${abierto ? "" : " ruta-panel-collapsed"}`} aria-label="Ruta por el campus">
-      <div className="ruta-panel-heading">
-        <div hidden={!abierto}><span className="ruta-kicker">ASISTENTE DE RUTA</span><h2>Ruta por el campus</h2></div>
-        <div className="ruta-heading-actions">
-          {abierto && <button className="ruta-clear" type="button" onClick={limpiar}>Limpiar</button>}
-          <button className="ruta-toggle" type="button" aria-expanded={abierto} aria-controls={contenidoId}
-            onClick={() => { if (abierto) setSeleccion(null); setAbierto(!abierto); }}>
-            {abierto ? "Ocultar" : "Mostrar asistente de ruta"}
-          </button>
-        </div>
-      </div>
-      <div id={contenidoId} hidden={!abierto}>
+    <section className="ruta-panel" aria-label="Ruta por el campus">
+      <div className="ruta-panel-heading"><div><span className="ruta-kicker">ASISTENTE DE RUTA</span><h2>Ruta por el campus</h2></div><button className="ruta-clear" type="button" onClick={limpiar}>Limpiar</button></div>
       <p className="ruta-help">Elige los puntos en el mapa o utiliza los botones de un lugar.</p>
       <div className="ruta-actions">
         <button type="button" className={seleccion === "origen" ? "ruta-selected" : ""} aria-pressed={seleccion === "origen"} onClick={() => setSeleccion(seleccion === "origen" ? null : "origen")}>Elegir origen</button>
@@ -39,7 +27,6 @@ export function PanelRuta({ estado }) {
         </>}
       </div>
       {error && <p className="ruta-error" role="alert">{error}</p>}
-      </div>
     </section>
   );
 }

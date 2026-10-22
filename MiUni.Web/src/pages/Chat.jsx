@@ -32,16 +32,6 @@ export default function Chat() {
   const [deleting, setDeleting] = useState(null);
   const [opening, setOpening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia("(min-width: 701px)").matches);
-  const sidebarToggleRef = useRef(null);
-
-  function cerrarSidebar() {
-    setSidebarOpen(false);
-    sidebarToggleRef.current?.focus();
-  }
-
-  function cerrarSidebarEnMovil() {
-    if (window.matchMedia("(max-width: 700px)").matches) cerrarSidebar();
-  }
   const busy = sending || opening || deleting !== null;
 
   useEffect(() => {
