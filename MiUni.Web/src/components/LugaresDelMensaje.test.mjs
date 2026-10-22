@@ -22,5 +22,19 @@ test("renderiza enlaces reales al mapa para una respuesta y ninguno sin coincide
     assert.match(html, /Ver Biblioteca Central en el mapa/);
     assert.equal(render("Hola, ¿cómo puedo ayudarte?"), "");
     assert.equal(render(""), "");
+    assert.match(render("Visita [Biblioteca](https://unison.mx/fuente) Central."), /href="\/mapa\?lugar=biblioteca-id"/);
+    assert.equal(render("Consulta [fuente](https://unison.mx/biblioteca-central)."), "");
+    const { default: ChatAnswer } = await server.ssrLoadModule("/src/components/ChatAnswer.jsx");
+    for (const texto of [
+      "La **Biblioteca Central** está en el campus. [Ver Biblioteca Central](/mapa?lugar=biblioteca-id). También está Rectoría.",
+      "La **Biblioteca Central** está en el campus. [Ver mapa][mapa]. También está Rectoría.\n\n[mapa]: /mapa?lugar=biblioteca-id",
+    ]) {
+      const respuesta = renderToStaticMarkup(createElement(MemoryRouter, null,
+        createElement(ChatAnswer, { content: texto },
+          createElement(LugaresDelMensaje, { texto, lugares }))));
+      assert.equal((respuesta.match(/href="\/mapa\?lugar=biblioteca-id"/g) ?? []).length, 1);
+      assert.equal((respuesta.match(/href="\/mapa\?lugar=rectoria-id"/g) ?? []).length, 1);
+    }
+
   } finally { await server.close(); }
 });
