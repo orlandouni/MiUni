@@ -11,6 +11,7 @@ const NotFound = lazy(() => import("../pages/NotFound"));
 const Negocios = lazy(() => import("../pages/Negocios"));
 const Admin = lazy(() => import("../pages/Admin"));
 const Chat = lazy(() => import("../pages/Chat"));
+const Perfil = lazy(() => import("../pages/Perfil"));
 const Favoritos = lazy(() => import("../pages/Comunidad").then(module => ({default: module.Favoritos})));
 const MisResenas = lazy(() => import("../pages/Comunidad").then(module => ({default: module.MisResenas})));
 const FichaLugar = lazy(() => import("../pages/Comunidad").then(module => ({default: module.FichaLugar})));
@@ -25,6 +26,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/mapa" element={<MapaCampus />} />
         <Route path="/asistente" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+        <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
 

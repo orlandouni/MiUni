@@ -6,7 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using MiUni.Api.Enums;
+using MiUni.Api.Models;
 namespace MiUni.Api.Controllers;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,13 +18,16 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly MiUniDbContext _context;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        MiUniDbContext context)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _context = context;
     }
 
     [HttpPost("register")]
@@ -169,6 +174,22 @@ public async Task<IActionResult> Me()
         roles
     });
 }
+
+[Authorize]
+[HttpPut("profile")]
+public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request, CancellationToken ct)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var user = await _userManager.FindByIdAsync(userId!);
+    if (user == null) return Unauthorized();
+    if (request.CarreraId.HasValue && !await _context.Carreras.AnyAsync(c => c.Id == request.CarreraId.Value, ct))
+        return BadRequest(new { message = "La carrera seleccionada no existe." });
+    user.Nombre = request.Nombre.Trim();
+    user.CarreraId = request.CarreraId;
+    user.Semestre = request.Semestre;
+    var result = await _userManager.UpdateAsync(user);
+    return result.Succeeded ? NoContent() : BadRequest(result.Errors);
+}
 }
 
 
@@ -202,4 +223,15 @@ public class LoginRequest
 
     [Required(ErrorMessage = "La contraseña es obligatoria.")]
     public string Password { get; set; } = null!;
+}
+
+public class UpdateProfileRequest
+{
+    [Required, StringLength(120, MinimumLength = 2)]
+    public string Nombre { get; set; } = null!;
+
+    public Guid? CarreraId { get; set; }
+
+    [Range(1, 12)]
+    public short? Semestre { get; set; }
 }

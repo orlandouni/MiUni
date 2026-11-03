@@ -39,6 +39,12 @@ export default function Chat() {
     Promise.all([getMe(), api.get("/api/Chat/sessions")]).then(([me, result]) => {
       if (!vigente) return;
       setUser(me); setSessions(result.data || []);
+      const requestedSession = new URLSearchParams(window.location.search).get("sesion");
+      if (requestedSession && result.data?.some(session => session.sesionId?.toLowerCase() === requestedSession.toLowerCase())) {
+        api.get(`/api/Chat/sessions/${requestedSession}`).then(({ data }) => {
+          if (vigente) { setSessionId(requestedSession); setMessages(data); }
+        }).catch(() => { if (vigente) setError("No se pudo abrir esta conversación."); });
+      }
     }).catch(() => { if (vigente) setError("No se pudo cargar el historial del asistente."); })
       .finally(() => { if (vigente) setLoading(false); });
     return () => { vigente = false; };
@@ -139,7 +145,7 @@ export default function Chat() {
     </aside>
     {sidebarOpen && <button className="chat-sidebar-overlay" aria-label="Cerrar historial" onClick={() => setSidebarOpen(false)} />}
     <section className="chat-main">
-      <header className="chat-topbar"><button className="chat-mobile-back" aria-label={sidebarOpen ? "Ocultar historial" : "Abrir historial"} title={sidebarOpen ? "Ocultar historial" : "Abrir historial"} aria-controls="chat-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(open => !open)}><Menu size={20} /></button><span className="chat-top-icon"><Sparkles size={17} /></span><div><strong>Asistente MiUni</strong><span className="chat-top-subtitle">Tu guía para la vida en el campus</span></div><div className="chat-top-status"><span /> A tu lado</div><div className="chat-user"><span>{initials}</span><ChevronRight size={14} /></div></header>
+      <header className="chat-topbar"><button className="chat-mobile-back" aria-label={sidebarOpen ? "Ocultar historial" : "Abrir historial"} title={sidebarOpen ? "Ocultar historial" : "Abrir historial"} aria-controls="chat-sidebar" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(open => !open)}><Menu size={20} /></button><span className="chat-top-icon"><Sparkles size={17} /></span><div><strong>Asistente MiUni</strong><span className="chat-top-subtitle">Tu guía para la vida en el campus</span></div><div className="chat-top-status"><span /> A tu lado</div><Link to="/perfil" className="chat-user" aria-label="Ir a mi perfil" title="Mi perfil"><span>{initials}</span><ChevronRight size={14} /></Link></header>
       <div className="chat-content">
         <section className={`chat-intro ${messages.length ? "compacta" : ""}`}>
           <div className="chat-intro-copy"><span className="ui-eyebrow"><Sparkles size={13} /> Menos dudas, más campus</span><h1>{messages.length ? "Lo encontramos juntos." : <>¿Qué necesitas<br /><em>encontrar hoy?</em></>}</h1><p>Edificios, un buen café o ese horario que no recuerdas.<br className="chat-desktop-break" /> Pregúntame y empezamos.</p></div>

@@ -149,6 +149,7 @@ function Pantalla({ titulo, subtitulo, children }) {
 
         <nav className="com-navegacion" aria-label="Mi actividad">
           <Link to="/">Mapa</Link>
+          <Link to="/perfil">Mi perfil</Link>
           <Link to="/favoritos">Mis favoritos</Link>
           <Link to="/resenas">Mis reseñas</Link>
           <Link to="/resenas-reportes">Mis reportes</Link>

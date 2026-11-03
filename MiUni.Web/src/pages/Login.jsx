@@ -56,8 +56,15 @@ export default function Login() {
         setError(
           "No se pudo conectar con el servidor. Intenta de nuevo."
         );
+      } else if (err.response?.status >= 500) {
+        setError(
+          `La API respondió con un error (${err.response.status}). En desarrollo, revisa la configuración local de la base de datos y JWT_KEY, y reinicia la API.`
+        );
       } else {
-        setError("Ocurrió un error inesperado.");
+        setError(
+          err.response?.data?.message ||
+            `No se pudo iniciar sesión (error ${err.response?.status ?? "desconocido"}).`
+        );
       }
     } finally {
       setLoading(false);
