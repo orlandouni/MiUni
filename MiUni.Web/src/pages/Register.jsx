@@ -8,14 +8,33 @@ import {
   GraduationCap,
   LockKeyhole,
   Mail,
+  Store,
   User,
 } from "lucide-react";
 
 import { registerRequest } from "../services/api";
+import { ROLES } from "../services/roles";
 import { authErrorMessage } from "../services/authErrors";
 import CampusPanel from "./CampusPanel";
 
+const TIPOS_CUENTA = [
+  {
+    valor: ROLES.usuario,
+    titulo: "Estudiante",
+    texto: "Explora el campus con tu correo @unison.mx",
+    icono: GraduationCap,
+  },
+  {
+    valor: ROLES.propietario,
+    titulo: "Propietario",
+    texto: "Publica y administra tu negocio",
+    icono: Store,
+  },
+];
+
 export default function Register() {
+  const [tipoCuenta, setTipoCuenta] = useState(ROLES.usuario);
+  const esPropietario = tipoCuenta === ROLES.propietario;
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +53,7 @@ export default function Register() {
       setError("Completa todos los campos.");
       return;
     }
-    if (!email.trim().toLowerCase().endsWith("@unison.mx")) {
+    if (!esPropietario && !email.trim().toLowerCase().endsWith("@unison.mx")) {
       setError("Usa tu correo institucional terminado en @unison.mx.");
       return;
     }
@@ -48,7 +67,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await registerRequest(email.trim(), password, nombre.trim());
+      await registerRequest(email.trim(), password, nombre.trim(), tipoCuenta);
       setSuccess(true);
     } catch (err) {
       setError(authErrorMessage(err));
@@ -58,25 +77,33 @@ export default function Register() {
   }
 
     return (
-    <CampusPanel>
+    <CampusPanel animateIllustration>
       <section
         className="ma-card ma-register"
         aria-labelledby="register-title"
       >
         <div className="ma-heading">
           <div className="ma-emblem">
-            <GraduationCap aria-hidden="true" />
+            {esPropietario ? <Store aria-hidden="true" /> : <GraduationCap aria-hidden="true" />}
           </div>
 
           <h1 id="register-title">Crear cuenta</h1>
-          <p>Regístrate para comenzar a usar MIUNI</p>
+          <p>
+            {esPropietario
+              ? "Registra tu negocio y llega a la comunidad universitaria"
+              : "Regístrate para comenzar a usar MIUNI"}
+          </p>
         </div>
 
         {success ? (
           <div className="ma-success" role="status">
             <Check size={34} aria-hidden="true" />
             <h2>Cuenta creada correctamente</h2>
-            <p>Ya puedes iniciar sesión con tus credenciales.</p>
+            <p>
+              {esPropietario
+                ? "Inicia sesión y registra tu negocio. Lo publicaremos en el mapa cuando la administración lo apruebe."
+                : "Ya puedes iniciar sesión con tus credenciales."}
+            </p>
 
             <Link className="ma-submit" to="/login">
               <span>Iniciar sesión</span>
@@ -90,21 +117,46 @@ export default function Register() {
               onSubmit={handleSubmit}
               aria-busy={loading}
             >
+              <fieldset className="ma-account-type" disabled={loading}>
+                <legend>Tipo de cuenta</legend>
+                {TIPOS_CUENTA.map(({ valor, titulo, texto, icono: Icono }) => (
+                  <label
+                    key={valor}
+                    className={tipoCuenta === valor ? "activo" : ""}
+                  >
+                    <input
+                      type="radio"
+                      name="tipoCuenta"
+                      value={valor}
+                      checked={tipoCuenta === valor}
+                      onChange={() => { setTipoCuenta(valor); setError(""); }}
+                    />
+                    <Icono size={20} aria-hidden="true" />
+                    <span>
+                      <strong>{titulo}</strong>
+                      <small>{texto}</small>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+
               <div className="ma-field">
-                <label htmlFor="nombre">Nombre completo</label>
+                <label htmlFor="nombre">
+                  {esPropietario ? "Nombre del negocio" : "Nombre completo"}
+                </label>
 
                 <div className="ma-input-wrap">
-                  <User
-                    className="ma-input-icon"
-                    size={19}
-                    aria-hidden="true"
-                  />
+                  {esPropietario ? (
+                    <Store className="ma-input-icon" size={19} aria-hidden="true" />
+                  ) : (
+                    <User className="ma-input-icon" size={19} aria-hidden="true" />
+                  )}
 
                   <input
                     id="nombre"
                     name="nombre"
-                    autoComplete="name"
-                    placeholder="Ej. Ana López Torres"
+                    autoComplete={esPropietario ? "organization" : "name"}
+                    placeholder={esPropietario ? "Ej. Cafetería El Búho" : "Ej. Ana López Torres"}
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                     disabled={loading}
@@ -114,7 +166,9 @@ export default function Register() {
               </div>
 
               <div className="ma-field">
-                <label htmlFor="correo">Correo institucional</label>
+                <label htmlFor="correo">
+                  {esPropietario ? "Correo del negocio" : "Correo institucional"}
+                </label>
 
                 <div className="ma-input-wrap">
                   <Mail
@@ -128,7 +182,7 @@ export default function Register() {
                     name="email"
                     type="email"
                     autoComplete="email"
-                    placeholder="ejemplo@unison.mx"
+                    placeholder={esPropietario ? "negocio@correo.com" : "ejemplo@unison.mx"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
@@ -137,90 +191,92 @@ export default function Register() {
                 </div>
               </div>
 
-              <div className="ma-field">
-                <label htmlFor="contrasena">Contraseña</label>
+              <div className="ma-field-row">
+                <div className="ma-field">
+                  <label htmlFor="contrasena">Contraseña</label>
 
-                <div className="ma-input-wrap">
-                  <LockKeyhole
-                    className="ma-input-icon"
-                    size={19}
-                    aria-hidden="true"
-                  />
+                  <div className="ma-input-wrap">
+                    <LockKeyhole
+                      className="ma-input-icon"
+                      size={19}
+                      aria-hidden="true"
+                    />
 
-                  <input
-                    id="contrasena"
-                    name="password"
-                    className="ma-password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={8}
-                    aria-describedby="password-help"
-                    disabled={loading}
-                    required
-                  />
+                    <input
+                      id="contrasena"
+                      name="password"
+                      className="ma-password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      minLength={8}
+                      aria-describedby="password-help"
+                      disabled={loading}
+                      required
+                    />
 
-                  <button
-                    type="button"
-                    className="ma-eye"
-                    onClick={() => setShowPassword((value) => !value)}
-                    aria-label={
-                      showPassword
-                        ? "Ocultar contraseña"
-                        : "Mostrar contraseña"
-                    }
-                    aria-pressed={showPassword}
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                    <button
+                      type="button"
+                      className="ma-eye"
+                      onClick={() => setShowPassword((value) => !value)}
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      aria-pressed={showPassword}
+                      disabled={loading}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+
                 </div>
 
+                <div className="ma-field">
+                  <label htmlFor="confirmar">Confirmar contraseña</label>
+
+                  <div className="ma-input-wrap">
+                    <LockKeyhole
+                      className="ma-input-icon"
+                      size={19}
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      id="confirmar"
+                      name="confirmPassword"
+                      className="ma-password"
+                      type={showConfirm ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      className="ma-eye"
+                      onClick={() => setShowConfirm((value) => !value)}
+                      aria-label={
+                        showConfirm
+                          ? "Ocultar confirmación de contraseña"
+                          : "Mostrar confirmación de contraseña"
+                      }
+                      aria-pressed={showConfirm}
+                      disabled={loading}
+                    >
+                      {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
                 <p id="password-help" className="ma-help">
                   Mínimo 8 caracteres, con mayúscula, minúscula, número y símbolo.
                 </p>
-              </div>
-
-              <div className="ma-field">
-                <label htmlFor="confirmar">Confirmar contraseña</label>
-
-                <div className="ma-input-wrap">
-                  <LockKeyhole
-                    className="ma-input-icon"
-                    size={19}
-                    aria-hidden="true"
-                  />
-
-                  <input
-                    id="confirmar"
-                    name="confirmPassword"
-                    className="ma-password"
-                    type={showConfirm ? "text" : "password"}
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
-
-                  <button
-                    type="button"
-                    className="ma-eye"
-                    onClick={() => setShowConfirm((value) => !value)}
-                    aria-label={
-                      showConfirm
-                        ? "Ocultar confirmación de contraseña"
-                        : "Mostrar confirmación de contraseña"
-                    }
-                    aria-pressed={showConfirm}
-                    disabled={loading}
-                  >
-                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
               </div>
 
               {error && (

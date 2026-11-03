@@ -28,7 +28,16 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-         if (!request.Email.EndsWith("@unison.mx", StringComparison.OrdinalIgnoreCase))
+    // Sólo se puede elegir entre estudiante y propietario; el rol de administrador
+    // nunca se asigna desde el registro.
+    var tipoCuenta = string.IsNullOrWhiteSpace(request.TipoCuenta) ? AppRoles.Usuario : request.TipoCuenta.Trim();
+    if (tipoCuenta != AppRoles.Usuario && tipoCuenta != AppRoles.Propietario)
+    {
+        return BadRequest(new { message = "Elige una cuenta de estudiante o de propietario de negocio." });
+    }
+    // Los propietarios pueden no pertenecer a la universidad, así que sólo a los
+    // estudiantes se les exige el correo institucional.
+    if (tipoCuenta == AppRoles.Usuario && !request.Email.EndsWith("@unison.mx", StringComparison.OrdinalIgnoreCase))
     {
         return BadRequest(new { message = "Debes registrarte con tu correo institucional (@unison.mx)." });
     }
@@ -50,7 +59,10 @@ public class AuthController : ControllerBase
             return BadRequest(result.Errors);
         }
 
-        var roleResult = await _userManager.AddToRoleAsync(user, AppRoles.Usuario);
+        var roles = tipoCuenta == AppRoles.Propietario
+            ? new[] { AppRoles.Usuario, AppRoles.Propietario }
+            : new[] { AppRoles.Usuario };
+        var roleResult = await _userManager.AddToRolesAsync(user, roles);
         if (!roleResult.Succeeded)
         {
             await _userManager.DeleteAsync(user);
@@ -176,6 +188,10 @@ public class RegisterRequest
     public Guid? CarreraId { get; set; }
 
     public short? Semestre { get; set; }
+
+    // "Estudiante" (por defecto) o "Propietario".
+    [StringLength(20)]
+    public string? TipoCuenta { get; set; }
 }
 
 public class LoginRequest

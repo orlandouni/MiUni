@@ -66,11 +66,12 @@ export async function loginRequest(email, password) {
 }
 
 // REGISTRO
-export async function registerRequest(email, password, nombre) {
+export async function registerRequest(email, password, nombre, tipoCuenta = "Estudiante") {
   const { data } = await api.post("/api/Auth/register", {
     nombre,
     email,
     password,
+    tipoCuenta,
   });
 
   return data;

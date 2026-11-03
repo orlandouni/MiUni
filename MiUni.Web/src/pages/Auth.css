@@ -694,3 +694,40 @@
 .miuni-auth .ma-error { color: var(--danger); background: var(--danger-soft); }
 @media(min-width:1366px) { .miuni-auth .ma-layout { grid-template-columns: 43% 57%; }.miuni-auth .ma-left { padding: 24px 40px; }.miuni-auth .ma-card { max-width: 470px; padding: 28px 32px; } }
 @media(max-width:480px) { .miuni-auth .ma-heading h1 { font-size: 34px; } }
+
+/* Selector de tipo de cuenta en el registro */
+.ma-account-type { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.ma-account-type legend { margin-bottom: 6px; padding: 0; color: var(--ink); font-size: 12.5px; font-weight: 700; }
+.ma-account-type label { position: relative; display: flex; align-items: flex-start; gap: 9px; padding: 10px 11px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: white; color: var(--muted); cursor: pointer; transition: border-color var(--motion-fast), background var(--motion-fast); }
+.ma-account-type label:hover { border-color: #b9c6d6; }
+.ma-account-type label.activo { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.ma-account-type input { position: absolute; opacity: 0; pointer-events: none; }
+.ma-account-type label:has(input:focus-visible) { outline: 2px solid #165ee5; outline-offset: 2px; }
+.ma-account-type svg { flex-shrink: 0; margin-top: 1px; }
+.ma-account-type strong, .ma-account-type small { display: block; }
+.ma-account-type strong { color: var(--ink); font-size: 13.5px; line-height: 1.25; }
+.ma-account-type small { margin-top: 2px; font-size: 11px; line-height: 1.3; }
+.ma-account-type:disabled label { cursor: wait; }
+@media (min-width: 1024px) and (min-height: 600px) {
+  .ma-account-type legend { font-size: 11px; margin-bottom: 4px; }
+  .ma-account-type label { padding: 7px 9px; }
+  .ma-account-type strong { font-size: 12.5px; }
+  .ma-account-type small { font-size: 10px; }
+}
+@media (max-width: 360px) { .ma-account-type { grid-template-columns: 1fr; } }
+
+/* Registro: mismo aspecto que el login, más compacto y sin solaparse con el fondo */
+.ma-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ma-field-row .ma-help { grid-column: 1 / -1; margin-top: -4px; }
+.miuni-auth .ma-register .ma-account-type + .ma-field { margin-top: 2px; }
+@media (max-width: 420px) { .ma-field-row { grid-template-columns: 1fr; } }
+
+@media (min-width: 1024px) {
+  /* El formulario de registro es más alto que el de login: en vez de forzarlo a la
+     altura de la ventana (y tapar la marca y la silueta), la columna crece y la
+     ilustración permanece fija a la derecha. */
+  .ma-layout:has(.ma-register) { height: auto; min-height: 100svh; align-items: start; }
+  .ma-layout:has(.ma-register) .ma-left { height: auto; min-height: 100svh; }
+  .ma-layout:has(.ma-register) .ma-center { flex: 1 0 auto; }
+  .ma-layout:has(.ma-register) .ma-right { position: sticky; top: 0; height: 100svh; }
+}
