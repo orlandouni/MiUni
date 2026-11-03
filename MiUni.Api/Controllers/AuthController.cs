@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MiUni.Api.Enums;
 using MiUni.Api.Models;
+using MiUni.Api.Services;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 namespace MiUni.Api.Controllers;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,15 +23,24 @@ public class AuthController : ControllerBase
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
     private readonly MiUniDbContext _context;
+    private readonly ICorreoService _correo;
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         UserManager<ApplicationUser> userManager,
         IConfiguration configuration,
-        MiUniDbContext context)
+        MiUniDbContext context,
+        ICorreoService correo,
+        IMemoryCache cache,
+        ILogger<AuthController> logger)
     {
         _userManager = userManager;
         _configuration = configuration;
         _context = context;
+        _correo = correo;
+        _cache = cache;
+        _logger = logger;
     }
 
     [HttpPost("register")]
@@ -74,10 +87,80 @@ public class AuthController : ControllerBase
             return Problem("No fue posible asignar los permisos de la cuenta.");
         }
 
+        var correoEnviado = await EnviarVerificacion(user, tipoCuenta == AppRoles.Propietario);
+
         return Ok(new
         {
-            message = "Usuario registrado correctamente."
+            message = correoEnviado
+                ? "Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta."
+                : "Usuario registrado, pero no pudimos enviar el correo de verificación. Solicita uno nuevo.",
+            requiereVerificacion = true,
+            correoEnviado
         });
+    }
+
+    // Confirma el correo con el enlace recibido. Es idempotente para cuentas ya verificadas.
+    [HttpPost("verificar-correo")]
+    public async Task<IActionResult> VerificarCorreo(VerificarCorreoRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UsuarioId.ToString());
+        if (user == null) return BadRequest(new { message = "El enlace de verificación no es válido." });
+        if (user.EmailConfirmed) return Ok(new { message = "Tu correo ya estaba verificado.", yaVerificado = true });
+
+        string token;
+        try { token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token)); }
+        catch (FormatException) { return BadRequest(new { message = "El enlace de verificación no es válido." }); }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        return result.Succeeded
+            ? Ok(new { message = "¡Listo! Tu correo quedó verificado.", yaVerificado = false })
+            : BadRequest(new { message = "El enlace venció o ya no es válido. Solicita uno nuevo." });
+    }
+
+    // Siempre responde igual para no revelar qué correos están registrados.
+    [HttpPost("reenviar-verificacion")]
+    public async Task<IActionResult> ReenviarVerificacion(ReenviarVerificacionRequest request)
+    {
+        var respuesta = Ok(new { message = "Si la cuenta existe y aún no está verificada, te enviamos un nuevo correo." });
+        var clave = "reenvio:" + request.Email.Trim().ToLowerInvariant();
+        if (_cache.TryGetValue(clave, out _)) return respuesta;
+        _cache.Set(clave, true, TimeSpan.FromSeconds(60));
+
+        var user = await _userManager.FindByEmailAsync(request.Email.Trim());
+        if (user != null && !user.EmailConfirmed)
+            await EnviarVerificacion(user, await _userManager.IsInRoleAsync(user, AppRoles.Propietario));
+        return respuesta;
+    }
+
+    private async Task<bool> EnviarVerificacion(ApplicationUser user, bool esPropietario)
+    {
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var frontend = (_configuration["App:FrontendUrl"] ?? "http://localhost:5173").TrimEnd('/');
+        var enlace = $"{frontend}/verificar-correo?usuario={user.Id}&token={WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token))}";
+        var nombre = WebUtility.HtmlEncode(user.Nombre);
+        var motivo = esPropietario
+            ? "Confirma que este correo es válido para administrar tu negocio en MiUni."
+            : "Confirma tu correo institucional para empezar a usar MiUni.";
+        var html = $"""
+            <div style="font-family:Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#182f48">
+              <h1 style="color:#102e50">Hola, {nombre}</h1>
+              <p>{motivo}</p>
+              <p style="margin:28px 0"><a href="{enlace}" style="background:#245bdf;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:600">Verificar mi correo</a></p>
+              <p style="color:#5e6f80;font-size:13px">El enlace vence en 24 horas. Si no creaste esta cuenta, ignora este mensaje.</p>
+              <p style="color:#5e6f80;font-size:12px;word-break:break-all">{enlace}</p>
+            </div>
+            """;
+        var texto = $"Hola, {user.Nombre}.\n\n{motivo}\n\nAbre este enlace (vence en 24 horas):\n{enlace}";
+        try
+        {
+            await _correo.EnviarAsync(user.Email!, "Verifica tu correo en MiUni", html, texto);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo enviar el correo de verificación a la cuenta {UserId}.", user.Id);
+            return false;
+        }
     }
 
 [HttpPost("login")]
@@ -108,6 +191,15 @@ public async Task<IActionResult> Login(LoginRequest request)
         return Unauthorized(new
         {
             message = "Correo o contraseña incorrectos."
+        });
+    }
+
+    if (!user.EmailConfirmed)
+    {
+        return StatusCode(StatusCodes.Status403Forbidden, new
+        {
+            message = "Verifica tu correo antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo enlace.",
+            codigo = "CORREO_NO_VERIFICADO"
         });
     }
 
@@ -213,6 +305,19 @@ public class RegisterRequest
     // "Estudiante" (por defecto) o "Propietario".
     [StringLength(20)]
     public string? TipoCuenta { get; set; }
+}
+
+public class VerificarCorreoRequest
+{
+    [Required] public Guid UsuarioId { get; set; }
+    [Required] public string Token { get; set; } = null!;
+}
+
+public class ReenviarVerificacionRequest
+{
+    [Required(ErrorMessage = "El correo es obligatorio.")]
+    [EmailAddress(ErrorMessage = "El correo no tiene un formato válido.")]
+    public string Email { get; set; } = null!;
 }
 
 public class LoginRequest

@@ -10,6 +10,7 @@ using Microsoft.OpenApi;
 using System.Text;
 using MiUni.Api.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,8 @@ dataSourceBuilder.UseNetTopologySuite();
 var dataSource = dataSourceBuilder.Build();
 builder.Services.AddSingleton(dataSource);
 builder.Services.AddScoped<IRutaService, RutaService>();
+builder.Services.AddScoped<ICorreoService, SmtpCorreoService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<MiUniDbContext>(options =>
     options.UseNpgsql(dataSource, o => o.UseNetTopologySuite()
@@ -34,6 +37,9 @@ builder.Services
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<MiUniDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.AddDataProtection();
+// Los enlaces de verificación de correo vencen en 24 horas.
+builder.Services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
 
 builder.Services
     .AddAuthentication(options =>

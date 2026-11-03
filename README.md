@@ -181,6 +181,36 @@ Las pruebas HTTP se omiten explícitamente si no se configuran ambas variables.
 Frontend: `node --test src/services/*.test.js`, `npm run build` y `npm run lint`
 desde `MiUni.Web`.
 
+## Verificación de correo
+
+Al registrarse, toda cuenta (estudiante con `@unison.mx` o propietario con cualquier
+correo) recibe un enlace para verificar su correo. Hasta abrirlo, el login responde
+403 con `codigo: "CORREO_NO_VERIFICADO"` y la pantalla ofrece reenviar el enlace.
+El enlace vence en 24 horas y lleva a `/verificar-correo` en el frontend.
+
+Endpoints: `POST /api/Auth/verificar-correo` (`{usuarioId, token}`) y
+`POST /api/Auth/reenviar-verificacion` (`{email}`; responde siempre igual y admite
+un reenvío por minuto). Las cuentas creadas antes de esta función se marcaron como
+verificadas con la migración `VerificarCuentasExistentes`.
+
+**Desarrollo sin SMTP:** si `Correo:Host` está vacío, la API escribe el correo con el
+enlace en su consola en lugar de enviarlo. Fuera de Development es obligatorio
+configurar SMTP.
+
+**Configurar SMTP** (por ejemplo, Gmail con una contraseña de aplicación) con
+user-secrets, sin guardar contraseñas en el repositorio:
+
+```powershell
+cd MiUni.Api
+dotnet user-secrets set "Correo:Host" "smtp.gmail.com"
+dotnet user-secrets set "Correo:Port" "587"
+dotnet user-secrets set "Correo:Usuario" "tu-cuenta@gmail.com"
+dotnet user-secrets set "Correo:Contrasena" "contraseña-de-aplicacion"
+dotnet user-secrets set "Correo:Remitente" "tu-cuenta@gmail.com"
+```
+
+`App:FrontendUrl` define el dominio de los enlaces (por defecto `http://localhost:5173`).
+
 ## RF-03: ruta más corta
 
 `POST /api/Ruta` recibe coordenadas WGS84:

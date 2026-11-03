@@ -35,6 +35,12 @@ public class AdministracionHttpTests
             Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/Categoria", new { nombre = prefix })).StatusCode);
             foreach (var email in emails)
                 Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/Auth/register", new { nombre = prefix, email, password })).StatusCode);
+            // Simula que las cuentas desechables abrieron su enlace de verificación.
+            await using (var confirm = new NpgsqlCommand("""UPDATE "AspNetUsers" SET "EmailConfirmed"=TRUE WHERE "Email" = ANY(@emails)""", db))
+            {
+                confirm.Parameters.AddWithValue("emails", emails);
+                await confirm.ExecuteNonQueryAsync();
+            }
             await using (var grant = new NpgsqlCommand("""
                 INSERT INTO "AspNetUserRoles" ("UserId","RoleId")
                 SELECT u."Id", r."Id" FROM "AspNetUsers" u CROSS JOIN "AspNetRoles" r

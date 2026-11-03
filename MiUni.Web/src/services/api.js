@@ -77,6 +77,17 @@ export async function registerRequest(email, password, nombre, tipoCuenta = "Est
   return data;
 }
 
+// VERIFICACIÓN DE CORREO
+export async function verificarCorreoRequest(usuarioId, token) {
+  const { data } = await api.post("/api/Auth/verificar-correo", { usuarioId, token });
+  return data;
+}
+
+export async function reenviarVerificacionRequest(email) {
+  const { data } = await api.post("/api/Auth/reenviar-verificacion", { email });
+  return data;
+}
+
 // Obtener usuario autenticado
 export async function getMe() {
   const { data } = await api.get("/api/Auth/me");

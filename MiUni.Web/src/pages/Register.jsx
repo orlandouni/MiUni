@@ -4,10 +4,10 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Check,
   GraduationCap,
   LockKeyhole,
   Mail,
+  MailCheck,
   Store,
   User,
 } from "lucide-react";
@@ -16,6 +16,7 @@ import { registerRequest } from "../services/api";
 import { ROLES } from "../services/roles";
 import { authErrorMessage } from "../services/authErrors";
 import CampusPanel from "./CampusPanel";
+import ReenviarVerificacion from "../components/ReenviarVerificacion";
 
 const TIPOS_CUENTA = [
   {
@@ -97,16 +98,18 @@ export default function Register() {
 
         {success ? (
           <div className="ma-success" role="status">
-            <Check size={34} aria-hidden="true" />
-            <h2>Cuenta creada correctamente</h2>
+            <MailCheck size={34} aria-hidden="true" />
+            <h2>Revisa tu correo</h2>
             <p>
-              {esPropietario
-                ? "Inicia sesión y registra tu negocio. Lo publicaremos en el mapa cuando la administración lo apruebe."
-                : "Ya puedes iniciar sesión con tus credenciales."}
+              Enviamos un enlace de verificación a <strong>{email.trim()}</strong>.
+              Ábrelo para activar tu cuenta{esPropietario ? " y después registra tu negocio" : ""}.
             </p>
+            <p className="ma-help">El enlace vence en 24 horas. Si no lo ves, revisa la carpeta de spam.</p>
+
+            <ReenviarVerificacion email={email.trim()} />
 
             <Link className="ma-submit" to="/login">
-              <span>Iniciar sesión</span>
+              <span>Ya lo verifiqué, iniciar sesión</span>
               <ArrowRight size={20} aria-hidden="true" />
             </Link>
           </div>

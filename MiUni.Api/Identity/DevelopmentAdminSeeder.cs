@@ -40,7 +40,7 @@ public static class DevelopmentAdminSeeder
                 throw new InvalidOperationException("El correo del seed ya pertenece a otra cuenta. Configura otro DevelopmentAdmin:Email.");
             account = new ApplicationUser
             {
-                Id = AdminId, UserName = email, Email = email,
+                Id = AdminId, UserName = email, Email = email, EmailConfirmed = true,
                 Nombre = "Administrador de desarrollo", FechaRegistro = DateTime.UtcNow,
                 Rol = RolUsuario.Administrador
             };

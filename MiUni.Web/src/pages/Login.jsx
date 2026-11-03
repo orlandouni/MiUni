@@ -12,6 +12,7 @@ import {
 import { loginRequest, setSession } from "../services/api";
 import { landingFor } from "../services/roles";
 import CampusPanel from "./CampusPanel";
+import ReenviarVerificacion from "../components/ReenviarVerificacion";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,10 +22,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sinVerificar, setSinVerificar] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setSinVerificar(false);
 
     if (!email.trim() || !password.trim()) {
       setError("Completa correo y contraseña.");
@@ -40,7 +43,10 @@ export default function Login() {
 
       navigate(landingFor(data.roles), { replace: true });
     } catch (err) {
-      if (err.response?.status === 401) {
+      if (err.response?.data?.codigo === "CORREO_NO_VERIFICADO") {
+        setSinVerificar(true);
+        setError(err.response.data.message);
+      } else if (err.response?.status === 401) {
         setError(
           err.response.data?.message ||
             "Correo o contraseña incorrectos."
@@ -151,6 +157,8 @@ export default function Login() {
               {error}
             </p>
           )}
+
+          {sinVerificar && <ReenviarVerificacion email={email.trim()} />}
 
           <button
             type="submit"

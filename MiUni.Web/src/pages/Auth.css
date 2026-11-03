@@ -731,3 +731,16 @@
   .ma-layout:has(.ma-register) .ma-center { flex: 1 0 auto; }
   .ma-layout:has(.ma-register) .ma-right { position: sticky; top: 0; height: 100svh; }
 }
+
+/* Verificación de correo */
+.ma-reenviar { display: grid; gap: 6px; }
+.ma-reenviar button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: white; color: var(--navy); font-weight: 650; font-size: 13px; }
+.ma-reenviar button:hover:not(:disabled) { background: var(--blue-soft); }
+.ma-reenviar p { color: var(--muted); font-size: 12px; text-align: center; }
+.ma-success .ma-reenviar { margin: 4px 0 14px; }
+.ma-success p strong { color: var(--ink); overflow-wrap: anywhere; }
+.ma-input-wrap.ma-sin-icono input { padding-left: 14px; }
+.ma-verificar-accion { margin-top: 22px; }
+.ma-girando svg { animation: ma-girar 1s linear infinite; }
+@keyframes ma-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ma-girando svg { animation: none; } }

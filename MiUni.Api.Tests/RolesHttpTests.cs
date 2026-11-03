@@ -48,6 +48,17 @@ public class RolesHttpTests
                 });
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
+
+            // Sin verificar el correo no se puede iniciar sesión.
+            var sinVerificar = await client.PostAsJsonAsync("/api/Auth/login", new { email = emailOwner, password });
+            Assert.Equal(HttpStatusCode.Forbidden, sinVerificar.StatusCode);
+            Assert.Equal("CORREO_NO_VERIFICADO", (await sinVerificar.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("codigo").GetString());
+            await using (var confirm = new NpgsqlCommand("""UPDATE "AspNetUsers" SET "EmailConfirmed"=TRUE WHERE "Email" = ANY(@emails)""", db))
+            {
+                confirm.Parameters.AddWithValue("emails", new[] { emailOwner, emailAdmin, emailOther });
+                await confirm.ExecuteNonQueryAsync();
+            }
+
             async Task<string> Login(string email)
             {
                 var response = await client.PostAsJsonAsync("/api/Auth/login", new { email, password });
