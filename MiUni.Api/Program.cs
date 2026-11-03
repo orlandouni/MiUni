@@ -52,7 +52,7 @@ builder.Services
                 var manager = context.HttpContext.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
                 var id = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                 var user = id is null ? null : await manager.FindByIdAsync(id);
-                if (user is null) { context.Fail("Cuenta no disponible."); return; }
+                if (user is null || await manager.IsLockedOutAsync(user)) { context.Fail("Cuenta no disponible."); return; }
                 var identity = (ClaimsIdentity)context.Principal!.Identity!;
                 foreach (var claim in identity.FindAll(ClaimTypes.Role).ToList()) identity.RemoveClaim(claim);
                 foreach (var role in await manager.GetRolesAsync(user)) identity.AddClaim(new Claim(ClaimTypes.Role, role));

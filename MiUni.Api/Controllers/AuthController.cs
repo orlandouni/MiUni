@@ -78,6 +78,14 @@ public async Task<IActionResult> Login(LoginRequest request)
 
     var result = await _userManager.CheckPasswordAsync(user, request.Password);
 
+    if (result && await _userManager.IsLockedOutAsync(user))
+    {
+        return StatusCode(StatusCodes.Status403Forbidden, new
+        {
+            message = "Tu cuenta está suspendida. Contacta a la administración de MiUni."
+        });
+    }
+
     if (!result)
     {
         return Unauthorized(new

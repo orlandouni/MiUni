@@ -109,6 +109,27 @@ máximo 100 caracteres; icono opcional, máximo 500. POST devuelve 201 y el DTO
 `{id,nombre,icono}`; PUT/DELETE devuelven 204. DELETE es físico y devuelve 409 si
 existen lugares relacionados, aunque estén inactivos.
 
+## Panel de administración (`/api/Admin`)
+
+Todas las rutas requieren rol Administrador. El panel visual está en `/admin`
+(`MiUni.Web/src/pages/Admin.jsx` y `src/pages/admin/`).
+
+| Método y ruta | Comportamiento |
+| --- | --- |
+| `GET /api/Admin/panel` | Métricas: usuarios, lugares, reseñas, reportes y solicitudes pendientes, uso del chat (7 días), registros por día (14 días), lugares por categoría y lugares destacados |
+| `GET /api/Admin/usuarios?q=&rol=&bloqueado=&pagina=&tamanoPagina=` | Página de usuarios con roles, carrera, estado de acceso y actividad |
+| `GET /api/Admin/usuarios/{id}` | Detalle de un usuario |
+| `PUT /api/Admin/usuarios/{id}/roles` | `{"roles":["Propietario","Administrador"]}`. Estudiante siempre se conserva; 409 si el administrador intenta quitarse su propio rol |
+| `POST /api/Admin/usuarios/{id}/bloquear` | 204. Suspende la cuenta (lockout de Identity): el login responde 403 y los JWT vigentes dejan de ser válidos. 409 sobre la propia cuenta |
+| `POST /api/Admin/usuarios/{id}/desbloquear` | 204. Restaura el acceso |
+| `GET /api/Admin/resenas?q=&lugarId=&calificacion=&conReportes=&pagina=&tamanoPagina=` | Reseñas con autor, lugar y conteo de reportes; las que tienen reportes pendientes van primero |
+| `DELETE /api/Admin/resenas/{id}` | 204. Elimina la reseña y los reportes que apuntan a ella |
+| `GET /api/Admin/negocios?estado=` | Historial de solicitudes de negocio (Pendiente, Aprobada, Rechazada) con datos del propietario |
+| `GET/POST /api/Admin/carreras`, `PUT/DELETE /api/Admin/carreras/{id}` | Catálogo de carreras `{"nombre","facultad"}`; DELETE devuelve 409 si hay estudiantes asociados |
+
+La aprobación/rechazo de negocios, el CRUD de lugares y categorías y la gestión de
+reportes siguen usando los endpoints descritos arriba.
+
 ## Errores, migración y pruebas
 
 - 400: validación, destino o categoría inválidos.

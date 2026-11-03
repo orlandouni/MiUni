@@ -1,83 +1,86 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { AlertTriangle, Building2, Check, Clock3, RefreshCw, ShieldCheck, X } from "lucide-react";
-import api from "../services/api";
-import { negocioError } from "../services/negocioErrors";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { AlertTriangle, ArrowLeft, Building2, GraduationCap, LayoutDashboard, MapPin, RefreshCw, ShieldCheck, Star, Tags, Users } from "lucide-react";
+import { getMe } from "../services/api";
+import { adminApi } from "../services/admin";
+import { useCarga } from "./admin/ui";
+import Resumen from "./admin/Resumen";
+import Reportes from "./admin/Reportes";
+import Negocios from "./admin/Negocios";
+import Lugares from "./admin/Lugares";
+import Resenas from "./admin/Resenas";
+import Usuarios from "./admin/Usuarios";
+import { Carreras, Categorias } from "./admin/Catalogos";
 import "./Admin.css";
 
-const estados = ["Pendiente", "Revisado", "Descartado"];
-const etiquetas = { Pendiente: "Pendiente", Revisado: "Revisado", Descartado: "Descartado" };
+const SECCIONES = [
+  { id: "resumen", texto: "Resumen", icono: LayoutDashboard, titulo: "Centro de control", sub: "Métricas generales de MiUni." },
+  { id: "reportes", texto: "Reportes", icono: AlertTriangle, contador: "reportesPendientes", titulo: "Moderación", sub: "Reportes enviados por la comunidad." },
+  { id: "negocios", texto: "Negocios", icono: Building2, contador: "solicitudesPendientes", titulo: "Negocios", sub: "Solicitudes de publicación de propietarios." },
+  { id: "resenas", texto: "Reseñas", icono: Star, titulo: "Reseñas", sub: "Opiniones publicadas sobre los lugares." },
+  { id: "lugares", texto: "Lugares", icono: MapPin, titulo: "Lugares", sub: "Contenido del mapa del campus." },
+  { id: "categorias", texto: "Categorías", icono: Tags, titulo: "Categorías", sub: "Clasificación de los lugares." },
+  { id: "usuarios", texto: "Usuarios", icono: Users, titulo: "Usuarios", sub: "Cuentas, roles y acceso." },
+  { id: "carreras", texto: "Carreras", icono: GraduationCap, titulo: "Carreras", sub: "Catálogo académico." },
+];
 
 export default function Admin() {
-  const [seccion, setSeccion] = useState("reportes");
-  const [reportes, setReportes] = useState([]);
-  const [resumen, setResumen] = useState([]);
-  const [solicitudes, setSolicitudes] = useState([]);
-  const [filtro, setFiltro] = useState("Pendiente");
-  const [cargando, setCargando] = useState(true);
-  const [ocupado, setOcupado] = useState("");
-  const [error, setError] = useState("");
-  const [aviso, setAviso] = useState("");
+  const [params, setParams] = useSearchParams();
+  const actual = SECCIONES.find(s => s.id === params.get("s")) || SECCIONES[0];
+  const panel = useCarga(adminApi.panel);
+  const [yo, setYo] = useState(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
-  const cargar = useCallback(async () => {
-    setCargando(true); setError("");
-    try {
-      const [lista, conteo, negocios] = await Promise.all([
-        api.get("/api/ReporteUsuario", { params: { estado: filtro, pagina: 1, tamanoPagina: 100 } }),
-        api.get("/api/ReporteUsuario/resumen"),
-        api.get("/api/Negocio/solicitudes"),
-      ]);
-      setReportes(lista.data.items || []); setResumen(conteo.data); setSolicitudes(negocios.data);
-    } catch (e) { setError(negocioError(e)); }
-    finally { setCargando(false); }
-  }, [filtro]);
+  useEffect(() => {
+    let activo = true;
+    getMe().then(u => { if (activo) setYo(u); }).catch(() => {});
+    return () => { activo = false; };
+  }, []);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  const irA = id => { setParams(id === "resumen" ? {} : { s: id }); setMenuAbierto(false); window.scrollTo({ top: 0 }); };
+  const props = { onCambio: panel.recargar };
+  const Icono = actual.icono;
 
-  async function cambiarEstado(id, estado) {
-    setOcupado(id); setError(""); setAviso("");
-    try {
-      await api.patch(`/api/ReporteUsuario/${id}/estado`, { estado });
-      setReportes(items => items.filter(item => item.id !== id));
-      setResumen(items => items.map(item => {
-        if (item.estado === estado) return { ...item, cantidad: item.cantidad + 1 };
-        const previo = reportes.find(reporte => reporte.id === id)?.estado;
-        return item.estado === previo ? { ...item, cantidad: Math.max(0, item.cantidad - 1) } : item;
-      }));
-      setAviso(`Reporte actualizado: ${etiquetas[estado].toLowerCase()}.`);
-    } catch (e) { setError(negocioError(e)); }
-    finally { setOcupado(""); }
-  }
-
-  async function revisarNegocio(id, accion) {
-    setOcupado(id); setError(""); setAviso("");
-    try {
-      await api.post(`/api/Negocio/solicitudes/${id}/${accion}`);
-      setSolicitudes(items => items.filter(item => item.id !== id));
-      setAviso(accion === "aprobar" ? "Negocio aprobado y publicado." : "Solicitud de negocio rechazada.");
-    } catch (e) { setError(negocioError(e)); }
-    finally { setOcupado(""); }
-  }
-
-  const cantidad = estado => resumen.find(item => item.estado === estado)?.cantidad ?? 0;
-
-  return <main className="admin-page">
-    <div className="admin-shell">
-      <header className="admin-top"><Link to="/" className="admin-back">← Volver al mapa</Link><span className="admin-brand"><ShieldCheck size={18} /> MIUNI · ADMIN</span></header>
-      <section className="admin-heading"><div><p className="admin-eyebrow">CENTRO DE CONTROL</p><h1>Administración</h1><p>Revisa los reportes de la comunidad y las solicitudes de negocios.</p></div><button className="admin-refresh" onClick={cargar} disabled={cargando}><RefreshCw size={16} /> Actualizar</button></section>
-      {error && <p className="admin-alert" role="alert">{error}</p>}{aviso && <p className="admin-success" role="status">{aviso}</p>}
-      <nav className="admin-tabs" aria-label="Secciones de administración">
-        <button className={seccion === "reportes" ? "activo" : ""} onClick={() => setSeccion("reportes")}><AlertTriangle size={17} /> Reportes <span>{cantidad("Pendiente")}</span></button>
-        <button className={seccion === "negocios" ? "activo" : ""} onClick={() => setSeccion("negocios")}><Building2 size={17} /> Negocios <span>{solicitudes.length}</span></button>
+  return <main className="adm">
+    <aside className={`adm-sidebar${menuAbierto ? " abierto" : ""}`}>
+      <div className="adm-brand"><ShieldCheck size={20} /><span>MiUni<small>Administración</small></span></div>
+      <nav aria-label="Secciones de administración">
+        {SECCIONES.map(s => {
+          const I = s.icono;
+          const n = s.contador ? panel.datos?.[s.contador] : 0;
+          return <button type="button" key={s.id} className={actual.id === s.id ? "activo" : ""} aria-current={actual.id === s.id ? "page" : undefined} onClick={() => irA(s.id)}>
+            <I size={17} /> {s.texto}{n > 0 && <span className="adm-count">{n}</span>}
+          </button>;
+        })}
       </nav>
-      {seccion === "reportes" ? <>
-        <div className="admin-stats">{estados.map((estado, i) => <article key={estado}><span className={`admin-stat-icon stat-${i}`}><Clock3 size={18} /></span><div><small>{etiquetas[estado]}</small><strong>{cantidad(estado)}</strong></div></article>)}</div>
-        <section className="admin-content"><div className="admin-content-head"><div><h2>Reportes de la comunidad</h2><p>Evalúa reportes de lugares y reseñas.</p></div><label className="admin-filter">Estado <select value={filtro} onChange={e => setFiltro(e.target.value)}>{estados.map(estado => <option key={estado}>{estado}</option>)}</select></label></div>
-          {cargando ? <p className="admin-empty">Cargando reportes…</p> : reportes.length === 0 ? <div className="admin-empty"><Check size={24} /><strong>Todo al día</strong><span>No hay reportes con este estado.</span></div> : <div className="admin-list">{reportes.map(reporte => <article className="admin-card" key={reporte.id}><div className="admin-card-top"><span className="admin-kind">{reporte.resenaId ? "RESEÑA" : "LUGAR"}</span><time>{reporte.fechaCreacion ? new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(reporte.fechaCreacion)) : "Fecha no disponible"}</time></div><h3>{reporte.nombreLugar || "Lugar reportado"}</h3>{reporte.comentarioResena && <blockquote>“{reporte.comentarioResena}”</blockquote>}<p className="admin-reason">{reporte.motivo}</p><p className="admin-reporter">Reportado por <strong>{reporte.nombreUsuario}</strong>{reporte.emailUsuario ? ` · ${reporte.emailUsuario}` : ""}</p><div className="admin-actions"><button className="admin-dismiss" disabled={ocupado === reporte.id} onClick={() => cambiarEstado(reporte.id, "Descartado")}><X size={15} /> Descartar</button><button className="admin-resolve" disabled={ocupado === reporte.id} onClick={() => cambiarEstado(reporte.id, "Revisado")}><Check size={15} /> Marcar revisado</button></div></article>)}</div>}
-        </section>
-      </> : <section className="admin-content"><div className="admin-content-head"><div><h2>Solicitudes de negocios</h2><p>Aprueba los negocios para publicarlos en el mapa.</p></div><span className="admin-pending">{solicitudes.length} pendientes</span></div>
-        {cargando ? <p className="admin-empty">Cargando solicitudes…</p> : solicitudes.length === 0 ? <div className="admin-empty"><Check size={24} /><strong>Sin solicitudes pendientes</strong><span>Las nuevas solicitudes aparecerán aquí.</span></div> : <div className="admin-list">{solicitudes.map(item => <article className="admin-card" key={item.id}><div className="admin-card-top"><span className="admin-kind">NUEVO NEGOCIO</span><span className="admin-pending">Pendiente</span></div><h3>{item.nombre}</h3><p className="admin-reason">{item.descripcion || "Sin descripción"}</p><p className="admin-reporter">Ubicación: {item.latitud}, {item.longitud}</p><div className="admin-actions"><button className="admin-dismiss" disabled={ocupado === item.id} onClick={() => revisarNegocio(item.id, "rechazar")}><X size={15} /> Rechazar</button><button className="admin-resolve" disabled={ocupado === item.id} onClick={() => revisarNegocio(item.id, "aprobar")}><Check size={15} /> Aprobar y publicar</button></div></article>)}</div>}
-      </section>}
+      <div className="adm-sidebar-foot">
+        {yo && <p><strong>{yo.nombre}</strong><small>{yo.email}</small></p>}
+        <Link to="/" className="adm-back"><ArrowLeft size={15} /> Volver a MiUni</Link>
+      </div>
+    </aside>
+    {menuAbierto && <div className="adm-scrim" onClick={() => setMenuAbierto(false)} />}
+
+    <div className="adm-main">
+      <header className="adm-topbar">
+        <button type="button" className="adm-menu-btn" onClick={() => setMenuAbierto(true)} aria-label="Abrir menú"><Icono size={18} /> {actual.texto}</button>
+        <div>
+          <p className="adm-eyebrow">Administración</p>
+          <h1>{actual.titulo}</h1>
+          <p className="adm-sub">{actual.sub}</p>
+        </div>
+        {actual.id === "resumen" && <button type="button" className="adm-btn" onClick={panel.recargar} disabled={panel.cargando}><RefreshCw size={15} /> Actualizar</button>}
+      </header>
+
+      <div className="adm-body">
+        {actual.id === "resumen" && <Resumen panel={panel.datos} cargando={panel.cargando} error={panel.error} irA={irA} />}
+        {actual.id === "reportes" && <Reportes {...props} />}
+        {actual.id === "negocios" && <Negocios {...props} />}
+        {actual.id === "resenas" && <Resenas {...props} />}
+        {actual.id === "lugares" && <Lugares {...props} />}
+        {actual.id === "categorias" && <Categorias {...props} />}
+        {actual.id === "usuarios" && <Usuarios {...props} yo={yo?.id} />}
+        {actual.id === "carreras" && <Carreras />}
+      </div>
     </div>
   </main>;
 }
