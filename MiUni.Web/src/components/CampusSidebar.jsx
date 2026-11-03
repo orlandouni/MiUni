@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { Building2, Compass, House, LogOut, Map, MessageSquare, ShieldCheck, Star, UserRound, X } from "lucide-react";
-import { ROLES } from "../services/roles";
+import { ROLES, canManageBusiness } from "../services/roles";
 
 export default function CampusSidebar({ user, open = false, onClose = () => {}, onLogout }) {
   const navClass = ({ isActive }) => `home-nav-item${isActive ? " activo" : ""}`;
@@ -25,9 +25,9 @@ export default function CampusSidebar({ user, open = false, onClose = () => {}, 
         <NavLink to="/favoritos" className={navClass} onClick={closeOnMobile}><Star size={17} /> Mis favoritos</NavLink>
         <NavLink to="/resenas" className={navClass} onClick={closeOnMobile}><MessageSquare size={17} /> Mis reseñas y reportes</NavLink>
       </div>
-      {user && <div className="home-nav-group">
+      {canManageBusiness(user?.roles) && <div className="home-nav-group">
         <span className="home-nav-label">Gestión</span>
-        <NavLink to="/negocios" className={navClass} onClick={closeOnMobile}><Building2 size={17} /> Mis negocios</NavLink>
+        {user.roles.includes(ROLES.propietario) && <NavLink to="/negocios" className={navClass} onClick={closeOnMobile}><Building2 size={17} /> Mis negocios</NavLink>}
         {user.roles?.includes(ROLES.admin) && <NavLink to="/admin" className={navClass} onClick={closeOnMobile}><ShieldCheck size={17} /> Administración</NavLink>}
       </div>}
       <div className="home-sidebar-bottom">

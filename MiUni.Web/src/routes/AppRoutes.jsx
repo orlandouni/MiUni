@@ -34,7 +34,7 @@ function AppRoutes() {
 
         <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
         <Route path="/resenas" element={<ProtectedRoute><MisResenas /></ProtectedRoute>} />
-        <Route path="/negocios" element={<ProtectedRoute><Negocios /></ProtectedRoute>} />
+        <Route path="/negocios" element={<ProtectedRoute role={["Propietario", "Administrador"]}><Negocios /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute role="Administrador"><Admin /></ProtectedRoute>} />
         <Route path="/lugares/:lugarId" element={<FichaLugar />} />
 

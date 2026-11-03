@@ -3,6 +3,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 import { clearSession, getMe, isAuthenticated } from "../services/api";
 import MascotaIlustrada from "../components/MascotaIlustrada";
 import CampusSidebar from "../components/CampusSidebar";
+import { ROLES } from "../services/roles";
 import {
   BookOpen,
   Building2,
@@ -17,6 +18,7 @@ import {
   Route,
   Search,
   Sparkles,
+  Star,
   Store,
   Toilet,
   ArrowUpRight,
@@ -31,8 +33,10 @@ const accesos = [
   { icon: Route, label: "Calcular ruta", text: "Elige origen y destino en el mapa", href: "/mapa" },
   { icon: Compass, label: "Chat MIUNI", text: "Pregunta al asistente del campus", href: "/asistente" },
   { icon: Flag, label: "Reportar", text: "Avisa sobre lugares o reseñas", href: "/resenas-reportes" },
-  { icon: Store, label: "Negocios", text: "Consulta y administra negocios", href: "/negocios" },
 ];
+
+const accesoNegocio = { icon: Store, label: "Mi negocio", text: "Horario, menú y reseñas de tu negocio", href: "/negocios" };
+const accesoFavoritos = { icon: Star, label: "Mis favoritos", text: "Los lugares que guardaste", href: "/favoritos" };
 
 const populares = [
   { icon: BookOpen, label: "Biblioteca" },
@@ -98,7 +102,7 @@ function Home() {
           </section>
 
           <section data-reveal="visible" className="home-quick-grid" aria-label="Accesos rápidos">
-            {accesos.map(({ icon: Icon, label, text, href }) => (
+            {[...accesos, user?.roles?.includes(ROLES.propietario) ? accesoNegocio : accesoFavoritos].map(({ icon: Icon, label, text, href }) => (
               href.startsWith("/") ? (
                 <Link className="home-action" to={href} key={label}>
                   <span><Icon size={20} /></span>

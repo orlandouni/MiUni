@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { clearSession, getMe, isAuthenticated } from "../services/api";
-import { ROLES } from "../services/roles";
+import { ROLES, canManageBusiness } from "../services/roles";
 import "./Home.css";
 
 const CampusMap = lazy(() => import("../components/CampusMap"));
@@ -62,10 +62,10 @@ function MapaCampus() {
           <Link to="/favoritos" className="home-nav-item"><Star size={17} /> Mis favoritos</Link>
           <Link to="/resenas" className="home-nav-item"><MessageSquare size={17} /> Mis reseñas y reportes</Link>
         </div>
-        {user && (
+        {canManageBusiness(user?.roles) && (
           <div className="home-nav-group">
             <span className="home-nav-label">Gestión</span>
-            <Link to="/negocios" className="home-nav-item"><Building2 size={17} /> Mis negocios</Link>
+            {user.roles.includes(ROLES.propietario) && <Link to="/negocios" className="home-nav-item"><Building2 size={17} /> Mis negocios</Link>}
             {user.roles?.includes(ROLES.admin) && <Link to="/admin" className="home-nav-item"><ShieldCheck size={17} /> Administración</Link>}
           </div>
         )}

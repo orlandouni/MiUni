@@ -15,7 +15,9 @@ export default function ProtectedRoute({ role, children }) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   if (state.loading) return <p role="status">Verificando acceso…</p>;
   if (state.error) return <p role="alert">No pudimos verificar tu sesión. Recarga para intentar de nuevo.</p>;
-  if (role && !state.user.roles?.includes(role))
+  // `role` admite un rol o una lista de roles permitidos.
+  const permitidos = role ? [role].flat() : [];
+  if (permitidos.length && !permitidos.some(r => state.user.roles?.includes(r)))
     return <main><h1>Acceso restringido</h1><p>Tu cuenta no tiene permiso para entrar aquí.</p><Link to="/">Volver al inicio</Link></main>;
   return children;
 }

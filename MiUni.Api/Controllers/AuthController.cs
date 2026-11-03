@@ -112,8 +112,12 @@ public class AuthController : ControllerBase
         catch (FormatException) { return BadRequest(new { message = "El enlace de verificación no es válido." }); }
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
-        return result.Succeeded
-            ? Ok(new { message = "¡Listo! Tu correo quedó verificado.", yaVerificado = false })
+        if (result.Succeeded) return Ok(new { message = "¡Listo! Tu correo quedó verificado.", yaVerificado = false });
+
+        // Dos aperturas simultáneas del mismo enlace: una confirma y la otra choca por concurrencia.
+        var actual = await _userManager.FindByIdAsync(request.UsuarioId.ToString());
+        return actual?.EmailConfirmed == true
+            ? Ok(new { message = "Tu correo ya estaba verificado.", yaVerificado = true })
             : BadRequest(new { message = "El enlace venció o ya no es válido. Solicita uno nuevo." });
     }
 

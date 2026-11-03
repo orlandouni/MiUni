@@ -5,6 +5,15 @@ import { verificarCorreoRequest } from "../services/api";
 import ReenviarVerificacion from "../components/ReenviarVerificacion";
 import CampusPanel from "./CampusPanel";
 
+// Un enlace se verifica una sola vez aunque el efecto se ejecute dos veces
+// (StrictMode en desarrollo) o el componente se vuelva a montar.
+const verificaciones = new Map();
+function verificarUnaVez(usuario, token) {
+  const clave = `${usuario}:${token}`;
+  if (!verificaciones.has(clave)) verificaciones.set(clave, verificarCorreoRequest(usuario, token));
+  return verificaciones.get(clave);
+}
+
 export default function VerificarCorreo() {
   const [params] = useSearchParams();
   const usuario = params.get("usuario");
@@ -16,7 +25,7 @@ export default function VerificarCorreo() {
   useEffect(() => {
     if (!enlaceCompleto) return undefined;
     let activo = true;
-    verificarCorreoRequest(usuario, token)
+    verificarUnaVez(usuario, token)
       .then(data => { if (activo) setEstado({ cargando: false, ok: true, mensaje: data.message }); })
       .catch(err => {
         if (activo) setEstado({ cargando: false, ok: false, mensaje: err.response?.data?.message || "No pudimos verificar tu correo. Intenta de nuevo." });
