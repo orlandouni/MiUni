@@ -1,0 +1,8 @@
+.sel-ubicacion { display: grid; gap: 8px; }
+.sel-ubicacion-barra { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.sel-ubicacion-barra span { display: inline-flex; align-items: center; gap: 6px; }
+.sel-ubicacion-barra button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--navy); font: inherit; font-weight: 650; cursor: pointer; }
+.sel-ubicacion-barra button:hover { background: var(--blue-soft); }
+.sel-ubicacion-mapa { height: 280px; border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: crosshair; z-index: 0; }
+.sel-ubicacion-nota { margin: 0; color: var(--muted); font-size: 12px; }
+@media (max-width: 600px) { .sel-ubicacion-mapa { height: 240px; } }

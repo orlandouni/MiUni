@@ -466,6 +466,12 @@ namespace MiUni.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("descripcion");
 
+                    b.Property<bool>("EsAmbulante")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("es_ambulante");
+
                     b.Property<string>("EstadoSolicitud")
                         .IsConcurrencyToken()
                         .HasMaxLength(20)

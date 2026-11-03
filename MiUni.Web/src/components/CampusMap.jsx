@@ -168,7 +168,7 @@ function CampusMap() {
           {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} icon={crearIcono(lugarChat.categoria?.nombre, true)} />}
           {lugares.filter(lugar => lugar.id !== lugarChat?.id).map(lugar => <Marker key={lugar.id} position={[lugar.latitud, lugar.longitud]}
             title={lugar.nombre} alt={lugar.nombre} icon={crearIcono(lugar.categoria?.nombre, seleccionado?.id === lugar.id)} eventHandlers={{click: () => setSeleccionado(lugar)}}>
-            <Popup><div className="campus-popup"><span>{lugar.categoria?.nombre}</span><strong>{lugar.nombre}</strong><p>{lugar.descripcion}</p>
+            <Popup><div className="campus-popup"><span>{lugar.categoria?.nombre}{lugar.esAmbulante ? " · Ambulante (zona aproximada)" : ""}</span><strong>{lugar.nombre}</strong><p>{lugar.descripcion}</p>
               <div><button type="button" onClick={() => ruta.elegir("origen", lugar)}>Desde aquí</button><button type="button" onClick={() => ruta.elegir("destino", lugar)}>Ir aquí</button></div>
               <Link to={`/lugares/${lugar.id}`}>Ver ficha del lugar →</Link>
             </div></Popup>

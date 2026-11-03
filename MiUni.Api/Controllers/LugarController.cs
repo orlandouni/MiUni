@@ -57,6 +57,7 @@ public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuer
         Piso = l.Piso,
         Latitud = l.Ubicacion.Y,
         Longitud = l.Ubicacion.X,
+        EsAmbulante = l.EsAmbulante,
         Categoria = new CategoriaDto
         {
             Id = l.Categoria.Id,

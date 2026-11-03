@@ -242,7 +242,7 @@ public class AdminController(MiUniDbContext db, UserManager<ApplicationUser> use
         {
             duenos.TryGetValue(l.PropietarioId!.Value, out var d);
             return new NegocioAdminDto(l.Id, l.Nombre, l.Descripcion, l.Categoria.Nombre, l.PropietarioId,
-                d?.Nombre, d?.Email, l.EstadoSolicitud, l.Activo, l.Ubicacion.Y, l.Ubicacion.X, l.FechaCreacion);
+                d?.Nombre, d?.Email, l.EstadoSolicitud, l.Activo, l.EsAmbulante, l.Ubicacion.Y, l.Ubicacion.X, l.FechaCreacion);
         }));
     }
 

@@ -8,6 +8,7 @@ public class LugarDto
     public short? Piso { get; set; }
     public double Latitud { get; set; }
     public double Longitud { get; set; }
+    public bool EsAmbulante { get; set; }
     public CategoriaDto Categoria { get; set; } = null!;
 }
 

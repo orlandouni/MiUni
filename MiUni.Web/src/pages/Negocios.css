@@ -1,22 +1,165 @@
-.negocios { display: grid; grid-template-columns: 1fr 1.1fr; align-content: start; column-gap: 48px; row-gap: 18px; max-width: 1260px; margin: 0 auto; min-height: 100svh; padding: 48px 36px; text-align: left; color: var(--ink); font-size: 14px; }
-.negocios > a,.negocios > h1,.negocios > p { grid-column: 1/-1; }
-.negocios > a { font-size: 12px; text-decoration: none; }
-.negocios h1 { font: 600 48px/1 var(--font-display); margin: 10px 0 0; }
-.negocios > p { color: var(--muted); margin-bottom: 18px; line-height: 1.7; }
-.negocios > section { grid-column: 1; grid-row: span 2; }
-.negocios > h2,.negocios > form { grid-column: 2; }
-.negocios > h2 { font: 600 30px/1 var(--font-display); }
-.negocios article { border: 1px solid var(--line); border-radius: var(--radius-md); background: white; padding: 24px; margin-bottom: 16px; }
-.negocios article h2 { font: 600 28px/1 var(--font-display); margin-bottom: 12px; }
-.negocios article p { color: var(--muted); line-height: 1.7; }
-.negocios form { padding: 24px; background: white; border: 1px solid var(--line); border-radius: var(--radius-md); }
-.negocios fieldset { border: 0; padding: 0; display: grid; gap: 18px; }
-.negocios label { display: grid; gap: 8px; font-size: 12px; font-weight: 600; }
-.negocios input,.negocios textarea,.negocios select { font: 14px var(--font-body); padding: 12px; width: 100%; border: 1px solid var(--line); border-radius: 10px; background: white; color: var(--ink); }
-.negocios textarea { min-height: 90px; resize: vertical; }
-.negocios button { border: 0; border-radius: var(--radius-sm); padding: 12px 16px; background: var(--blue); color: white; font-size: 13px; margin: 4px 8px 4px 0; }
-.negocios button:hover:not(:disabled) { transform: translateY(-2px); }
-.negocios button:disabled { opacity: .5; }
-.negocios [role=alert] { color: var(--danger); background: var(--danger-soft); padding: 12px; border-radius: var(--radius-sm); }
-.negocios [role=status] { color: var(--green); }
-@media(max-width:850px) { .negocios { display: block; padding: 28px 20px; }.negocios h1 { margin: 20px 0 14px; font-size: 40px; }.negocios > section { margin: 24px 0; }.negocios > h2 { margin: 26px 0 16px; } }
+#root:has(.ng) { width: 100%; max-width: none; border: 0; text-align: left; }
+.ng { max-width: 1240px; min-height: 100svh; margin: 0 auto; padding: 28px 32px 64px; color: var(--ink); font: 14px/1.5 var(--font-body); }
+.ng * { box-sizing: border-box; }
+.ng h1, .ng h2, .ng h3, .ng p { margin: 0; letter-spacing: normal; }
+.ng button { font: inherit; cursor: pointer; }
+.ng button:disabled { opacity: .5; cursor: not-allowed; }
+.ng :is(button, a, input, select, textarea):focus-visible { outline: 3px solid #e3bb61; outline-offset: 2px; }
+
+.ng-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.ng .ng-volver { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 600; text-decoration: none; }
+.ng-usuario { display: inline-flex; align-items: center; gap: 6px; color: var(--navy); font-weight: 700; font-size: 13px; }
+.ng-usuario svg { color: #b48a2c; }
+.ng-encabezado { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 28px 0 22px; }
+.ng-eyebrow { color: #9a7321; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px !important; }
+.ng h1 { font: 600 46px/1 var(--font-display); color: var(--ink); }
+.ng-encabezado p:last-child { margin-top: 8px; max-width: 620px; color: var(--muted); }
+
+.ng-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 9px 15px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: white; color: var(--navy); font-weight: 650; text-decoration: none; white-space: nowrap; transition: transform var(--motion-fast); }
+.ng-btn:hover:not(:disabled) { transform: translateY(-1px); background: #f6f8fa; }
+.ng-btn.primario { background: var(--blue); border-color: var(--blue); color: white; }
+.ng-btn.primario:hover:not(:disabled) { background: #1d4fc8; }
+.ng-enlace { margin-top: 10px; padding: 0; border: 0; background: none; color: var(--blue); font-weight: 650; }
+
+.ng-alerta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px !important; padding: 11px 14px; border-radius: var(--radius-sm); }
+.ng-alerta.ok { background: var(--green-soft); color: #17603a; }
+.ng-alerta.error { background: var(--danger-soft); color: #8d251c; }
+.ng-alerta button { display: grid; border: 0; background: none; color: inherit; }
+.ng-vacio { padding: 34px 12px; color: var(--muted); text-align: center; }
+
+/* Layout: lista de negocios + contenido */
+.ng-layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 24px; align-items: start; }
+.ng-layout.solo { grid-template-columns: minmax(0, 860px); justify-content: center; }
+.ng-lista { position: sticky; top: 16px; display: grid; gap: 8px; }
+.ng-lista > button { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "i t" "i c"; column-gap: 11px; row-gap: 6px; align-items: center; padding: 13px; border: 1px solid var(--line); border-radius: var(--radius-md); background: white; color: inherit; text-align: left; }
+.ng-lista > button:hover { border-color: #c3ccd6; }
+.ng-lista > button.activo { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.ng-lista-icono { grid-area: i; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--yellow-soft); color: #87651d; }
+.ng-lista-texto { grid-area: t; min-width: 0; }
+.ng-lista-texto strong, .ng-lista-texto small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ng-lista-texto small { color: var(--muted); font-size: 12px; }
+.ng-lista > button .ng-chip { grid-area: c; justify-self: start; }
+
+.ng-chip { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.ng-chip.pendiente { background: var(--yellow-soft); color: #87651d; }
+.ng-chip.aprobada { background: var(--green-soft); color: var(--green); }
+.ng-chip.rechazada { background: var(--danger-soft); color: var(--danger); }
+
+.ng-card { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: white; min-width: 0; }
+.ng-card h2 { font: 600 30px/1.1 var(--font-display); }
+.ng-card h3 { display: flex; align-items: center; gap: 8px; font: 600 23px/1.15 var(--font-display); margin-bottom: 4px; }
+.ng-sub { color: var(--muted); font-size: 13px; }
+.ng-card-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* Pasos del primer registro */
+.ng-pasos { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 20px; padding: 0; list-style: none; }
+.ng-pasos li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: var(--radius-pill); background: #f1f4f7; color: var(--muted); font-size: 12px; font-weight: 650; }
+.ng-pasos span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: white; font-size: 11px; }
+.ng-pasos li.activo { background: var(--blue-soft); color: var(--blue); }
+.ng-pasos li.activo span { background: var(--blue); color: white; }
+
+/* Formulario */
+.ng-form { margin-top: 18px; }
+.ng-form fieldset { display: grid; gap: 18px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.ng-tipo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ng-tipo label { position: relative; display: flex; align-items: flex-start; gap: 11px; padding: 13px 14px; border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--muted); cursor: pointer; }
+.ng-tipo label.activo { border-color: var(--blue); background: var(--blue-soft); color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.ng-tipo label:has(input:focus-visible) { outline: 3px solid #e3bb61; outline-offset: 2px; }
+.ng-tipo input { position: absolute; opacity: 0; pointer-events: none; }
+.ng-tipo strong, .ng-tipo small { display: block; }
+.ng-tipo strong { color: var(--ink); font-size: 14px; }
+.ng-tipo small { font-size: 12px; }
+.ng-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ng-campos .ancho { grid-column: 1 / -1; }
+.ng-form label:not(.ng-tipo label), .ng-label, .ng-producto-form label { display: grid; gap: 6px; color: var(--ink); font-size: 12.5px; font-weight: 700; }
+.ng :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: white; color: var(--ink); font: 14px var(--font-body); }
+.ng textarea { resize: vertical; }
+.ng :is(input, select, textarea):disabled { background: #f6f8fa; }
+.ng-mapa-campo { display: grid; gap: 8px; }
+.ng-ayuda { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; }
+.ng-acciones { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+/* Panel */
+.ng-panel { display: grid; gap: 16px; }
+.ng-panel-cabecera { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.ng-panel-cabecera h2 { margin: 8px 0 4px; font: 600 38px/1.05 var(--font-display); }
+.ng-banner { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border-radius: var(--radius-md); }
+.ng-banner svg { flex-shrink: 0; margin-top: 1px; }
+.ng-banner.pendiente { background: var(--yellow-soft); color: #6e5216; }
+.ng-banner.rechazada { background: var(--danger-soft); color: #8d251c; }
+.ng-banner.oculto { background: #eef1f4; color: var(--muted); }
+.ng-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+.ng-tabs button { flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; padding: 11px 14px; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font-weight: 650; white-space: nowrap; }
+.ng-tabs button.activo { color: var(--navy); border-color: var(--yellow); }
+.ng-tabs button span { padding: 0 7px; border-radius: var(--radius-pill); background: #edf1f5; font-size: 11px; }
+.ng-tab-contenido { display: grid; gap: 16px; }
+
+.ng-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ng-kpis article { display: grid; gap: 2px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-md); background: white; }
+.ng-kpis svg { color: var(--blue); margin-bottom: 6px; }
+.ng-kpis small { color: var(--muted); font-size: 12px; font-weight: 650; }
+.ng-kpis strong { font: 600 30px/1.1 var(--font-display); }
+.ng-kpis strong.ng-kpi-texto { font-size: 24px; }
+.ng-kpis em { color: var(--muted); font-size: 11.5px; font-style: normal; }
+.ng-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ng-progreso { padding: 2px 9px; border-radius: var(--radius-pill); background: var(--blue-soft); color: var(--blue); font: 700 12px var(--font-body); }
+.ng-checklist { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.ng-checklist li { display: flex; align-items: center; gap: 9px; color: #b4bfcc; }
+.ng-checklist li.hecho { color: var(--green); }
+.ng-checklist li.hecho span { color: var(--muted); text-decoration: line-through; }
+.ng-checklist button { padding: 0; border: 0; background: none; color: var(--blue); font-weight: 650; text-align: left; }
+
+/* Horario */
+.ng-horario { display: grid; gap: 6px; }
+.ng-dia { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 9px 12px; border-radius: var(--radius-sm); background: #f8fafc; }
+.ng-dia.cerrado { background: transparent; }
+.ng-switch { display: inline-flex; align-items: center; gap: 10px; min-width: 140px; font-weight: 650; cursor: pointer; }
+.ng-switch input { width: 18px; height: 18px; accent-color: var(--blue); }
+.ng-horas { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.ng-horas input { width: 130px !important; padding: 7px 10px !important; }
+.ng-cerrado { color: var(--muted); font-size: 13px; }
+
+/* Menú */
+.ng-productos { display: grid; margin: 0; padding: 0; list-style: none; }
+.ng-productos li { display: flex; align-items: center; gap: 14px; padding: 13px 4px; border-bottom: 1px solid #eff2f5; }
+.ng-productos li:last-child { border-bottom: 0; }
+.ng-productos li.agotado .ng-producto-info, .ng-productos li.agotado .ng-precio { opacity: .5; }
+.ng-producto-info { flex: 1; min-width: 0; }
+.ng-producto-info strong, .ng-producto-info small { display: block; }
+.ng-producto-info small { color: var(--muted); font-size: 12.5px; }
+.ng-precio { font-weight: 750; color: var(--navy); white-space: nowrap; }
+.ng-producto-acciones { display: flex; align-items: center; gap: 6px; }
+.ng-disponible { padding: 5px 10px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: #f6f8fa; color: var(--muted); font-size: 12px !important; font-weight: 700; }
+.ng-disponible.si { border-color: #b9dccd; background: var(--green-soft); color: var(--green); }
+.ng-icono { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--navy); }
+.ng-icono.peligro { color: var(--danger); }
+.ng-producto-form { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 16px; padding: 16px; border-radius: var(--radius-md); background: #f8fafc; }
+.ng-producto-form .ancho, .ng-producto-form .ng-acciones { grid-column: 1 / -1; }
+.ng-check { display: inline-flex !important; grid-auto-flow: column; align-items: center; gap: 8px !important; }
+
+/* Reseñas */
+.ng-resenas { display: grid; gap: 12px; margin: 12px 0 0; padding: 0; list-style: none; }
+.ng-resenas li { padding: 12px 14px; border-radius: var(--radius-sm); background: #f8fafc; }
+.ng-resenas li p { margin-top: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ng-resenas.compacto li p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ng-resena-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.ng-resena-top time { margin-left: auto; color: var(--muted); font-size: 12px; }
+.ng-estrellas { color: #d9a52b; letter-spacing: 1px; }
+.ng-estrellas span { color: #dfe4ea; }
+
+@media (max-width: 980px) {
+  .ng-layout { grid-template-columns: 1fr; }
+  .ng-lista { position: static; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); overflow-x: auto; padding-bottom: 4px; }
+  .ng-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ng-grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .ng { padding: 18px 16px 48px; }
+  .ng-encabezado { flex-direction: column; align-items: flex-start; }
+  .ng h1 { font-size: 38px; }
+  .ng-card { padding: 16px; }
+  .ng-tipo, .ng-campos, .ng-producto-form { grid-template-columns: 1fr; }
+  .ng-productos li { flex-wrap: wrap; }
+  .ng-producto-acciones { width: 100%; justify-content: flex-end; }
+  .ng-horas input { width: 110px !important; }
+}

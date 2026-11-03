@@ -27,6 +27,7 @@ import {
   mensajeError,
 } from "../services/comunidad";
 
+import InfoNegocioPublica from "../components/InfoNegocioPublica";
 import "./Comunidad.css";
 
 // Vuelve a consultar cuando cambia la función o se pulsa actualizar.
@@ -715,6 +716,8 @@ function ContenidoLugar({ lugarId }) {
             </div>
 
             <p>{lugar.descripcion}</p>
+
+            <InfoNegocioPublica lugarId={lugarId} />
 
             {sesion.datos && (
               <><BotonFavorito key={sesion.datos.id} lugarId={lugarId} />

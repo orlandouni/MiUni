@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -313,6 +313,7 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
                 .HasColumnName("activo");
             entity.Property(e => e.CategoriaId).HasColumnName("categoria_id");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.EsAmbulante).HasDefaultValue(false).HasColumnName("es_ambulante");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("fecha_creacion");

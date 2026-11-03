@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NetTopologySuite.Geometries;
 
@@ -23,6 +23,9 @@ public partial class Lugar
     public short? Piso { get; set; }
 
     public bool Activo { get; set; }
+
+    // Negocio sin local fijo: Ubicacion marca la zona aproximada donde suele vender.
+    public bool EsAmbulante { get; set; }
 
     public DateTime FechaCreacion { get; set; }
 

@@ -50,7 +50,7 @@ public record ResenaAdminDto(Guid Id, Guid UsuarioId, string NombreUsuario, stri
 
 public record NegocioAdminDto(Guid Id, string Nombre, string? Descripcion, string NombreCategoria,
     Guid? PropietarioId, string? NombrePropietario, string? EmailPropietario, string? EstadoSolicitud,
-    bool Activo, double Latitud, double Longitud, DateTime FechaCreacion);
+    bool Activo, bool EsAmbulante, double Latitud, double Longitud, DateTime FechaCreacion);
 
 public class GuardarCarreraRequest
 {
