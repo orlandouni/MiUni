@@ -17,23 +17,17 @@ namespace MiUni.Api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<long>(
-                name: "osm_way_id",
-                table: "camino",
-                type: "bigint",
-                nullable: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_camino_osm_way_id",
-                table: "camino",
-                column: "osm_way_id");
+            // Idempotente: hay bases locales donde la columna o el índice ya se crearon a mano
+            // al probar la importación de OSM. No toca los tramos que ya existen.
+            migrationBuilder.Sql("ALTER TABLE camino ADD COLUMN IF NOT EXISTS osm_way_id bigint;");
+            migrationBuilder.Sql("CREATE INDEX IF NOT EXISTS ix_camino_osm_way_id ON camino (osm_way_id);");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(name: "ix_camino_osm_way_id", table: "camino");
-            migrationBuilder.DropColumn(name: "osm_way_id", table: "camino");
+            migrationBuilder.Sql("DROP INDEX IF EXISTS ix_camino_osm_way_id;");
+            migrationBuilder.Sql("ALTER TABLE camino DROP COLUMN IF EXISTS osm_way_id;");
         }
     }
 }
