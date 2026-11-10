@@ -20,6 +20,8 @@ public class ApplicationUser : IdentityUser<Guid>
 
     public virtual ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
 
+    public virtual ICollection<HorarioClase> HorarioClases { get; set; } = new List<HorarioClase>();
+
     public virtual ICollection<Historialchat> Historialchats { get; set; } = new List<Historialchat>();
 
     public virtual ICollection<Reporteusuario> Reporteusuarios { get; set; } = new List<Reporteusuario>();

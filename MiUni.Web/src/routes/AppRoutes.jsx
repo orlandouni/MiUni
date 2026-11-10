@@ -16,6 +16,7 @@ const VerificarCorreo = lazy(() => import("../pages/VerificarCorreo"));
 const Favoritos = lazy(() => import("../pages/Comunidad").then(module => ({default: module.Favoritos})));
 const MisResenas = lazy(() => import("../pages/Comunidad").then(module => ({default: module.MisResenas})));
 const FichaLugar = lazy(() => import("../pages/Comunidad").then(module => ({default: module.FichaLugar})));
+const MiHorario = lazy(() => import("../pages/Comunidad").then(module => ({default: module.MiHorario})));
 const Reportes = lazy(() => import("../pages/Comunidad").then(module => ({default: module.Reportes})));
 
 function AppRoutes() {
@@ -32,6 +33,7 @@ function AppRoutes() {
         <Route path="/registro" element={<Register />} />
         <Route path="/verificar-correo" element={<VerificarCorreo />} />
 
+        <Route path="/horario" element={<ProtectedRoute><MiHorario /></ProtectedRoute>} />
         <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
         <Route path="/resenas" element={<ProtectedRoute><MisResenas /></ProtectedRoute>} />
         <Route path="/negocios" element={<ProtectedRoute role={["Propietario", "Administrador"]}><Negocios /></ProtectedRoute>} />

@@ -432,3 +432,23 @@
 .com-estado,.com-vacio { color: var(--muted); }
 @media(min-width:1100px) { .com-lista:not(.com-interior) { grid-template-columns: repeat(2,minmax(0,1fr)); }.com-lista > .com-vacio { grid-column: 1/-1; } }
 @media(max-width:700px) { .com-contenedor { padding: 28px 18px; }.comunidad .com-encabezado h1 { font-size: 36px; }.com-ficha { padding: 24px; }.comunidad .com-ficha h2 { font-size: 32px; } }
+
+/* Mi horario */
+.com-horario-subir { margin-bottom: 20px; }
+.com-horario-titulo { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 16px; color: var(--com-azul); }
+.com-horario-archivo { position: relative; display: inline-flex; margin-top: 12px; cursor: pointer; }
+.com-horario-archivo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.com-horario-archivo:focus-within { outline: 2px solid var(--com-azul); outline-offset: 2px; }
+.com-horario-vista { margin-top: 18px; display: grid; gap: 12px; }
+.com-horario-sesiones { margin: 4px 0 0; color: var(--com-texto); font-variant-numeric: tabular-nums; }
+.com-buho { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; }
+.com-horario-nota { margin: 16px 0 24px; font-size: 13px; }
+.com-horario-form fieldset { display: grid; gap: 12px; }
+.com-horario-form input, .com-horario-form select { width: 100%; padding: 10px 12px; border: 1px solid var(--com-borde); border-radius: 10px; color: var(--com-texto); background: white; font: inherit; }
+.com-horario-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+.com-horario-tarjeta .com-crecer { overflow-wrap: break-word; }
+@media (max-width: 540px) {
+  .com-horario-tarjeta .com-fila { flex-wrap: wrap; }
+  .com-horario-tarjeta .com-favorito-acciones { flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
+  .com-horario-tarjeta .com-peligro { margin-left: auto; }
+}
