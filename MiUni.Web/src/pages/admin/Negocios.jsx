@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, MapPin, X } from "lucide-react";
 import { adminApi } from "../../services/admin";
-import { Aviso, Cargando, Encabezado, Insignia, Vacio, fecha, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Encabezado, ErrorCarga, Insignia, Vacio, fecha, useAccion, useCarga } from "./ui";
 
 const ESTADOS = [["Pendiente", "Pendientes"], ["Aprobada", "Aprobados"], ["Rechazada", "Rechazados"], ["", "Todos"]];
 const TONO = { Pendiente: "alerta", Aprobada: "ok", Rechazada: "peligro" };
@@ -23,9 +23,9 @@ export default function Negocios({ onCambio }) {
         {ESTADOS.map(([valor, texto]) => <button type="button" key={texto} className={estado === valor ? "activo" : ""} onClick={() => setEstado(valor)}>{texto}</button>)}
       </div>
     </Encabezado>
-    <Aviso aviso={aviso || (error && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
+    <Aviso aviso={aviso || (error && datos && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
 
-    {cargando && !datos ? <Cargando texto="Cargando negocios…" /> : datos?.length === 0 ?
+    {cargando && !datos ? <Cargando texto="Cargando negocios…" /> : error && !datos ? <ErrorCarga error={error} onReintentar={recargar} /> : datos?.length === 0 ?
       <Vacio titulo="Sin negocios aquí" texto="Las nuevas solicitudes aparecerán en Pendientes." /> :
       <div className={`adm-list${cargando ? " recargando" : ""}`}>
         {datos?.map(n => <article className="adm-item" key={n.id}>

@@ -1,11 +1,11 @@
 import { AlertTriangle, Ban, Building2, MapPin, MessageSquare, Star, UserPlus, Users } from "lucide-react";
-import { Cargando, Encabezado, Vacio } from "./ui";
+import { Cargando, Encabezado, ErrorCarga, Vacio } from "./ui";
 
 const diaCorto = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short", timeZone: "UTC" });
 
-export default function Resumen({ panel, cargando, error, irA }) {
+export default function Resumen({ panel, cargando, error, irA, reintentar }) {
   if (cargando && !panel) return <Cargando texto="Calculando métricas…" />;
-  if (!panel) return <p className="adm-error">{error || "No hay datos disponibles."}</p>;
+  if (!panel) return <ErrorCarga error={error || "No hay datos disponibles."} onReintentar={reintentar} />;
 
   const tarjetas = [
     { icono: Users, etiqueta: "Usuarios", valor: panel.usuarios, detalle: `+${panel.usuariosNuevos30Dias} en 30 días`, ir: "usuarios" },

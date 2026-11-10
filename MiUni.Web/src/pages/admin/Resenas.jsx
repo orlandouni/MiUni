@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Trash2 } from "lucide-react";
 import { adminApi, limpiarParams } from "../../services/admin";
-import { Aviso, Cargando, Confirmacion, Encabezado, Estrellas, Insignia, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Confirmacion, Encabezado, ErrorCarga, Estrellas, Insignia, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
 
 const TAMANO = 20;
 
@@ -24,7 +24,7 @@ export default function Resenas({ onCambio }) {
 
   return <section className="adm-card">
     <Encabezado titulo="Reseñas" descripcion="Modera las opiniones publicadas. Las reseñas con reportes pendientes aparecen primero." />
-    <Aviso aviso={aviso || (error && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
+    <Aviso aviso={aviso || (error && datos && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
     <form className="adm-filters" onSubmit={e => { e.preventDefault(); cambiar({ q: busqueda }); }}>
       <label className="adm-search"><Search size={15} /><input type="search" placeholder="Comentario, lugar o autor" value={busqueda}
         onChange={e => { setBusqueda(e.target.value); if (!e.target.value) cambiar({ q: "" }); }} /></label>
@@ -35,7 +35,7 @@ export default function Resenas({ onCambio }) {
       <label className="adm-check"><input type="checkbox" checked={filtro.conReportes} onChange={e => cambiar({ conReportes: e.target.checked })} /> Solo reportadas</label>
     </form>
 
-    {cargando && !datos ? <Cargando texto="Cargando reseñas…" /> : datos?.items.length === 0 ?
+    {cargando && !datos ? <Cargando texto="Cargando reseñas…" /> : error && !datos ? <ErrorCarga error={error} onReintentar={recargar} /> : datos?.items.length === 0 ?
       <Vacio titulo="Sin reseñas" texto="No hay reseñas que coincidan con los filtros." /> :
       <div className={`adm-list${cargando ? " recargando" : ""}`}>
         {datos?.items.map(r => <article className="adm-item" key={r.id}>

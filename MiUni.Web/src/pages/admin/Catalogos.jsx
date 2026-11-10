@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { adminApi } from "../../services/admin";
 import { negocioError } from "../../services/negocioErrors";
-import { Aviso, Cargando, Confirmacion, Encabezado, Modal, Vacio, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Confirmacion, Encabezado, ErrorCarga, Modal, Vacio, useAccion, useCarga } from "./ui";
 
 // Tabla + formulario genérico para catálogos simples (categorías, carreras).
 function Catalogo({ titulo, descripcion, singular, cargar, crear, editar, eliminar, campos, columnas, onCambio }) {
@@ -22,8 +22,8 @@ function Catalogo({ titulo, descripcion, singular, cargar, crear, editar, elimin
     <Encabezado titulo={titulo} descripcion={descripcion}>
       <button type="button" className="adm-btn primario" onClick={() => setEditando(Object.fromEntries(campos.map(c => [c.campo, ""])))}><Plus size={15} /> Nueva {singular}</button>
     </Encabezado>
-    <Aviso aviso={aviso || (error && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
-    {cargando && !datos ? <Cargando /> : datos?.length === 0 ? <Vacio titulo={`Sin ${titulo.toLowerCase()}`} /> :
+    <Aviso aviso={aviso || (error && datos && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
+    {cargando && !datos ? <Cargando /> : error && !datos ? <ErrorCarga error={error} onReintentar={recargar} /> : datos?.length === 0 ? <Vacio titulo={`Sin ${titulo.toLowerCase()}`} /> :
       <div className="adm-table-wrap"><table className="adm-table">
         <thead><tr>{columnas.map(c => <th key={c.titulo}>{c.titulo}</th>)}<th aria-label="Acciones" /></tr></thead>
         <tbody>{datos?.map(item => <tr key={item.id}>

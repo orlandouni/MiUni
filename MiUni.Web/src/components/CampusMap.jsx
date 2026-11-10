@@ -74,6 +74,10 @@ function CampusMap() {
   };
   const ruta = useRuta();
   const [categorias, setCategorias] = useState([]);
+  const [cargandoCategorias, setCargandoCategorias] = useState(true);
+  const [errorCategorias, setErrorCategorias] = useState(false);
+  const [intentoCategorias, setIntentoCategorias] = useState(0);
+  const [intentoBusqueda, setIntentoBusqueda] = useState(0);
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(() => window.matchMedia("(min-width: 701px)").matches);
   const [seleccionado, setSeleccionado] = useState(null);
   const [texto, setTexto] = useState("");
@@ -91,11 +95,14 @@ function CampusMap() {
 
   // Categorías para los chips: una sola vez
   useEffect(() => {
+    let vigente = true;
     fetch("/api/Categoria")
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setCategorias)
-      .catch(() => {});
-  }, []);
+      .then((res) => { if (!res.ok) throw new Error("No se pudieron cargar las categorías."); return res.json(); })
+      .then(data => { if (vigente) setCategorias(data); })
+      .catch(() => { if (vigente) setErrorCategorias(true); })
+      .finally(() => { if (vigente) setCargandoCategorias(false); });
+    return () => { vigente = false; };
+  }, [intentoCategorias]);
 
   // Todos los lugares del campus, para verlos en el mapa sin tener que buscar.
   const [todos, setTodos] = useState(SIN_LUGARES);
@@ -130,7 +137,7 @@ function CampusMap() {
       });
 
     return () => controller.abort();
-  }, [q, categoria, abierto, hayFiltro, clave]);
+  }, [q, categoria, abierto, hayFiltro, clave, intentoBusqueda]);
 
   // Lo que realmente se pinta en el mapa
   const lugares = hayFiltro ? resultado.lugares : SIN_LUGARES;
@@ -159,11 +166,13 @@ function CampusMap() {
                 onClick={() => { salirDeLugarChat(); setSeleccionado(null); setCategoria(categoria === c.nombre ? null : c.nombre); }}>
                 <span className="campus-dot" style={{background: categoryStyle[c.nombre]?.color || "#52677f"}} />{c.nombre}
               </button>)}
-              {!categorias.length && <span className="campus-status">Las categorías aparecerán al conectar con el campus.</span>}
+              {cargandoCategorias && <span className="campus-status" role="status">Cargando categorías…</span>}
+              {errorCategorias && <span className="campus-status" role="alert">No se pudieron cargar las categorías. <button type="button" onClick={() => { setCargandoCategorias(true); setErrorCategorias(false); setIntentoCategorias(value => value + 1); }}>Reintentar</button></span>}
+              {!cargandoCategorias && !errorCategorias && !categorias.length && <span className="campus-status">Todavía no hay categorías disponibles.</span>}
             </div>
           </div>
           {(texto || categoria || abierto) && <button className="campus-clear" type="button" onClick={() => {setTexto(""); setCategoria(null); setAbierto(false); setSeleccionado(null);}}>Limpiar búsqueda <X size={12} /></button>}
-          {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? "No se pudieron cargar los lugares del campus. Intenta otra búsqueda." : "No encontramos ese lugar. Prueba con otro nombre o categoría."}</p>}
+          {(cargando || error || sinResultados) && <p className="campus-status" role={error ? "alert" : "status"}>{cargando ? "Buscando lugares…" : error ? <>No se pudieron cargar los lugares del campus. <button type="button" onClick={() => { setResultado(actual => ({ ...actual, clave: null })); setIntentoBusqueda(value => value + 1); }}>Reintentar</button></> : "No encontramos ese lugar. Prueba con otro nombre o categoría."}</p>}
           {lugarId && <p className="campus-status" role={errorChat ? "alert" : "status"}>{errorChat || (lugarChat ? `Desde el chat: ${lugarChat.nombre}` : "Cargando lugar del chat…")} <button type="button" onClick={salirDeLugarChat}>Volver a la búsqueda</button></p>}
           {hayFiltro && !cargando && !error && lugares.length > 0 && <div className="campus-results">
             <p className="campus-result-count">{lugares.length} {lugares.length === 1 ? "lugar encontrado" : "lugares encontrados"}</p>

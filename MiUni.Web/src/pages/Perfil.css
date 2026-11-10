@@ -54,6 +54,8 @@
 .perfil-cancelar { padding:8px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); color:var(--ink); background:var(--white); cursor:pointer; }
 .perfil-vacio,.perfil-estado { margin:0; padding:18px; border:1px dashed var(--line); border-radius:var(--radius-sm); color:var(--muted); background:var(--canvas); font-size:12px; text-align:center; }
 .perfil-alerta { margin:0 0 14px; padding:12px 14px; border:1px solid #e7bbbb; border-radius:var(--radius-sm); color:#8d2727; background:#fff2f2; font-size:12px; }
+.perfil-alerta { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.perfil-alerta button { flex:none; padding:7px 11px; border:1px solid #e7bbbb; border-radius:var(--radius-sm); color:#762321; background:white; font:600 11px var(--font-body); cursor:pointer; }
 .home-account { text-decoration:none; }
 .home-account:hover span { box-shadow:0 0 0 3px #e4d29b88; }
 .home-account:focus-visible { outline:3px solid var(--blue); outline-offset:4px; border-radius:var(--radius-pill); }

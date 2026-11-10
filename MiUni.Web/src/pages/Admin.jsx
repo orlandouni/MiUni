@@ -72,7 +72,7 @@ export default function Admin() {
       </header>
 
       <div className="adm-body">
-        {actual.id === "resumen" && <Resumen panel={panel.datos} cargando={panel.cargando} error={panel.error} irA={irA} />}
+        {actual.id === "resumen" && <Resumen panel={panel.datos} cargando={panel.cargando} error={panel.error} irA={irA} reintentar={panel.recargar} />}
         {actual.id === "reportes" && <Reportes {...props} />}
         {actual.id === "negocios" && <Negocios {...props} />}
         {actual.id === "resenas" && <Resenas {...props} />}

@@ -60,12 +60,16 @@ function MascotaMiuni() {
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [userError, setUserError] = useState("");
+  const [userAttempt, setUserAttempt] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   useEffect(() => {
     let active = true;
-    if (isAuthenticated()) getMe().then(data => { if (active) setUser(data); }).catch(() => {});
+    if (isAuthenticated()) {
+      getMe().then(data => { if (active) setUser(data); }).catch(() => { if (active) setUserError("No pudimos cargar tu cuenta."); });
+    }
     return () => { active = false; };
-  }, []);
+  }, [userAttempt]);
   const cerrar = () => {
     clearSession();
     setUser(null);
@@ -86,7 +90,7 @@ function Home() {
         </header>
 
         <main className="home-content" id="home-main-content">
-          <div className="home-welcome"><p>Hola, <strong>{nombre}</strong>. Qué bueno verte por aquí.</p><span>Hermosillo · Sonora</span></div>
+          <div className="home-welcome"><p>Hola, <strong>{nombre}</strong>. Qué bueno verte por aquí.</p><span>Hermosillo · Sonora</span>{userError && <p className="home-inline-error" role="alert">{userError} <button type="button" onClick={() => { setUserError(""); setUserAttempt(value => value + 1); }}>Reintentar</button></p>}</div>
           <section className="home-hero" aria-labelledby="home-title">
             <div className="home-hero-copy">
               <span className="home-kicker"><Sparkles size={14} /> Universidad de Sonora</span>

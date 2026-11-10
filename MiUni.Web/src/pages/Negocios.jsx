@@ -24,6 +24,7 @@ export default function Negocios() {
   const [seleccion, setSeleccion] = useState(null);
   const [creando, setCreando] = useState(false);
   const [aviso, setAviso] = useState("");
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let activo = true;
@@ -35,7 +36,7 @@ export default function Negocios() {
       })
       .catch(e => { if (activo) setEstado(s => ({ ...s, cargando: false, error: negocioError(e) })); });
     return () => { activo = false; };
-  }, []);
+  }, [version]);
 
   const reemplazar = useCallback(negocio =>
     setEstado(s => ({ ...s, negocios: s.negocios.map(n => n.id === negocio.id ? negocio : n) })), []);
@@ -49,7 +50,8 @@ export default function Negocios() {
   const { cargando, negocios, categorias, usuario, error } = estado;
   const puedeGestionar = canManageBusiness(usuario?.roles || []);
   const actual = negocios.find(n => n.id === seleccion);
-  const mostrarFormulario = creando || (!cargando && negocios.length === 0);
+  const mostrarFormulario = !error && (creando || (!cargando && negocios.length === 0));
+  const reintentar = () => { setEstado(s => ({ ...s, cargando: true, error: "" })); setVersion(v => v + 1); };
 
   return <main className="ng">
     <header className="ng-top">
@@ -67,10 +69,10 @@ export default function Negocios() {
         <button type="button" className="ng-btn primario" onClick={() => { setCreando(true); setAviso(""); }}><Plus size={16} /> Registrar negocio</button>}
     </div>
 
-    {error && <p className="ng-alerta error" role="alert">{error}</p>}
+    {error && <p className="ng-alerta error" role="alert">{error}<button type="button" className="ng-btn" onClick={reintentar} disabled={cargando}>Reintentar</button></p>}
     {aviso && <p className="ng-alerta ok" role="status">{aviso}<button type="button" aria-label="Cerrar" onClick={() => setAviso("")}><X size={14} /></button></p>}
 
-    {cargando ? <p className="ng-vacio" role="status">Cargando tus negocios…</p> : <div className={`ng-layout${negocios.length > 0 ? "" : " solo"}`}>
+    {cargando ? <p className="ng-vacio" role="status">Cargando tus negocios…</p> : error ? null : <div className={`ng-layout${negocios.length > 0 ? "" : " solo"}`}>
       {negocios.length > 0 && <nav className="ng-lista" aria-label="Tus negocios">
         {negocios.map(n => {
           const e = ESTADO[n.estadoSolicitud] || ESTADO.Pendiente;
@@ -182,6 +184,7 @@ function PanelNegocio({ negocio, categorias, puedeGestionar, onActualizado }) {
   const [pestana, setPestana] = useState("resumen");
   const [panel, setPanel] = useState({ cargando: true, datos: null, error: "" });
   const [aviso, setAviso] = useState("");
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let activo = true;
@@ -189,7 +192,7 @@ function PanelNegocio({ negocio, categorias, puedeGestionar, onActualizado }) {
       .then(datos => { if (activo) setPanel({ cargando: false, datos, error: "" }); })
       .catch(e => { if (activo) setPanel({ cargando: false, datos: null, error: negocioError(e) }); });
     return () => { activo = false; };
-  }, [negocio.id]);
+  }, [negocio.id, intento]);
 
   const setDatos = fn => setPanel(p => ({ ...p, datos: fn(p.datos) }));
   const rechazado = negocio.estadoSolicitud === "Rechazada";
@@ -217,8 +220,8 @@ function PanelNegocio({ negocio, categorias, puedeGestionar, onActualizado }) {
         </button>)}
     </div>
 
-    {panel.error && <p className="ng-alerta error" role="alert">{panel.error}</p>}
-    {panel.cargando ? <p className="ng-vacio">Cargando…</p> : panel.datos && <div className="ng-tab-contenido">
+    {panel.error && <p className="ng-alerta error" role="alert">{panel.error}<button type="button" className="ng-btn" onClick={() => { setPanel(s => ({ ...s, cargando: true, error: "" })); setIntento(v => v + 1); }} disabled={panel.cargando}>Reintentar</button></p>}
+    {panel.cargando ? <p className="ng-vacio" role="status">Cargando información del negocio…</p> : panel.datos && <div className="ng-tab-contenido">
       {pestana === "resumen" && <Resumen negocio={negocio} panel={panel.datos} irA={setPestana} />}
       {pestana === "info" && <div className="ng-card">
         <FormNegocio inicial={negocio} categorias={categorias} textoBoton="Guardar cambios" soloLectura={!editable}

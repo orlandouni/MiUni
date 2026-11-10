@@ -64,6 +64,8 @@
 .adm-empty { display: grid; justify-items: center; gap: 4px; padding: 40px 12px; color: var(--muted); text-align: center; }
 .adm-empty svg { color: var(--green); }
 .adm-empty strong { color: var(--ink); }
+.adm-load-error span { max-width: 520px; color: var(--muted); }
+.adm-load-error strong { color: var(--danger); }
 .recargando { opacity: .55; transition: opacity var(--motion-fast); }
 
 .adm-badge { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; white-space: nowrap; background: #eef1f4; color: var(--muted); }

@@ -22,6 +22,8 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
+  const [historyAttempt, setHistoryAttempt] = useState(0);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const messagesRef = useRef(null);
@@ -36,19 +38,31 @@ export default function Chat() {
 
   useEffect(() => {
     let vigente = true;
-    Promise.all([getMe(), api.get("/api/Chat/sessions")]).then(([me, result]) => {
-      if (!vigente) return;
-      setUser(me); setSessions(result.data || []);
-      const requestedSession = new URLSearchParams(window.location.search).get("sesion");
-      if (requestedSession && result.data?.some(session => session.sesionId?.toLowerCase() === requestedSession.toLowerCase())) {
-        api.get(`/api/Chat/sessions/${requestedSession}`).then(({ data }) => {
+    (async () => {
+      try {
+        const [me, result] = await Promise.all([getMe(), api.get("/api/Chat/sessions")]);
+        if (!vigente) return;
+        setHistoryError("");
+        setUser(me);
+        setSessions(result.data || []);
+        const requestedSession = new URLSearchParams(window.location.search).get("sesion");
+        if (requestedSession) {
+          const encontrada = result.data?.some(session => session.sesionId?.toLowerCase() === requestedSession.toLowerCase());
+          if (!encontrada) {
+            setHistoryError("No encontramos esa conversación. Puedes iniciar una nueva.");
+            return;
+          }
+          const { data } = await api.get(`/api/Chat/sessions/${requestedSession}`);
           if (vigente) { setSessionId(requestedSession); setMessages(data); }
-        }).catch(() => { if (vigente) setError("No se pudo abrir esta conversación."); });
+        }
+      } catch {
+        if (vigente) setHistoryError("No se pudo cargar el historial del asistente.");
+      } finally {
+        if (vigente) setLoading(false);
       }
-    }).catch(() => { if (vigente) setError("No se pudo cargar el historial del asistente."); })
-      .finally(() => { if (vigente) setLoading(false); });
+    })();
     return () => { vigente = false; };
-  }, []);
+  }, [historyAttempt]);
 
   useEffect(() => { const panel = messagesRef.current; if (panel) panel.scrollTo({ top: panel.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }, [messages, sending]);
 
@@ -139,7 +153,7 @@ export default function Chat() {
       <Link to="/" className="chat-back"><ArrowLeft size={16} /> Volver al inicio</Link>
       <button className="chat-new" disabled={busy} onClick={nuevaConversacion}><Plus size={17} /> Nueva conversación</button>
       <div className="chat-history"><span className="chat-history-label">Tus conversaciones</span>
-        {loading ? <div className="chat-history-loading" role="status">Cargando historial…</div> : sessions.length === 0 ? <div className="chat-history-empty"><Clock3 size={20} /><p>Un nuevo comienzo.</p><small>Tus conversaciones aparecerán aquí.</small></div> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={15} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}
+        {loading ? <div className="chat-history-loading" role="status">Cargando historial…</div> : historyError ? <div className="chat-history-error" role="alert"><p>{historyError}</p><button type="button" onClick={() => { setLoading(true); setHistoryAttempt(value => value + 1); }}>Reintentar</button></div> : sessions.length === 0 ? <div className="chat-history-empty"><Clock3 size={20} /><p>Un nuevo comienzo.</p><small>Tus conversaciones aparecerán aquí.</small></div> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={15} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}
       </div>
       <Link className="chat-map-link" to="/mapa"><Map size={19} /><span>¿Prefieres explorar?<strong>Abrir el mapa del campus</strong></span><ArrowUpRight size={15} /></Link>
     </aside>

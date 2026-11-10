@@ -6,20 +6,20 @@ import { negocioError } from "../../services/negocioErrors";
 
 // Carga datos al montar y cada vez que cambia `clave` (p. ej. los filtros serializados).
 export function useCarga(cargador, clave = "") {
-  const [estado, setEstado] = useState({ cargando: true, datos: null, error: "" });
+  const [estado, setEstado] = useState({ cargando: true, datos: null, error: "", clave });
   const [version, setVersion] = useState(0);
   const ref = useRef(cargador);
   useEffect(() => { ref.current = cargador; });
   useEffect(() => {
     let activo = true;
     ref.current()
-      .then(datos => { if (activo) setEstado({ cargando: false, datos, error: "" }); })
-      .catch(e => { if (activo) setEstado(s => ({ ...s, cargando: false, error: negocioError(e) })); });
+      .then(datos => { if (activo) setEstado({ cargando: false, datos, error: "", clave }); })
+      .catch(e => { if (activo) setEstado(s => ({ cargando: false, datos: s.clave === clave ? s.datos : null, error: negocioError(e), clave })); });
     return () => { activo = false; };
   }, [version, clave]);
   const recargar = useCallback(() => { setEstado(s => ({ ...s, cargando: true })); setVersion(v => v + 1); }, []);
   const setDatos = useCallback(fn => setEstado(s => ({ ...s, datos: typeof fn === "function" ? fn(s.datos) : fn })), []);
-  return { ...estado, recargar, setDatos };
+  return { ...estado, cargando: estado.cargando || estado.clave !== clave, error: estado.clave === clave ? estado.error : "", recargar, setDatos };
 }
 
 // Ejecuta una acción mostrando ocupado/éxito/error de forma uniforme.
@@ -61,6 +61,12 @@ export function Vacio({ titulo, texto }) {
 
 export function Cargando({ texto = "Cargando…" }) {
   return <p className="adm-empty" role="status">{texto}</p>;
+}
+
+export function ErrorCarga({ error, onReintentar }) {
+  return <div className="adm-empty adm-load-error" role="alert"><strong>No se pudo cargar la información</strong><span>{error}</span>
+    {onReintentar && <button type="button" className="adm-btn" onClick={onReintentar}>Reintentar</button>}
+  </div>;
 }
 
 export function Paginacion({ pagina, total, tamano, onCambio }) {

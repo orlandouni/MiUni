@@ -3,7 +3,7 @@ import { Ban, Search, ShieldCheck, Unlock } from "lucide-react";
 import { adminApi, limpiarParams } from "../../services/admin";
 import { negocioError } from "../../services/negocioErrors";
 import { ROLES } from "../../services/roles";
-import { Aviso, Cargando, Confirmacion, Encabezado, Insignia, Modal, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Confirmacion, Encabezado, ErrorCarga, Insignia, Modal, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
 
 const TAMANO = 20;
 const TONO_ROL = { [ROLES.admin]: "primario", [ROLES.propietario]: "alerta", [ROLES.usuario]: "neutro" };
@@ -36,7 +36,7 @@ export default function Usuarios({ yo, onCambio }) {
 
   return <section className="adm-card">
     <Encabezado titulo="Usuarios" descripcion="Gestiona roles y acceso de las cuentas registradas." />
-    <Aviso aviso={aviso || (error && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
+    <Aviso aviso={aviso || (error && datos && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
     <form className="adm-filters" onSubmit={e => { e.preventDefault(); cambiar({ q: busqueda }); }}>
       <label className="adm-search"><Search size={15} /><input type="search" placeholder="Nombre o correo" value={busqueda}
         onChange={e => { setBusqueda(e.target.value); if (!e.target.value) cambiar({ q: "" }); }} /></label>
@@ -49,7 +49,7 @@ export default function Usuarios({ yo, onCambio }) {
       </select>
     </form>
 
-    {cargando && !datos ? <Cargando texto="Cargando usuarios…" /> : datos?.items.length === 0 ?
+    {cargando && !datos ? <Cargando texto="Cargando usuarios…" /> : error && !datos ? <ErrorCarga error={error} onReintentar={recargar} /> : datos?.items.length === 0 ?
       <Vacio titulo="Sin usuarios" texto="Nadie coincide con estos filtros." /> :
       <div className={`adm-table-wrap${cargando ? " recargando" : ""}`}><table className="adm-table">
         <thead><tr><th>Usuario</th><th>Roles</th><th>Carrera</th><th>Actividad</th><th>Registro</th><th aria-label="Acciones" /></tr></thead>

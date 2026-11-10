@@ -73,7 +73,7 @@ export default function Perfil() {
       </header>
       <main className="home-content perfil-content" id="perfil-main">
         <div className="perfil-heading"><div><span className="home-section-label"><UserRound size={14}/> Cuenta universitaria</span><h1>Mi perfil</h1><p>Tu información y actividad en MiUni.</p></div></div>
-        {error && <div className="perfil-alerta" role="alert">{error}</div>}
+        {error && <div className="perfil-alerta" role="alert"><span>{error}</span><button type="button" onClick={() => { setCargando(true); void cargar(); }} disabled={cargando}>Reintentar</button></div>}
         {cargando ? <p className="perfil-estado" role="status">Cargando perfil…</p> : datos && <>
           <section className="perfil-banner">
             <div className="perfil-banner-avatar"><UserRound size={30}/></div>

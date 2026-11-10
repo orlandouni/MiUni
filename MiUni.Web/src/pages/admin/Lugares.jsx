@@ -7,7 +7,7 @@ import { adminApi } from "../../services/admin";
 import { negocioError } from "../../services/negocioErrors";
 import { LIMITES_MAPA, TESELAS } from "../../components/mapaBase";
 import LimitarAlCampus from "../../components/LimitarAlCampus";
-import { Aviso, Cargando, Confirmacion, Encabezado, Insignia, Modal, Vacio, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Confirmacion, Encabezado, ErrorCarga, Insignia, Modal, Vacio, useAccion, useCarga } from "./ui";
 
 const CENTRO = [29.0833, -110.9627];
 
@@ -34,6 +34,8 @@ export default function Lugares({ onCambio }) {
   }, [lugares.datos, filtro]);
 
   const tras = ok => { if (ok) { lugares.recargar(); onCambio(); } return ok; };
+  const errorCarga = !lugares.datos ? lugares.error : !categorias.datos ? categorias.error : "";
+  const reintentarCarga = () => { lugares.recargar(); categorias.recargar(); };
 
   const cambiarActivo = l => l.activo
     ? setConfirmar({
@@ -49,7 +51,7 @@ export default function Lugares({ onCambio }) {
         <Plus size={15} /> Nuevo lugar
       </button>
     </Encabezado>
-    <Aviso aviso={aviso || ((lugares.error || categorias.error) && { tipo: "error", texto: lugares.error || categorias.error })} onCerrar={() => setAviso(null)} />
+    <Aviso aviso={aviso || (!errorCarga && (lugares.error || categorias.error) && { tipo: "error", texto: lugares.error || categorias.error })} onCerrar={() => setAviso(null)} />
 
     <div className="adm-filters">
       <label className="adm-search"><Search size={15} /><input type="search" placeholder="Buscar por nombre o descripción" value={filtro.q} onChange={e => setFiltro(f => ({ ...f, q: e.target.value }))} /></label>
@@ -62,7 +64,7 @@ export default function Lugares({ onCambio }) {
       </select>
     </div>
 
-    {lugares.cargando && !lugares.datos ? <Cargando texto="Cargando lugares…" /> : visibles.length === 0 ?
+    {lugares.cargando && !lugares.datos ? <Cargando texto="Cargando lugares…" /> : errorCarga ? <ErrorCarga error={errorCarga} onReintentar={reintentarCarga} /> : visibles.length === 0 ?
       <Vacio titulo="Sin resultados" texto="Ajusta los filtros o crea un lugar nuevo." /> :
       <div className="adm-table-wrap"><table className="adm-table">
         <thead><tr><th>Nombre</th><th>Categoría</th><th>Piso</th><th>Tipo</th><th>Estado</th><th aria-label="Acciones" /></tr></thead>

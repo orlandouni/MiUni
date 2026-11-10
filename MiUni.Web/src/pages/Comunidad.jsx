@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
+  BookOpen,
   Building2,
   CalendarDays,
   ExternalLink,
@@ -9,15 +10,18 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Eye,
   MessageSquare,
+  Menu,
   Pencil,
   Flag,
   Star,
   Trash2,
 } from "lucide-react";
 
-import api, { getMe, getToken } from "../services/api";
+import api, { clearSession, getMe, getToken } from "../services/api";
+import CampusSidebar from "../components/CampusSidebar";
 import {
   obtenerLugares,
   obtenerResenas,
@@ -52,6 +56,7 @@ function useConsulta(consultar) {
     version: -1,
     datos: null,
     error: "",
+    status: null,
   });
 
   useEffect(() => {
@@ -66,6 +71,7 @@ function useConsulta(consultar) {
             version,
             datos,
             error: "",
+            status: null,
           });
         }
       })
@@ -76,6 +82,7 @@ function useConsulta(consultar) {
             version,
             datos: null,
             error: mensajeError(error),
+            status: error.response?.status ?? null,
           });
         }
       });
@@ -136,7 +143,7 @@ function EstadoConsulta({ consulta }) {
             Reintentar
           </button>
 
-          <Link to="/login">Iniciar sesión</Link>
+          {consulta.status === 401 && <Link to="/login">Iniciar sesión</Link>}
         </div>
       </div>
     );
@@ -145,7 +152,59 @@ function EstadoConsulta({ consulta }) {
   return null;
 }
 
-function Pantalla({ titulo, subtitulo, children }) {
+function FormularioReporte({ pregunta, motivo, setMotivo, enviando, error, onEnviar, onCancelar }) {
+  return <form className="com-formulario com-reporte-form" onSubmit={onEnviar} aria-busy={enviando}>
+    <label>{pregunta}
+      <textarea required minLength={3} maxLength={2000} rows={3} value={motivo}
+        onChange={event => setMotivo(event.target.value)} placeholder="Describe el problema" />
+    </label>
+    {error && <p className="com-error" role="alert">{error}</p>}
+    <div className="com-acciones">
+      <button className="com-boton" type="submit" disabled={enviando}>
+        {enviando ? "Enviando…" : "Enviar reporte"}
+      </button>
+      <button className="com-boton com-secundario" type="button" disabled={enviando} onClick={onCancelar}>Cancelar</button>
+    </div>
+  </form>;
+}
+
+function Pantalla({ titulo, subtitulo, children, conSidebar = false, usuario = null }) {
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const nombre = usuario?.nombre || usuario?.email?.split("@")[0] || "Mi perfil";
+  const iniciales = nombre.slice(0, 2).toUpperCase();
+  const cerrarSesion = () => {
+    clearSession();
+    navigate("/login", { replace: true });
+  };
+
+  if (conSidebar) {
+    return (
+      <div className="home-app comunidad-app">
+        <a href="#com-main-content" className="skip-link">Saltar al contenido</a>
+        <CampusSidebar user={usuario} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={cerrarSesion} />
+        <div className="home-main">
+          <header className="home-topbar">
+            <button className="home-menu" onClick={() => setSidebarOpen(true)} aria-label="Abrir menú"><Menu size={19} /></button>
+            <div className="home-top-brand"><span className="home-top-icon"><BookOpen size={16} /></span><strong>MIUNI</strong></div>
+            <span className="home-top-context">Mi espacio · {titulo}</span>
+            <Link to="/perfil" className="home-account" aria-label="Ir a mi perfil" title="Mi perfil"><span>{iniciales}</span><ChevronRight size={15} /></Link>
+          </header>
+          <main className="home-content comunidad-content" id="com-main-content">
+            <section className="comunidad">
+              <div className="com-contenedor">
+                <header className="com-encabezado">
+                  <div><h1>{titulo}</h1>{subtitulo && <p>{subtitulo}</p>}</div>
+                </header>
+                {children}
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="comunidad">
       <div className="com-contenedor">
@@ -300,10 +359,14 @@ function TarjetaResena({ resena, titulo, propia, puedeReportar = false, alCambia
 
   async function reportar(evento) {
     evento.preventDefault();
+    if (motivo.trim().length < 3) {
+      setError("Describe el motivo con al menos 3 caracteres.");
+      return;
+    }
     setEnviandoReporte(true);
     setError("");
     try {
-      await api.post("/api/ReporteUsuario", { resenaId: resena.id, motivo });
+      await api.post("/api/ReporteUsuario", { resenaId: resena.id, motivo: motivo.trim() });
       setReporteEnviado(true);
       setReportando(false);
     } catch (e) { setError(mensajeError(e)); }
@@ -366,7 +429,7 @@ function TarjetaResena({ resena, titulo, propia, puedeReportar = false, alCambia
             </button>
           </div>
         )}
-        {puedeReportar && !propia && <button className="com-icono" type="button" aria-label="Reportar reseña" onClick={() => setReportando(value => !value)}><Flag size={17} /></button>}
+        {puedeReportar && !propia && !reporteEnviado && <button className="com-boton com-secundario com-reportar" type="button" onClick={() => { setReportando(value => !value); setError(""); }}><Flag size={16} /> Reportar reseña</button>}
       </div>
 
       {editando ? (
@@ -384,16 +447,10 @@ function TarjetaResena({ resena, titulo, propia, puedeReportar = false, alCambia
         </>
       )}
 
-      {reportando && <form className="com-formulario com-reporte-form" onSubmit={reportar}>
-        <label>¿Por qué reportas esta reseña?
-          <textarea required minLength={3} maxLength={2000} rows={3} value={motivo} onChange={event => setMotivo(event.target.value)} placeholder="Describe el problema" />
-        </label>
-        <div className="com-acciones"><button className="com-boton" disabled={enviandoReporte}>{enviandoReporte ? "Enviando…" : "Enviar reporte"}</button><button className="com-boton com-secundario" type="button" onClick={() => setReportando(false)}>Cancelar</button></div>
-      </form>}
-      {reportando && error && <p className="com-error" role="alert">{error}</p>}
+      {reportando && <FormularioReporte pregunta="¿Por qué reportas esta reseña?" motivo={motivo} setMotivo={setMotivo} enviando={enviandoReporte} error={error} onEnviar={reportar} onCancelar={() => setReportando(false)} />}
       {reporteEnviado && <p className="com-exito" role="status">Gracias. El equipo revisará tu reporte.</p>}
 
-      {error && <p className="com-error" role="alert">{error}</p>}
+      {error && !reportando && <p className="com-error" role="alert">{error}</p>}
     </article>
   );
 }
@@ -471,7 +528,7 @@ function ListaFavoritos() {
   const consultar = useCallback(async () => {
     const [favoritos, lugares] = await Promise.all([
       obtenerFavoritos(),
-      obtenerLugares(),
+      obtenerLugares().catch(() => []),
     ]);
     return { favoritos, lugares };
   }, []);
@@ -482,7 +539,7 @@ function ListaFavoritos() {
     <>
       <EstadoConsulta consulta={consulta} />
 
-      {consulta.datos && (
+      {consulta.datos && !consulta.error && (
         <>
           <p className="com-contador">
             {consulta.datos.favoritos.length} lugares guardados
@@ -516,7 +573,7 @@ export function Favoritos() {
   const sesion = useSesion();
 
   return (
-    <Pantalla titulo="Mis favoritos" subtitulo="Tus lugares guardados del campus">
+    <Pantalla titulo="Mis favoritos" subtitulo="Tus lugares guardados del campus" conSidebar usuario={sesion.datos}>
       <EstadoConsulta consulta={sesion} />
       {!sesion.cargando && !sesion.error && (
         sesion.datos ? <ListaFavoritos /> : <SolicitarSesion />
@@ -529,7 +586,7 @@ function ListaMisResenas({ usuario }) {
   const consultar = useCallback(async () => {
     const [resenas, lugares] = await Promise.all([
       obtenerResenas(),
-      obtenerLugares(),
+      obtenerLugares().catch(() => []),
     ]);
 
     return {
@@ -583,7 +640,7 @@ export function MisResenas() {
   const sesion = useSesion();
 
   return (
-    <Pantalla titulo="Mis reseñas" subtitulo="Tu experiencia en el campus">
+    <Pantalla titulo="Mis reseñas" subtitulo="Tu experiencia en el campus" conSidebar usuario={sesion.datos}>
       <EstadoConsulta consulta={sesion} />
       {!sesion.cargando && !sesion.error && (
         sesion.datos
@@ -689,9 +746,10 @@ function ContenidoLugar({ lugarId }) {
 
   async function reportarLugar(evento) {
     evento.preventDefault();
+    if (motivoLugar.trim().length < 3) { setErrorReporteLugar("Describe el motivo con al menos 3 caracteres."); return; }
     setEnviandoReporteLugar(true); setErrorReporteLugar("");
     try {
-      await api.post("/api/ReporteUsuario", { lugarId, motivo: motivoLugar });
+      await api.post("/api/ReporteUsuario", { lugarId, motivo: motivoLugar.trim() });
       setReporteLugarEnviado(true); setReportandoLugar(false);
     } catch (error) { setErrorReporteLugar(mensajeError(error)); }
     finally { setEnviandoReporteLugar(false); }
@@ -736,9 +794,9 @@ function ContenidoLugar({ lugarId }) {
 
             {sesion.datos && (
               <><BotonFavorito key={sesion.datos.id} lugarId={lugarId} />
-                <div className="com-reporte-lugar"><button className="com-boton com-secundario" type="button" onClick={() => setReportandoLugar(value => !value)}><Flag size={16} /> Reportar lugar</button>
+                <div className="com-reporte-lugar">{!reporteLugarEnviado && <button className="com-boton com-secundario" type="button" onClick={() => { setReportandoLugar(value => !value); setErrorReporteLugar(""); }}><Flag size={16} /> Reportar lugar</button>}
                   {reporteLugarEnviado && <p className="com-exito" role="status">Gracias. El equipo revisará tu reporte.</p>}
-                  {reportandoLugar && <form className="com-formulario" onSubmit={reportarLugar}><label>Motivo del reporte<textarea required minLength={3} maxLength={2000} rows={3} value={motivoLugar} onChange={event => setMotivoLugar(event.target.value)} /></label>{errorReporteLugar && <p role="alert" className="com-error">{errorReporteLugar}</p>}<div className="com-acciones"><button className="com-boton" disabled={enviandoReporteLugar}>{enviandoReporteLugar ? "Enviando…" : "Enviar reporte"}</button><button className="com-boton com-secundario" type="button" onClick={() => setReportandoLugar(false)}>Cancelar</button></div></form>}
+                  {reportandoLugar && <FormularioReporte pregunta="¿Por qué reportas este lugar?" motivo={motivoLugar} setMotivo={setMotivoLugar} enviando={enviandoReporteLugar} error={errorReporteLugar} onEnviar={reportarLugar} onCancelar={() => setReportandoLugar(false)} />}
                 </div>
               </>
             )}
@@ -1071,7 +1129,7 @@ export function MiHorario() {
   const sesion = useSesion();
 
   return (
-    <Pantalla titulo="Mi horario" subtitulo="Tus clases y tus profes, con acceso a sus reseñas en BuhoRater">
+    <Pantalla titulo="Mi horario" subtitulo="Tus clases y tus profes, con acceso a sus reseñas en BuhoRater" conSidebar usuario={sesion.datos}>
       <EstadoConsulta consulta={sesion} />
       {!sesion.cargando && !sesion.error && (
         sesion.datos ? <ContenidoHorario /> : <SolicitarSesion />

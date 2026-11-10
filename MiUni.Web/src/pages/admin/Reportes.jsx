@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, EyeOff, RotateCcw, Trash2, X } from "lucide-react";
 import { adminApi } from "../../services/admin";
-import { Aviso, Cargando, Confirmacion, Encabezado, Insignia, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
+import { Aviso, Cargando, Confirmacion, Encabezado, ErrorCarga, Insignia, Paginacion, Vacio, fecha, useAccion, useCarga } from "./ui";
 
 const ESTADOS = ["Pendiente", "Revisado", "Descartado"];
 const TONO = { Pendiente: "alerta", Revisado: "ok", Descartado: "neutro" };
@@ -49,9 +49,9 @@ export default function Reportes({ onCambio }) {
           onClick={() => { setEstado(e); setPagina(1); }}>{e || "Todos"}</button>)}
       </div>
     </Encabezado>
-    <Aviso aviso={aviso || (error && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
+    <Aviso aviso={aviso || (error && datos && { tipo: "error", texto: error })} onCerrar={() => setAviso(null)} />
 
-    {cargando && !datos ? <Cargando texto="Cargando reportes…" /> : datos?.items.length === 0 ?
+    {cargando && !datos ? <Cargando texto="Cargando reportes…" /> : error && !datos ? <ErrorCarga error={error} onReintentar={recargar} /> : datos?.items.length === 0 ?
       <Vacio titulo="Todo al día" texto="No hay reportes con este estado." /> :
       <div className={`adm-list${cargando ? " recargando" : ""}`}>
         {datos?.items.map(r => <article className="adm-item" key={r.id}>

@@ -22,6 +22,9 @@
 .home-account span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--yellow-soft); color: var(--navy); border: 1px solid #e6ce8c; font-size: 11px; font-weight: 700; }
 .home-content { overflow: auto; flex: 1; padding: 32px clamp(24px,3vw,48px) 48px; scroll-padding-top: 20px; }
 .home-welcome { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+.home-welcome { flex-wrap: wrap; }
+.home-inline-error { flex-basis: 100%; margin-top: 8px; color: var(--danger); font-size: 12px; }
+.home-inline-error button { margin-left: 8px; padding: 4px 9px; border: 1px solid #ae3b3733; border-radius: 8px; color: var(--danger); background: white; font: 600 11px var(--font-body); cursor: pointer; }
 .home-welcome strong { color: var(--ink); font-weight: 600; }
 .home-welcome span { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
 .home-hero { position: relative; display: grid; grid-template-columns: 1.3fr 1fr; align-items: center; min-height: 340px; gap: 24px; background: var(--navy); border-radius: var(--radius-lg); padding: 36px 40px; isolation: isolate; overflow: hidden; }
@@ -66,6 +69,8 @@
 .map-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .map-page-heading h1 { font: 600 40px/1 var(--font-display); margin: 7px 0 0; }
 .map-page-heading p { color: var(--muted); font-size: 12px; max-width: 320px; line-height: 1.7; }
+.map-page-heading .map-account-error { flex-basis: 100%; max-width: none; margin: 0; color: var(--danger); }
+.map-account-error button { margin-left: 8px; padding: 4px 9px; border: 1px solid #ae3b3733; border-radius: 8px; color: var(--danger); background: white; font: 600 11px var(--font-body); cursor: pointer; }
 .map-page-map { flex: 1; min-height: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; }
 @media(min-width:1650px) { :root { --sidebar-width: 244px; } .home-content { padding-top: 40px; } .home-hero { min-height: 370px; padding: 40px 56px; } .home-action { padding-block: 22px; } }
 @media(max-width:1150px) { :root { --sidebar-width: 200px; } .home-hero { padding: 30px; gap: 12px; } .home-mascot-glow { width: 210px; } .home-hero h1 { font-size: 60px; } .home-action { padding-inline: 8px; } .home-action strong { font-size: 12px; } .home-popular { align-items: flex-start; flex-direction: column; gap: 16px; } .home-chip-list { justify-content: flex-start; } }
