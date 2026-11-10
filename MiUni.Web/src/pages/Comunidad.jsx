@@ -3,6 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
+  CalendarDays,
+  ExternalLink,
+  FileUp,
+  Plus,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -26,6 +30,15 @@ import {
   quitarFavorito,
   mensajeError,
 } from "../services/comunidad";
+
+import {
+  obtenerHorario,
+  leerHorarioPdf,
+  guardarHorario,
+  agregarClase,
+  eliminarClase,
+} from "../services/horario";
+import { DIAS, agruparPorMateria, resumenSesiones } from "../services/horarioUtils";
 
 import InfoNegocioPublica from "../components/InfoNegocioPublica";
 import "./Comunidad.css";
@@ -150,6 +163,7 @@ function Pantalla({ titulo, subtitulo, children }) {
         <nav className="com-navegacion" aria-label="Mi actividad">
           <Link to="/">Mapa</Link>
           <Link to="/perfil">Mi perfil</Link>
+          <Link to="/horario">Mi horario</Link>
           <Link to="/favoritos">Mis favoritos</Link>
           <Link to="/resenas">Mis reseñas</Link>
           <Link to="/resenas-reportes">Mis reportes</Link>
@@ -819,4 +833,249 @@ function ListaReportes() {
 
 export function Reportes() {
   return <Pantalla titulo="Mis reportes" subtitulo="Consulta el estado de tus reportes enviados"><ListaReportes /></Pantalla>;
+}
+
+// ---------- Mi horario ----------
+
+function TarjetaMateria({ grupo, alQuitar }) {
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+
+  async function quitar() {
+    setOcupado(true);
+    setError("");
+    try {
+      for (const sesion of grupo.sesiones) await eliminarClase(sesion.id);
+      alQuitar();
+    } catch (error) {
+      setError(mensajeError(error));
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <article className="com-tarjeta com-horario-tarjeta">
+      <div className="com-fila">
+        <span className="com-categoria-icono">
+          <CalendarDays size={22} />
+        </span>
+
+        <div className="com-crecer">
+          <h2>{grupo.materia}</h2>
+          <p className="com-descripcion">
+            {grupo.profesor ?? "Sin profesor asignado"}
+            {grupo.salones.length > 0 && ` · ${grupo.salones.join(", ")}`}
+          </p>
+          <p className="com-horario-sesiones">{resumenSesiones(grupo.sesiones)}</p>
+        </div>
+
+        <div className="com-favorito-acciones">
+          {grupo.buhoRaterUrl && (
+            <a
+              className="com-boton com-secundario com-buho"
+              href={grupo.buhoRaterUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Buscar a ${grupo.profesor} en BuhoRater (se abre en otra pestaña)`}
+            >
+              BuhoRater <ExternalLink size={14} />
+            </a>
+          )}
+          {alQuitar && (
+            <button
+              type="button"
+              className="com-icono com-peligro"
+              aria-label={`Quitar ${grupo.materia} del horario`}
+              disabled={ocupado}
+              onClick={quitar}
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {error && <p className="com-error" role="alert">{error}</p>}
+    </article>
+  );
+}
+
+function SubirHorarioPdf({ alGuardar }) {
+  const [vista, setVista] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+
+  async function leer(evento) {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = "";
+    if (!archivo) return;
+    setOcupado(true);
+    setError("");
+    setVista(null);
+    try {
+      setVista(await leerHorarioPdf(archivo));
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function confirmar() {
+    setOcupado(true);
+    setError("");
+    try {
+      await guardarHorario(vista);
+      setVista(null);
+      alGuardar();
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <section className="com-seccion com-horario-subir" aria-busy={ocupado}>
+      <div className="com-interior">
+        <h2 className="com-horario-titulo"><FileUp size={18} /> Sube tu horario en PDF</h2>
+        <p className="com-descripcion">
+          Descarga el &quot;Horario de reinscripción&quot; del portal de alumnos de la UNISON y súbelo aquí.
+          Lo leemos y te mostramos tus clases antes de guardarlas.
+        </p>
+
+        <label className="com-boton com-horario-archivo">
+          {ocupado && !vista ? "Leyendo PDF…" : "Elegir PDF"}
+          <input type="file" accept="application/pdf,.pdf" onChange={leer} disabled={ocupado} />
+        </label>
+
+        {error && <p className="com-error" role="alert">{error}</p>}
+
+        {vista && (
+          <div className="com-horario-vista">
+            <p className="com-contador">
+              Encontramos {vista.length} clases en {agruparPorMateria(vista).length} materias. Revisa que estén bien:
+            </p>
+            <div className="com-lista">
+              {agruparPorMateria(vista).map((grupo) => (
+                <TarjetaMateria key={grupo.id} grupo={grupo} />
+              ))}
+            </div>
+            <p className="com-descripcion">Al guardar se reemplaza el horario que ya tenías.</p>
+            <div className="com-acciones">
+              <button type="button" className="com-boton" onClick={confirmar} disabled={ocupado}>
+                {ocupado ? "Guardando…" : "Guardar este horario"}
+              </button>
+              <button type="button" className="com-boton com-secundario" onClick={() => setVista(null)} disabled={ocupado}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const claseVacia = { materia: "", profesor: "", dia: 1, horaInicio: "07:00", horaFin: "08:00", salon: "" };
+
+function AgregarClaseManual({ alGuardar }) {
+  const [abierto, setAbierto] = useState(false);
+  const [clase, setClase] = useState(claseVacia);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+
+  const cambiar = (campo) => (evento) => setClase((actual) => ({ ...actual, [campo]: evento.target.value }));
+
+  async function enviar(evento) {
+    evento.preventDefault();
+    setGuardando(true);
+    setError("");
+    try {
+      await agregarClase(clase);
+      setClase((actual) => ({ ...claseVacia, materia: actual.materia, profesor: actual.profesor, salon: actual.salon }));
+      alGuardar();
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <section className="com-seccion">
+      <button type="button" className="com-acordeon" aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
+        <Plus size={18} /> <span>Agregar o corregir una clase a mano</span>
+        {abierto ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+      </button>
+
+      {abierto && (
+        <form className="com-formulario com-interior com-horario-form" onSubmit={enviar}>
+          <fieldset disabled={guardando}>
+            <label>Materia<input required maxLength={120} value={clase.materia} onChange={cambiar("materia")} /></label>
+            <label>Profesor <span>(opcional)</span><input maxLength={120} value={clase.profesor} onChange={cambiar("profesor")} /></label>
+            <div className="com-horario-campos">
+              <label>Día
+                <select value={clase.dia} onChange={cambiar("dia")}>
+                  {DIAS.map((dia, i) => <option key={dia} value={i + 1}>{dia}</option>)}
+                </select>
+              </label>
+              <label>Inicio<input type="time" required value={clase.horaInicio} onChange={cambiar("horaInicio")} /></label>
+              <label>Fin<input type="time" required value={clase.horaFin} onChange={cambiar("horaFin")} /></label>
+              <label>Salón <span>(opcional)</span><input maxLength={60} value={clase.salon} onChange={cambiar("salon")} /></label>
+            </div>
+            {error && <p className="com-error" role="alert">{error}</p>}
+            <div className="com-acciones">
+              <button className="com-boton" type="submit">{guardando ? "Guardando…" : "Agregar clase"}</button>
+            </div>
+          </fieldset>
+        </form>
+      )}
+    </section>
+  );
+}
+
+function ContenidoHorario() {
+  const consulta = useConsulta(obtenerHorario);
+  const grupos = consulta.datos ? agruparPorMateria(consulta.datos) : [];
+
+  return (
+    <>
+      <SubirHorarioPdf alGuardar={consulta.actualizar} />
+      <EstadoConsulta consulta={consulta} />
+
+      {consulta.datos && (
+        <>
+          <p className="com-contador">{grupos.length} materias en tu horario</p>
+          <div className="com-lista">
+            {grupos.map((grupo) => (
+              <TarjetaMateria key={grupo.id} grupo={grupo} alQuitar={consulta.actualizar} />
+            ))}
+          </div>
+          {grupos.length === 0 && (
+            <p className="com-vacio">Todavía no tienes clases. Sube el PDF de tu horario para empezar.</p>
+          )}
+          <p className="com-descripcion com-horario-nota">
+            Las calificaciones de los profesores están en BuhoRater, un sitio independiente de MiUni.
+            El botón abre la búsqueda del profesor en otra pestaña.
+          </p>
+        </>
+      )}
+
+      <AgregarClaseManual alGuardar={consulta.actualizar} />
+    </>
+  );
+}
+
+export function MiHorario() {
+  const sesion = useSesion();
+
+  return (
+    <Pantalla titulo="Mi horario" subtitulo="Tus clases y tus profes, con acceso a sus reseñas en BuhoRater">
+      <EstadoConsulta consulta={sesion} />
+      {!sesion.cargando && !sesion.error && (
+        sesion.datos ? <ContenidoHorario /> : <SolicitarSesion />
+      )}
+    </Pantalla>
+  );
 }

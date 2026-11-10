@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { Building2, Compass, House, LogOut, Map, MessageSquare, ShieldCheck, Star, UserRound, X } from "lucide-react";
+import { Building2, CalendarDays, Compass, House, LogOut, Map, MessageSquare, ShieldCheck, Star, UserRound, X } from "lucide-react";
 import { ROLES, canManageBusiness } from "../services/roles";
 
 export default function CampusSidebar({ user, open = false, onClose = () => {}, onLogout }) {
@@ -22,6 +22,7 @@ export default function CampusSidebar({ user, open = false, onClose = () => {}, 
       <div className="home-nav-group">
         <span className="home-nav-label">Mi espacio</span>
         <NavLink to="/perfil" className={navClass} onClick={closeOnMobile}><UserRound size={17} /> Mi perfil</NavLink>
+        <NavLink to="/horario" className={navClass} onClick={closeOnMobile}><CalendarDays size={17} /> Mi horario</NavLink>
         <NavLink to="/favoritos" className={navClass} onClick={closeOnMobile}><Star size={17} /> Mis favoritos</NavLink>
         <NavLink to="/resenas" className={navClass} onClick={closeOnMobile}><MessageSquare size={17} /> Mis reseñas y reportes</NavLink>
       </div>
