@@ -1190,7 +1190,7 @@ function ImportarPerfilesBuhoRater({ alImportar }) {
       <div className="com-interior">
         <h2 className="com-horario-titulo"><FileUp size={18} /> Admin: cargar perfiles de BuhoRater</h2>
         <p className="com-descripcion">
-          Abre en tu navegador la página de BuhoRater donde salen los profes, baja hasta el final, guárdala con
+          Abre buhorater.com en tu navegador, presiona &quot;Cargar más resultados&quot; hasta que salgan todos los profes, guarda la página con
           Ctrl+S (&quot;Página web completa&quot;) y súbela aquí. También acepta un CSV con nombre y enlace.
           Los botones de esos profes llevarán directo a su perfil para todos los estudiantes.
         </p>

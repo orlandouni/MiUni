@@ -20,6 +20,11 @@ public static partial class BuhoRaterImport
     [GeneratedRegex(@"\b(?:aria-label|title)\s*=\s*(?:""(?<v>[^""]*)""|'(?<v>[^']*)')", RegexOptions.IgnoreCase)]
     private static partial Regex Etiqueta();
 
+    // Encabezado (h1..h6) o texto alternativo de imagen: en las tarjetas de BuhoRater el enlace
+    // al perfil va vacío y el nombre está en el <h3> de la misma tarjeta.
+    [GeneratedRegex(@"<h[1-6]\b[^>]*>(?<v>.*?)</h[1-6]\s*>|<img\b[^>]*\balt\s*=\s*(?:""(?<v>[^""]*)""|'(?<v>[^']*)')", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    private static partial Regex NombreCercano();
+
     [GeneratedRegex(@"<(script|style)\b.*?</\1\s*>", RegexOptions.IgnoreCase | RegexOptions.Singleline)]
     private static partial Regex ScriptsYEstilos();
 
@@ -30,7 +35,8 @@ public static partial class BuhoRaterImport
     private static partial Regex Uuid();
 
     private static readonly HashSet<string> TextosGenericos =
-        ["VER PERFIL", "PERFIL", "VER", "VER MAS", "CALIFICAR", "VER RESENAS", "RESENAS"];
+        new[] { "VER PERFIL", "PERFIL", "VER", "VER MAS", "CALIFICAR", "VER RESENAS", "RESENAS" }
+            .Select(t => BuhoRater.Clave(t)!).ToHashSet();
 
     public static ResultadoImportacion Leer(string contenido, string nombreArchivo)
     {
@@ -44,8 +50,11 @@ public static partial class BuhoRaterImport
         html = ScriptsYEstilos().Replace(html, " ");
         var perfiles = new List<PerfilImportado>();
         var sinNombre = new HashSet<Guid>();
+        var finAnterior = 0;
         foreach (Match enlace in Enlace().Matches(html))
         {
+            var antes = html[finAnterior..enlace.Index];
+            finAnterior = enlace.Index + enlace.Length;
             var atributos = enlace.Groups["atributos"].Value;
             var href = Href().Match(atributos);
             if (!href.Success || !BuhoRater.TryLeerPerfil(Absoluto(WebUtility.HtmlDecode(href.Groups["v"].Value)), out var id))
@@ -53,6 +62,14 @@ public static partial class BuhoRaterImport
             var nombre = Nombre(enlace.Groups["texto"].Value);
             if (nombre is null && Etiqueta().Match(atributos) is { Success: true } etiqueta)
                 nombre = Nombre(etiqueta.Groups["v"].Value);
+            // Lo más cercano antes del enlace y después del enlace anterior: primero un encabezado.
+            if (nombre is null)
+            {
+                var candidatos = NombreCercano().Matches(antes).Cast<Match>().ToList();
+                nombre = candidatos.Where(m => m.Value.StartsWith("<h", StringComparison.OrdinalIgnoreCase))
+                    .Select(m => Nombre(m.Groups["v"].Value)).LastOrDefault(n => n is not null)
+                    ?? candidatos.Select(m => Nombre(m.Groups["v"].Value)).LastOrDefault(n => n is not null);
+            }
             if (nombre is null) sinNombre.Add(id);
             else perfiles.Add(new PerfilImportado(nombre, id));
         }

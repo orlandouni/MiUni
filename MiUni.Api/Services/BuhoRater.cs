@@ -46,13 +46,18 @@ public static class BuhoRater
             && perfilId != Guid.Empty;
     }
 
+    // Clave para reconocer al mismo profe aunque venga escrito distinto: sin acentos, en
+    // mayúsculas y con las palabras ordenadas, porque el horario de la UNISON pone primero
+    // los apellidos ("SOTO MORA CLAUDIA PAULINA") y BuhoRater primero el nombre.
     public static string? Clave(string? profesor)
     {
         var sinAcentos = new StringBuilder();
         foreach (var c in (profesor ?? "").Normalize(NormalizationForm.FormD))
             if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
                 sinAcentos.Append(char.ToUpperInvariant(c));
-        var clave = string.Join(' ', sinAcentos.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        var palabras = sinAcentos.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Array.Sort(palabras, StringComparer.Ordinal);
+        var clave = string.Join(' ', palabras);
         return clave.Length == 0 ? null : clave;
     }
 }

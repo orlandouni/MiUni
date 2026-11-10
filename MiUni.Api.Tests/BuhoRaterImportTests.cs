@@ -33,6 +33,23 @@ public class BuhoRaterImportTests
         Assert.Equal(1, resultado.SinNombre);
     }
 
+    // Así vienen las tarjetas en la página principal de BuhoRater guardada desde el navegador.
+    [Fact]
+    public void ReadsBuhoRaterCardsWhereLinkIsEmpty()
+    {
+        var html = $$"""
+            <nav><a href="https://www.buhorater.com/dictionary" class="nav-link">Directorio</a></nav>
+            <div id="resultados">
+            <div class="card"><img alt="AARON CHAVEZ VALDEZ" src="logo2.png"><div class="card-info"><h3>AARON CHAVEZ VALDEZ</h3><p class="depto">Departamento de Economía</p><div class="meta-row"><div class="rating-pill rating-high">★ 4.4</div></div></div><a href="https://www.buhorater.com/perfil?id={{Soto}}" class="full-link"></a></div>
+            <div class="card"><img alt="ADALBERTO CORELLA MADUEÑO" src="logo2.png"><div class="card-info"><h3>ADALBERTO CORELLA MADUEÑO</h3><p class="depto">Departamento de Física</p></div><a href="https://www.buhorater.com/perfil?id={{Lopez}}" class="full-link"></a></div>
+            </div>
+            """;
+        var resultado = BuhoRaterImport.LeerHtml(html);
+        Assert.Equal(["AARON CHAVEZ VALDEZ", "ADALBERTO CORELLA MADUEÑO"], resultado.Perfiles.Select(p => p.Nombre));
+        Assert.Equal([Guid.Parse(Soto), Guid.Parse(Lopez)], resultado.Perfiles.Select(p => p.PerfilId));
+        Assert.Equal(0, resultado.SinNombre);
+    }
+
     [Fact]
     public void ReadsCsvInEitherColumnOrder()
     {
@@ -48,7 +65,7 @@ public class BuhoRaterImportTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
         var admin = Guid.NewGuid();
         db.Users.Add(new MiUni.Api.Identity.ApplicationUser { Id = admin, Nombre = "Admin" });
-        db.ProfesorBuhoRaters.Add(new ProfesorBuhoRater { Clave = "LOPEZ RUIZ ANA", Nombre = "LÓPEZ RUIZ ANA", PerfilId = Guid.NewGuid() });
+        db.ProfesorBuhoRaters.Add(new ProfesorBuhoRater { Clave = "ANA LOPEZ RUIZ", Nombre = "LÓPEZ RUIZ ANA", PerfilId = Guid.NewGuid() });
         await db.SaveChangesAsync();
         var controller = new HorarioController(db)
         {
@@ -67,12 +84,16 @@ public class BuhoRaterImportTests
             new FormFile(new MemoryStream(html), 0, html.Length, "archivo", "buhorater.html"), default));
         Assert.Contains("nuevos = 1", ok.Value!.ToString());
         Assert.Contains("actualizados = 1", ok.Value!.ToString());
-        Assert.Equal(Guid.Parse(Lopez), (await db.ProfesorBuhoRaters.SingleAsync(p => p.Clave == "LOPEZ RUIZ ANA")).PerfilId);
+        Assert.Equal(Guid.Parse(Lopez), (await db.ProfesorBuhoRaters.SingleAsync(p => p.Clave == "ANA LOPEZ RUIZ")).PerfilId);
 
         var vacio = Encoding.UTF8.GetBytes("<p>nada</p>");
         Assert.IsType<UnprocessableEntityObjectResult>(await controller.ImportarBuhoRater(
             new FormFile(new MemoryStream(vacio), 0, vacio.Length, "archivo", "x.html"), default));
     }
+
+    [Fact]
+    public void MatchesUnisonNameOrderWithBuhoRaterNameOrder() =>
+        Assert.Equal(BuhoRater.Clave("SOTO MORA CLAUDIA PAULINA"), BuhoRater.Clave("Claudia Paulina Soto Mora"));
 
     [Fact]
     public void ImportIsAdminOnly()
