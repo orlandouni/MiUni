@@ -8,9 +8,8 @@ export const TESELAS = {
   className: "miuni-teselas",
 };
 
-// Unison y ~500 m alrededor (la misma zona de la que se importan los caminos).
-export const LIMITES_CAMPUS = [[29.0755, -110.975], [29.0915, -110.9535]];
-export const ZOOM_MINIMO = 15;
+// Perímetro del campus Unison centro (lugares del seed + ~150 m: Reforma, Luis Encinas, Rosales).
+export const LIMITES_CAMPUS = [[29.0790, -110.9712], [29.0880, -110.9572]];
 
-// Props para <MapContainer>: no deja salir del campus ni alejarse hasta ver la ciudad o el mundo.
-export const LIMITES_MAPA = { maxBounds: LIMITES_CAMPUS, maxBoundsViscosity: 1, minZoom: ZOOM_MINIMO, maxZoom: 19 };
+// Props para <MapContainer>. El zoom mínimo real lo fija <LimitarAlCampus /> según el tamaño del mapa.
+export const LIMITES_MAPA = { maxBounds: LIMITES_CAMPUS, maxBoundsViscosity: 1, minZoom: 15, maxZoom: 19, zoomSnap: 0.25 };

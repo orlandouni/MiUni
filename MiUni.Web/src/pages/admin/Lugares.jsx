@@ -6,6 +6,7 @@ import { EyeOff, Pencil, Plus, RotateCcw, Search } from "lucide-react";
 import { adminApi } from "../../services/admin";
 import { negocioError } from "../../services/negocioErrors";
 import { LIMITES_MAPA, TESELAS } from "../../components/mapaBase";
+import LimitarAlCampus from "../../components/LimitarAlCampus";
 import { Aviso, Cargando, Confirmacion, Encabezado, Insignia, Modal, Vacio, useAccion, useCarga } from "./ui";
 
 const CENTRO = [29.0833, -110.9627];
@@ -129,6 +130,7 @@ function FormLugar({ lugar, categorias, onCerrar, onGuardado }) {
       <div className="adm-map-picker">
         <MapContainer center={posicion} zoom={17} scrollWheelZoom {...LIMITES_MAPA}>
           <TileLayer {...TESELAS} />
+          <LimitarAlCampus />
           <SelectorMapa posicion={posicion} onCambio={(lat, lng) => setValores(v => ({ ...v, latitud: lat.toFixed(6), longitud: lng.toFixed(6) }))} />
         </MapContainer>
         <small>Haz clic en el mapa para colocar el lugar.</small>

@@ -86,3 +86,10 @@
 
 /* Suaviza el estilo de OSM: menos saturado y más claro, para que destaquen ruta y marcadores. */
 .miuni-teselas { filter: saturate(.55) brightness(1.04) contrast(.95); }
+
+/* Ficha del lugar: flota sobre el mapa al tocar un lugar. */
+.campus-map-stage > .campus-place-card { position: absolute; z-index: 500; right: 16px; top: 66px; width: min(340px, calc(100% - 80px)); max-height: calc(100% - 82px); overflow-y: auto; margin: 0; padding: 18px 18px 16px; border: 1px solid #102e5014; border-radius: var(--radius-md); background: white; box-shadow: var(--shadow-popover); }
+.campus-map-stage > .campus-place-card h3 { margin: 6px 36px 6px 0; font-size: 25px; }
+.campus-map-stage > .campus-place-card .info-negocio h3 { font-size: 18px; margin: 0 0 8px; }
+.campus-place-close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--ink); cursor: pointer; }
+@media(max-width:700px) { .campus-map-stage > .campus-place-card { top: auto; left: 10px; right: 10px; bottom: 10px; width: auto; max-height: 62%; } }

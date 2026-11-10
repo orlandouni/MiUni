@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Link, useSearchParams } from "react-router-dom";
@@ -12,6 +12,7 @@ import InfoNegocioPublica from "./InfoNegocioPublica";
 import {crearIcono, categoryStyle} from "./mapMarkers";
 import "./CampusMap.css";
 import { LIMITES_MAPA, TESELAS } from "./mapaBase";
+import LimitarAlCampus from "./LimitarAlCampus";
 
 const CENTRO_INICIAL = [29.0833, -110.9627];
 const ZOOM_INICIAL = 17;
@@ -96,6 +97,17 @@ function CampusMap() {
       .catch(() => {});
   }, []);
 
+  // Todos los lugares del campus, para verlos en el mapa sin tener que buscar.
+  const [todos, setTodos] = useState(SIN_LUGARES);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/Lugar", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : SIN_LUGARES))
+      .then(setTodos)
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+
   // Solo se consulta la API cuando hay algo que buscar
   useEffect(() => {
     if (!hayFiltro) return;
@@ -122,6 +134,7 @@ function CampusMap() {
 
   // Lo que realmente se pinta en el mapa
   const lugares = hayFiltro ? resultado.lugares : SIN_LUGARES;
+  const enMapa = hayFiltro ? lugares : todos;
   const cargando = hayFiltro && resultado.clave !== clave;
   const error = hayFiltro && !cargando && resultado.error;
   const sinResultados = hayFiltro && !cargando && !error && lugares.length === 0;
@@ -160,7 +173,12 @@ function CampusMap() {
           </div>}
         </div>
         <PanelRuta estado={ruta} />
-        {detalle ? <section className="campus-place-card" aria-label="Lugar seleccionado">
+        {!detalle && !hayFiltro && !ruta.destino && <div className="campus-welcome"><MapPin size={23} /><p>El campus, sin perderte.</p><span>Busca un lugar o elige una categoría para empezar a explorar.</span></div>}
+      </aside>
+      <div className="campus-map-stage">
+        <div className="campus-map-label"><span /> Universidad de Sonora <small>Campus Hermosillo</small></div>
+        {detalle && <section className="campus-place-card" aria-label="Información del lugar">
+          <button type="button" className="campus-place-close" aria-label="Cerrar ficha" onClick={() => { salirDeLugarChat(); setSeleccionado(null); }}><X size={16} /></button>
           <span className="ui-eyebrow"><MapPin size={12} /> {detalle.categoria?.nombre || "En el campus"}</span>
           <h3>{detalle.nombre}</h3>
           {detalle.abiertoAhora != null && <EstadoApertura abierto={detalle.abiertoAhora} />}
@@ -169,22 +187,16 @@ function CampusMap() {
           <div className="campus-place-actions">{ruta.destino?.id !== detalle.id && <button type="button" className="primario" onClick={() => ruta.elegir("destino", detalle)}><Route size={13} /> Cómo llegar</button>}<button type="button" onClick={() => ruta.elegir("origen", detalle)}>Salir desde aquí</button></div>
           <InfoNegocioPublica key={detalle.id} lugarId={detalle.id} />
           <Link to={`/lugares/${detalle.id}`}>Reseñas y favoritos <ArrowUpRight size={13} /></Link>
-        </section> : !hayFiltro && !ruta.destino && <div className="campus-welcome"><MapPin size={23} /><p>El campus, sin perderte.</p><span>Busca un lugar o elige una categoría para empezar a explorar.</span></div>}
-      </aside>
-      <div className="campus-map-stage">
-        <div className="campus-map-label"><span /> Universidad de Sonora <small>Campus Hermosillo</small></div>
+        </section>}
         <MapContainer center={CENTRO_INICIAL} zoom={ZOOM_INICIAL} className="campus-leaflet" zoomControl={true} {...LIMITES_MAPA}>
           <TileLayer {...TESELAS} />
+          <LimitarAlCampus />
           <AjustarVista lugares={lugares} hayFiltro={hayFiltro} lugarSeleccionado={lugarId || seleccionado?.id} />
           <VistaMapa lugar={seleccionado} />
           <CapaRuta estado={ruta} />
           {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} icon={crearIcono(lugarChat.categoria?.nombre, true)} />}
-          {lugares.filter(lugar => lugar.id !== lugarChat?.id).map(lugar => <Marker key={lugar.id} position={[lugar.latitud, lugar.longitud]}
+          {enMapa.filter(lugar => lugar.id !== lugarChat?.id).map(lugar => <Marker key={lugar.id} position={[lugar.latitud, lugar.longitud]}
             title={lugar.nombre} alt={lugar.nombre} icon={crearIcono(lugar.categoria?.nombre, seleccionado?.id === lugar.id)} eventHandlers={{click: () => { setSeleccionado(lugar); ruta.elegir("destino", lugar); }}}>
-            <Popup><div className="campus-popup"><span>{lugar.categoria?.nombre}{lugar.esAmbulante ? " · Ambulante (zona aproximada)" : ""}</span><strong>{lugar.nombre}</strong><p>{lugar.descripcion}</p>
-              <div><button type="button" onClick={() => ruta.elegir("origen", lugar)}>Salir desde aquí</button></div>
-              <Link to={`/lugares/${lugar.id}`}>Ver ficha del lugar →</Link>
-            </div></Popup>
           </Marker>)}
         </MapContainer>
       </div>
