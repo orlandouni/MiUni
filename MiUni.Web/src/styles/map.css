@@ -83,3 +83,6 @@
 .campus-place-card .info-negocio-horario li { font-size: 12px; padding: 4px 8px; }
 .campus-place-card .info-negocio-menu li { font-size: 12.5px; border-bottom-color: var(--line); }
 .campus-place-card .info-negocio-menu li > span:last-child { color: var(--navy); }
+
+/* Suaviza el estilo de OSM: menos saturado y más claro, para que destaquen ruta y marcadores. */
+.miuni-teselas { filter: saturate(.55) brightness(1.04) contrast(.95); }
