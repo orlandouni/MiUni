@@ -9,6 +9,8 @@ public class LugarDto
     public double Latitud { get; set; }
     public double Longitud { get; set; }
     public bool EsAmbulante { get; set; }
+    // Null si el lugar no publicó horario.
+    public bool? AbiertoAhora { get; set; }
     public CategoriaDto Categoria { get; set; } = null!;
 }
 

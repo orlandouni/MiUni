@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { EyeOff, Pencil, Plus, RotateCcw, Search } from "lucide-react";
 import { adminApi } from "../../services/admin";
 import { negocioError } from "../../services/negocioErrors";
+import { LIMITES_MAPA, TESELAS } from "../../components/mapaBase";
 import { Aviso, Cargando, Confirmacion, Encabezado, Insignia, Modal, Vacio, useAccion, useCarga } from "./ui";
 
 const CENTRO = [29.0833, -110.9627];
@@ -126,8 +127,8 @@ function FormLugar({ lugar, categorias, onCerrar, onGuardado }) {
         <label>Longitud<input required type="number" step="any" min={-180} max={180} value={valores.longitud} onChange={e => set("longitud", e.target.value)} /></label>
       </div>
       <div className="adm-map-picker">
-        <MapContainer center={posicion} zoom={17} scrollWheelZoom>
-          <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MapContainer center={posicion} zoom={17} scrollWheelZoom {...LIMITES_MAPA}>
+          <TileLayer {...TESELAS} />
           <SelectorMapa posicion={posicion} onCambio={(lat, lng) => setValores(v => ({ ...v, latitud: lat.toFixed(6), longitud: lng.toFixed(6) }))} />
         </MapContainer>
         <small>Haz clic en el mapa para colocar el lugar.</small>

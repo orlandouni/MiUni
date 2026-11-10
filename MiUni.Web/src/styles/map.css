@@ -67,3 +67,19 @@
 .ruta-origen-falta { flex-direction: column; align-items: stretch; }
 .ruta-origen-falta > div { display: flex; gap: 6px; flex-wrap: wrap; }
 .ruta-origen-falta button:first-child { background: var(--blue); color: white; border-color: var(--blue); }
+
+.campus-open-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 6px 0 2px; padding: 7px 11px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: white; color: var(--ink); font-size: 11px; cursor: pointer; }
+.campus-open-toggle[aria-pressed=true] { border-color: var(--green); background: var(--green-soft); color: var(--green); font-weight: 600; }
+.campus-open-badge { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; }
+.campus-place-card > .campus-open-badge { margin: 0 0 6px; }
+.campus-open-badge.abierto { background: var(--green-soft); color: var(--green); }
+.campus-open-badge.cerrado { background: var(--canvas); color: var(--muted); }
+.campus-place-meta { margin: 0; }
+/* La ficha del mapa es clara: InfoNegocioPublica está pensada para fondo oscuro. */
+.campus-place-card .info-negocio { grid-template-columns: 1fr; gap: 16px; margin: 14px 0; padding-top: 14px; border-top-color: var(--line); color: var(--ink); }
+.campus-place-card .info-negocio h3 { font-size: 19px; margin: 0 0 8px; }
+.campus-place-card .info-negocio h3 .cerrado { background: var(--canvas); color: var(--muted); }
+.campus-place-card .info-negocio-ambulante { background: var(--yellow-soft); font-size: 12px; }
+.campus-place-card .info-negocio-horario li { font-size: 12px; padding: 4px 8px; }
+.campus-place-card .info-negocio-menu li { font-size: 12.5px; border-bottom-color: var(--line); }
+.campus-place-card .info-negocio-menu li > span:last-child { color: var(--navy); }
