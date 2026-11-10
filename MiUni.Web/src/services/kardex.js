@@ -29,3 +29,17 @@ export const guardarMateria = (id, form) => id
   : api.post("/api/Kardex", aPeticion(form));
 
 export const eliminarMateria = id => api.delete(`/api/Kardex/${id}`);
+
+// Lee el PDF del kárdex del portal y devuelve las materias encontradas, sin guardarlas.
+export async function leerKardexPdf(archivo) {
+  const formulario = new FormData();
+  formulario.append("archivo", archivo);
+  const { data } = await api.post("/api/Kardex/importar", formulario);
+  return data;
+}
+
+// Reemplaza todo el kárdex con estas materias.
+export async function guardarKardex(materias) {
+  const { data } = await api.put("/api/Kardex", materias);
+  return data;
+}

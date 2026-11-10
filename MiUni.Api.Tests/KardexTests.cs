@@ -66,15 +66,18 @@ public class KardexTests
     }
 
     [Fact]
-    public async Task ExigeCalificacionEnMateriasTerminadas()
+    public async Task AceptaMateriasAcreditadasSinCalificacion()
     {
         await using var db = Database();
         var user = await SeedUser(db);
 
-        var result = await AsUser(db, user).Create(Materia("Cálculo I", EstadoMateria.Aprobada, null), default);
+        // Materias como Culturest se acreditan ("AC") sin número; no cuentan para el promedio.
+        Assert.IsType<CreatedAtActionResult>(await AsUser(db, user).Create(Materia("Culturest", EstadoMateria.Aprobada, null, creditos: 2), default));
+        await AsUser(db, user).Create(Materia("Cálculo I", EstadoMateria.Aprobada, 80), default);
 
-        Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Empty(db.KardexMaterias);
+        var kardex = Assert.IsType<KardexDto>(Assert.IsType<OkObjectResult>(await AsUser(db, user).Get(default)).Value);
+        Assert.Equal(10, kardex.Resumen.CreditosAprobados);
+        Assert.Equal(80m, kardex.Resumen.Promedio);
     }
 
     [Fact]
