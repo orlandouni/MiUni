@@ -173,6 +173,47 @@ public class HorarioController(MiUniDbContext context) : ControllerBase
         return Ok(new PerfilBuhoRaterDto(nombre, BuhoRater.Url(nombre, perfiles), BuhoRater.TienePerfil(nombre, perfiles)));
     }
 
+    // Carga de golpe los perfiles de BuhoRater desde una página guardada (.html) o un CSV.
+    // Los profes que ya tenían perfil se actualizan.
+    [HttpPost("profesores/buhorater/importar"), Authorize(Roles = AppRoles.Administrador)]
+    [RequestSizeLimit(10 * 1024 * 1024 + 64 * 1024)]
+    public async Task<IActionResult> ImportarBuhoRater(IFormFile? archivo, CancellationToken ct)
+    {
+        if (!TryGetUsuario(out var usuarioId)) return Unauthorized();
+        if (archivo is null || archivo.Length == 0)
+            return BadRequest(new { message = "Sube la página de BuhoRater guardada (.html) o un CSV." });
+        if (archivo.Length > 10 * 1024 * 1024)
+            return BadRequest(new { message = "El archivo no puede pasar de 10 MB." });
+
+        string contenido;
+        using (var lector = new StreamReader(archivo.OpenReadStream()))
+            contenido = await lector.ReadToEndAsync(ct);
+        var resultado = BuhoRaterImport.Leer(contenido, archivo.FileName ?? "");
+        if (resultado.Perfiles.Count == 0)
+            return UnprocessableEntity(new { message = "No encontramos enlaces de perfiles de BuhoRater con el nombre del profe en ese archivo." });
+
+        var porClave = resultado.Perfiles.ToDictionary(p => BuhoRater.Clave(p.Nombre)!, p => p);
+        var claves = porClave.Keys.ToList();
+        var existentes = await context.ProfesorBuhoRaters.Where(p => claves.Contains(p.Clave)).ToDictionaryAsync(p => p.Clave, ct);
+        int nuevos = 0, actualizados = 0;
+        foreach (var (clave, perfil) in porClave)
+        {
+            if (!existentes.TryGetValue(clave, out var fila))
+            {
+                fila = context.ProfesorBuhoRaters.Add(new ProfesorBuhoRater { Clave = clave }).Entity;
+                nuevos++;
+            }
+            else if (fila.PerfilId != perfil.PerfilId) actualizados++;
+            else continue;
+            fila.Nombre = perfil.Nombre;
+            fila.PerfilId = perfil.PerfilId;
+            fila.ActualizadoPorId = usuarioId;
+            fila.FechaActualizacion = DateTime.UtcNow;
+        }
+        await context.SaveChangesAsync(ct);
+        return Ok(new { leidos = resultado.Perfiles.Count, nuevos, actualizados, sinNombre = resultado.SinNombre });
+    }
+
     private async Task<IReadOnlyDictionary<string, Guid>> Perfiles(IEnumerable<string?> profesores, CancellationToken ct)
     {
         var claves = profesores.Select(BuhoRater.Clave).OfType<string>().Distinct().ToList();

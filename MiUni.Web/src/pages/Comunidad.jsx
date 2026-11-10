@@ -42,6 +42,7 @@ import {
   agregarClase,
   eliminarClase,
   vincularBuhoRater,
+  importarPerfilesBuhoRater,
 } from "../services/horario";
 import { DIAS, agruparPorMateria, resumenSesiones, esEnlacePerfilBuhoRater } from "../services/horarioUtils";
 
@@ -1162,6 +1163,53 @@ function AgregarClaseManual({ alGuardar }) {
   );
 }
 
+function ImportarPerfilesBuhoRater({ alImportar }) {
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+  const [resultado, setResultado] = useState(null);
+
+  async function importar(evento) {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = "";
+    if (!archivo) return;
+    setOcupado(true);
+    setError("");
+    setResultado(null);
+    try {
+      setResultado(await importarPerfilesBuhoRater(archivo));
+      alImportar();
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <section className="com-seccion com-horario-subir" aria-busy={ocupado}>
+      <div className="com-interior">
+        <h2 className="com-horario-titulo"><FileUp size={18} /> Admin: cargar perfiles de BuhoRater</h2>
+        <p className="com-descripcion">
+          Abre en tu navegador la página de BuhoRater donde salen los profes, baja hasta el final, guárdala con
+          Ctrl+S (&quot;Página web completa&quot;) y súbela aquí. También acepta un CSV con nombre y enlace.
+          Los botones de esos profes llevarán directo a su perfil para todos los estudiantes.
+        </p>
+        <label className="com-boton com-secundario com-horario-archivo">
+          {ocupado ? "Leyendo…" : "Elegir archivo (.html o .csv)"}
+          <input type="file" accept=".html,.htm,.csv,.txt,text/html,text/csv" onChange={importar} disabled={ocupado} />
+        </label>
+        {error && <p className="com-error" role="alert">{error}</p>}
+        {resultado && (
+          <p className="com-exito" role="status">
+            Leímos {resultado.leidos} profes: {resultado.nuevos} nuevos y {resultado.actualizados} actualizados.
+            {resultado.sinNombre > 0 && ` ${resultado.sinNombre} enlaces no traían el nombre del profe y se saltaron.`}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ContenidoHorario({ esAdmin = false }) {
   const consulta = useConsulta(obtenerHorario);
   const grupos = consulta.datos ? agruparPorMateria(consulta.datos) : [];
@@ -1190,6 +1238,7 @@ function ContenidoHorario({ esAdmin = false }) {
       )}
 
       <AgregarClaseManual alGuardar={consulta.actualizar} />
+      {esAdmin && <ImportarPerfilesBuhoRater alImportar={consulta.actualizar} />}
     </>
   );
 }
