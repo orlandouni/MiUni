@@ -42,6 +42,7 @@ import {
   agregarClase,
   eliminarClase,
   vincularBuhoRater,
+  importarPerfilesBuhoRater,
 } from "../services/horario";
 import { DIAS, agruparPorMateria, resumenSesiones, esEnlacePerfilBuhoRater } from "../services/horarioUtils";
 
@@ -896,7 +897,7 @@ export function Reportes() {
 
 // ---------- Mi horario ----------
 
-function TarjetaMateria({ grupo, alQuitar }) {
+function TarjetaMateria({ grupo, alQuitar, puedeVincular = false }) {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState("");
 
@@ -956,7 +957,7 @@ function TarjetaMateria({ grupo, alQuitar }) {
         </div>
       </div>
 
-      {alQuitar && grupo.profesor && <VincularBuhoRater grupo={grupo} alGuardar={alQuitar} />}
+      {puedeVincular && alQuitar && grupo.profesor && <VincularBuhoRater grupo={grupo} alGuardar={alQuitar} />}
 
       {error && <p className="com-error" role="alert">{error}</p>}
     </article>
@@ -993,7 +994,7 @@ function VincularBuhoRater({ grupo, alGuardar }) {
   if (!abierto) {
     return (
       <button type="button" className="com-horario-vincular" onClick={() => setAbierto(true)}>
-        {grupo.buhoRaterPerfil ? "Cambiar enlace de BuhoRater" : "Vincular su perfil de BuhoRater"}
+        {grupo.buhoRaterPerfil ? "Admin: cambiar enlace de BuhoRater" : "Admin: cargar su perfil de BuhoRater"}
       </button>
     );
   }
@@ -1162,7 +1163,54 @@ function AgregarClaseManual({ alGuardar }) {
   );
 }
 
-function ContenidoHorario() {
+function ImportarPerfilesBuhoRater({ alImportar }) {
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState("");
+  const [resultado, setResultado] = useState(null);
+
+  async function importar(evento) {
+    const archivo = evento.target.files?.[0];
+    evento.target.value = "";
+    if (!archivo) return;
+    setOcupado(true);
+    setError("");
+    setResultado(null);
+    try {
+      setResultado(await importarPerfilesBuhoRater(archivo));
+      alImportar();
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <section className="com-seccion com-horario-subir" aria-busy={ocupado}>
+      <div className="com-interior">
+        <h2 className="com-horario-titulo"><FileUp size={18} /> Admin: cargar perfiles de BuhoRater</h2>
+        <p className="com-descripcion">
+          Abre buhorater.com en tu navegador, presiona &quot;Cargar más resultados&quot; hasta que salgan todos los profes, guarda la página con
+          Ctrl+S (&quot;Página web completa&quot;) y súbela aquí. También acepta un CSV con nombre y enlace.
+          Los botones de esos profes llevarán directo a su perfil para todos los estudiantes.
+        </p>
+        <label className="com-boton com-secundario com-horario-archivo">
+          {ocupado ? "Leyendo…" : "Elegir archivo (.html o .csv)"}
+          <input type="file" accept=".html,.htm,.csv,.txt,text/html,text/csv" onChange={importar} disabled={ocupado} />
+        </label>
+        {error && <p className="com-error" role="alert">{error}</p>}
+        {resultado && (
+          <p className="com-exito" role="status">
+            Leímos {resultado.leidos} profes: {resultado.nuevos} nuevos y {resultado.actualizados} actualizados.
+            {resultado.sinNombre > 0 && ` ${resultado.sinNombre} enlaces no traían el nombre del profe y se saltaron.`}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ContenidoHorario({ esAdmin = false }) {
   const consulta = useConsulta(obtenerHorario);
   const grupos = consulta.datos ? agruparPorMateria(consulta.datos) : [];
 
@@ -1176,7 +1224,7 @@ function ContenidoHorario() {
           <p className="com-contador">{grupos.length} materias en tu horario</p>
           <div className="com-lista">
             {grupos.map((grupo) => (
-              <TarjetaMateria key={grupo.id} grupo={grupo} alQuitar={consulta.actualizar} />
+              <TarjetaMateria key={grupo.id} grupo={grupo} alQuitar={consulta.actualizar} puedeVincular={esAdmin} />
             ))}
           </div>
           {grupos.length === 0 && (
@@ -1184,12 +1232,13 @@ function ContenidoHorario() {
           )}
           <p className="com-descripcion com-horario-nota">
             Las calificaciones de los profesores están en BuhoRater, un sitio independiente de MiUni.
-            Si alguien ya pegó el perfil del profe, el botón lleva directo a él; si no, abre una búsqueda.
+            El botón abre el perfil del profe en otra pestaña cuando ya está cargado en MiUni; si no, abre una búsqueda.
           </p>
         </>
       )}
 
       <AgregarClaseManual alGuardar={consulta.actualizar} />
+      {esAdmin && <ImportarPerfilesBuhoRater alImportar={consulta.actualizar} />}
     </>
   );
 }
@@ -1201,7 +1250,7 @@ export function MiHorario() {
     <Pantalla titulo="Mi horario" subtitulo="Tus clases y tus profes, con acceso a sus reseñas en BuhoRater" conSidebar usuario={sesion.datos}>
       <EstadoConsulta consulta={sesion} />
       {!sesion.cargando && !sesion.error && (
-        sesion.datos ? <ContenidoHorario /> : <SolicitarSesion />
+        sesion.datos ? <ContenidoHorario esAdmin={Boolean(sesion.datos.roles?.includes("Administrador"))} /> : <SolicitarSesion />
       )}
     </Pantalla>
   );

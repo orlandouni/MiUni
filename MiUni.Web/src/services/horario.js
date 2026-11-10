@@ -38,3 +38,11 @@ export async function vincularBuhoRater(profesor, enlace) {
   const { data } = await api.put("/api/Horario/profesores/buhorater", { profesor, enlace });
   return data;
 }
+
+// Solo administradores: carga de golpe perfiles desde una página de BuhoRater guardada o un CSV.
+export async function importarPerfilesBuhoRater(archivo) {
+  const formulario = new FormData();
+  formulario.append("archivo", archivo);
+  const { data } = await api.post("/api/Horario/profesores/buhorater/importar", formulario);
+  return data;
+}
