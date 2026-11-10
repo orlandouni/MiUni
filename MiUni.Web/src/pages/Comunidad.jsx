@@ -41,8 +41,9 @@ import {
   guardarHorario,
   agregarClase,
   eliminarClase,
+  vincularBuhoRater,
 } from "../services/horario";
-import { DIAS, agruparPorMateria, resumenSesiones } from "../services/horarioUtils";
+import { DIAS, agruparPorMateria, resumenSesiones, esEnlacePerfilBuhoRater } from "../services/horarioUtils";
 
 import InfoNegocioPublica from "../components/InfoNegocioPublica";
 import "./Comunidad.css";
@@ -934,9 +935,11 @@ function TarjetaMateria({ grupo, alQuitar }) {
               href={grupo.buhoRaterUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Buscar a ${grupo.profesor} en BuhoRater (se abre en otra pestaña)`}
+              aria-label={grupo.buhoRaterPerfil
+                ? `Ver el perfil de ${grupo.profesor} en BuhoRater (se abre en otra pestaña)`
+                : `Buscar a ${grupo.profesor} en BuhoRater (se abre en otra pestaña)`}
             >
-              BuhoRater <ExternalLink size={14} />
+              {grupo.buhoRaterPerfil ? "Ver en BuhoRater" : "Buscar en BuhoRater"} <ExternalLink size={14} />
             </a>
           )}
           {alQuitar && (
@@ -953,8 +956,74 @@ function TarjetaMateria({ grupo, alQuitar }) {
         </div>
       </div>
 
+      {alQuitar && grupo.profesor && <VincularBuhoRater grupo={grupo} alGuardar={alQuitar} />}
+
       {error && <p className="com-error" role="alert">{error}</p>}
     </article>
+  );
+}
+
+// El perfil se pega una vez y queda para todos los que tengan a ese profe.
+function VincularBuhoRater({ grupo, alGuardar }) {
+  const [abierto, setAbierto] = useState(false);
+  const [enlace, setEnlace] = useState("");
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+
+  async function guardar(evento, valor = enlace) {
+    evento.preventDefault();
+    if (valor && !esEnlacePerfilBuhoRater(valor)) {
+      setError("Ese no parece un perfil de BuhoRater. Copia el enlace que empieza con https://www.buhorater.com/perfil?id=");
+      return;
+    }
+    setGuardando(true);
+    setError("");
+    try {
+      await vincularBuhoRater(grupo.profesor, valor);
+      setAbierto(false);
+      setEnlace("");
+      alGuardar();
+    } catch (error) {
+      setError(mensajeError(error));
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  if (!abierto) {
+    return (
+      <button type="button" className="com-horario-vincular" onClick={() => setAbierto(true)}>
+        {grupo.buhoRaterPerfil ? "Cambiar enlace de BuhoRater" : "Vincular su perfil de BuhoRater"}
+      </button>
+    );
+  }
+
+  return (
+    <form className="com-horario-enlace" onSubmit={guardar}>
+      <fieldset disabled={guardando}>
+        <label>
+          Enlace del perfil de {grupo.profesor} en BuhoRater
+          <input
+            type="url"
+            inputMode="url"
+            required
+            autoFocus
+            placeholder="https://www.buhorater.com/perfil?id=…"
+            value={enlace}
+            onChange={(evento) => setEnlace(evento.target.value)}
+          />
+        </label>
+        <p className="com-descripcion">Se guarda para todos los estudiantes que tienen a este profe.</p>
+        {error && <p className="com-error" role="alert">{error}</p>}
+        <div className="com-acciones">
+          <button className="com-boton" type="submit">{guardando ? "Guardando…" : "Guardar enlace"}</button>
+          {grupo.buhoRaterPerfil && (
+            <button className="com-boton com-secundario" type="button" onClick={(evento) => guardar(evento, "")}>Quitar enlace</button>
+          )}
+          <button className="com-boton com-secundario" type="button" onClick={() => { setAbierto(false); setError(""); }}>Cancelar</button>
+        </div>
+      </fieldset>
+    </form>
   );
 }
 
@@ -1115,7 +1184,7 @@ function ContenidoHorario() {
           )}
           <p className="com-descripcion com-horario-nota">
             Las calificaciones de los profesores están en BuhoRater, un sitio independiente de MiUni.
-            El botón abre la búsqueda del profesor en otra pestaña.
+            Si alguien ya pegó el perfil del profe, el botón lleva directo a él; si no, abre una búsqueda.
           </p>
         </>
       )}

@@ -31,7 +31,7 @@ export default function HorarioSeccion() {
             <strong>{m.materia}</strong>
             <small>{resumenSesiones(m.sesiones)}{m.salones.length ? ` · ${m.salones.join(", ")}` : ""}{m.profesor ? ` · ${m.profesor}` : ""}</small>
           </span>
-          {m.buhoRaterUrl && <a className="perfil-horario-buho" href={m.buhoRaterUrl} target="_blank" rel="noreferrer" title={`Ver a ${m.profesor} en BuhoRater`}>BuhoRater <ExternalLink size={13}/></a>}
+          {m.buhoRaterUrl && <a className="perfil-horario-buho" href={m.buhoRaterUrl} target="_blank" rel="noreferrer" title={m.buhoRaterPerfil ? `Ver el perfil de ${m.profesor} en BuhoRater` : `Buscar a ${m.profesor} en BuhoRater`}>BuhoRater <ExternalLink size={13}/></a>}
         </div>)}
       </div>
       : <p className="perfil-vacio">Aún no tienes horario. Sube el PDF del portal de la UNISON y lo llenamos por ti.</p>}

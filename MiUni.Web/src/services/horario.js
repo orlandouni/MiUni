@@ -32,3 +32,9 @@ export async function eliminarClase(id) {
     if (error.response?.status !== 404) throw error;
   }
 }
+
+// Guarda el perfil de BuhoRater del profe para todos los estudiantes (vacío lo quita).
+export async function vincularBuhoRater(profesor, enlace) {
+  const { data } = await api.put("/api/Horario/profesores/buhorater", { profesor, enlace });
+  return data;
+}

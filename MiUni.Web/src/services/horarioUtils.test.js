@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { agruparPorMateria, resumenSesiones, aSolicitud } from "./horarioUtils.js";
+import { agruparPorMateria, resumenSesiones, aSolicitud, esEnlacePerfilBuhoRater } from "./horarioUtils.js";
 
 const clase = (materia, profesor, dia, inicio, fin, salon = "5G-A303") => ({
   materia, profesor, dia, horaInicio: `${inicio}:00`, horaFin: `${fin}:00`, salon,
@@ -32,4 +32,14 @@ test("arma la solicitud para la API sin segundos ni textos vacíos", () => {
   assert.deepEqual(aSolicitud({ ...clase("X", "", "2", "07:00", "08:00"), salon: "" }), {
     materia: "X", profesor: null, dia: 2, horaInicio: "07:00", horaFin: "08:00", salon: null,
   });
+});
+
+test("reconoce solo enlaces de perfil de BuhoRater", () => {
+  const id = "0136eb39-3a7c-4b75-af52-92ff2283d434";
+  assert.ok(esEnlacePerfilBuhoRater(`https://www.buhorater.com/perfil?id=${id}`));
+  assert.ok(esEnlacePerfilBuhoRater(` buhorater.com/perfil?id=${id} `));
+  assert.ok(esEnlacePerfilBuhoRater(id));
+  assert.ok(!esEnlacePerfilBuhoRater(`https://buhorater.com.mx/perfil?id=${id}`));
+  assert.ok(!esEnlacePerfilBuhoRater("https://www.buhorater.com/"));
+  assert.ok(!esEnlacePerfilBuhoRater(""));
 });

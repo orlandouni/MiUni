@@ -23,6 +23,7 @@ export function agruparPorMateria(clases) {
         materia: clase.materia,
         profesor: clase.profesor ?? null,
         buhoRaterUrl: clase.buhoRaterUrl ?? null,
+        buhoRaterPerfil: Boolean(clase.buhoRaterPerfil),
         sesiones: [],
       });
     }
@@ -65,4 +66,20 @@ export function aSolicitud(clase) {
     horaFin: hora(clase.horaFin),
     salon: clase.salon || null,
   };
+}
+
+// Enlace de perfil de BuhoRater (https://www.buhorater.com/perfil?id=<uuid>) o el id suelto.
+// La API vuelve a validarlo; esto solo evita mandar algo que claramente no es un perfil.
+export function esEnlacePerfilBuhoRater(texto) {
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const limpio = (texto ?? "").trim();
+  if (uuid.test(limpio)) return true;
+  try {
+    const url = new URL(limpio.includes("://") ? limpio : `https://${limpio}`);
+    return ["www.buhorater.com", "buhorater.com"].includes(url.hostname.toLowerCase())
+      && url.pathname.replace(/\/+$/, "").toLowerCase() === "/perfil"
+      && uuid.test(url.searchParams.get("id") ?? "");
+  } catch {
+    return false;
+  }
 }
