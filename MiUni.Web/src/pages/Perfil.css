@@ -72,3 +72,8 @@
 .perfil-kardex-agregar { display:inline-flex; align-items:center; gap:7px; margin-bottom:14px; }
 .perfil-kardex-detalle { display:block; margin-top:3px; color:var(--muted); font-size:10px; }
 @media(max-width:700px) { .perfil-kardex-resumen { grid-template-columns:repeat(2,minmax(0,1fr)); } .perfil-kardex-form { grid-template-columns:1fr; } }
+.perfil-horario { margin-bottom:16px; }
+.perfil-horario-buho { display:inline-flex; align-items:center; gap:4px; flex-shrink:0; color:var(--navy); font-size:12px; font-weight:600; text-decoration:none; }
+.perfil-horario-buho:hover { text-decoration:underline; }
+.perfil-horario-ir { display:inline-flex; align-items:center; gap:6px; margin-top:12px; color:var(--navy); font-size:13px; font-weight:600; text-decoration:none; }
+.perfil-horario-ir:hover { text-decoration:underline; }
