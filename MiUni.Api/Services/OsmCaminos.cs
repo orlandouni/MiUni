@@ -175,13 +175,52 @@ public static class OsmCaminos
         return (long)(await command.ExecuteScalarAsync(ct))!;
     }
 
-    public static async Task<JsonDocument> DescargarAsync(HttpClient http, AreaOsm area, string overpassUrl, CancellationToken ct = default)
+    public static readonly string[] ServidoresOverpass =
+    [
+        "https://overpass-api.de/api/interpreter",
+        "https://overpass.kumi.systems/api/interpreter",
+        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    ];
+
+    /// <summary>
+    /// Prueba cada servidor hasta dos veces (los públicos se saturan seguido: 429, 502, 504)
+    /// y pasa al siguiente si falla. Sólo lanza error si todos fallan.
+    /// </summary>
+    public static async Task<JsonDocument> DescargarAsync(HttpClient http, AreaOsm area, IEnumerable<string> servidores,
+        Action<string>? log = null, TimeSpan? espera = null, CancellationToken ct = default)
     {
-        using var content = new FormUrlEncodedContent([new KeyValuePair<string, string>("data", area.ConsultaOverpass())]);
-        using var response = await http.PostAsync(overpassUrl, content, ct);
-        if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Overpass respondió {(int)response.StatusCode}. Espera un minuto y vuelve a intentarlo, o usa otro servidor con --osm-overpass-url.");
-        await using var stream = await response.Content.ReadAsStreamAsync(ct);
-        return await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+        var fallos = new List<string>();
+        foreach (var url in servidores)
+        {
+            for (var intento = 1; intento <= 2; intento++)
+            {
+                try
+                {
+                    using var content = new FormUrlEncodedContent([new KeyValuePair<string, string>("data", area.ConsultaOverpass())]);
+                    using var response = await http.PostAsync(url, content, ct);
+                    if (!response.IsSuccessStatusCode) throw new HttpRequestException($"respondió {(int)response.StatusCode}");
+                    await using var stream = await response.Content.ReadAsStreamAsync(ct);
+                    var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+                    // Overpass a veces responde 200 con un "remark" de error y sin elementos.
+                    if (doc.RootElement.TryGetProperty("remark", out var remark)
+                        && (!doc.RootElement.TryGetProperty("elements", out var els) || els.GetArrayLength() == 0))
+                    {
+                        var detalle = remark.GetString();
+                        doc.Dispose();
+                        throw new HttpRequestException($"devolvió un error: {detalle}");
+                    }
+                    return doc;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException && !ct.IsCancellationRequested)
+                {
+                    var motivo = ex is TaskCanceledException ? "tardó demasiado" : ex.Message;
+                    fallos.Add($"{new Uri(url).Host} {motivo}");
+                    log?.Invoke($"{new Uri(url).Host} {motivo} (intento {intento} de 2).");
+                    if (intento == 1) await Task.Delay(espera ?? TimeSpan.FromSeconds(5), ct);
+                }
+            }
+        }
+        throw new HttpRequestException("Ningún servidor de OpenStreetMap respondió: " + string.Join("; ", fallos)
+            + ". Espera unos minutos y vuelve a intentarlo, o indica otro con --osm-overpass-url.");
     }
 }

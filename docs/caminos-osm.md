@@ -18,7 +18,7 @@ Equivale a `dotnet run --no-launch-profile -- --importar-caminos-osm campus` des
 | `--importar-caminos-osm campus` | Área por defecto: campus de la Unison y ~500 m alrededor (29.0755,-110.975 a 29.0915,-110.9535). |
 | `--importar-caminos-osm 'sur,oeste,norte,este'` | Otra área, en grados decimales (máximo unos 10 km × 10 km). |
 | `--osm-incluir-privados true` | Incluye vías con `access=private` (por ejemplo, si el campus está etiquetado así). |
-| `--osm-overpass-url <url>` | Otro servidor Overpass si el principal está saturado. |
+| `--osm-overpass-url <url>` | Usa sólo ese servidor Overpass. Sin esta opción se prueban overpass-api.de, overpass.kumi.systems y maps.mail.ru, dos intentos cada uno. |
 
 Volver a correrlo es seguro: en una sola transacción borra sólo los caminos con
 `osm_way_id` y carga los nuevos. Los caminos manuales (`osm_way_id` nulo) se

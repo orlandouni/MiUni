@@ -73,4 +73,39 @@ public class OsmCaminosTests
         Assert.Throws<ArgumentException>(() => AreaOsm.Parse("0,0,1,1"));
         Assert.Contains("(29.0755,-110.975,29.0915,-110.9535)", AreaOsm.Campus.ConsultaOverpass());
     }
+
+    private sealed class FakeHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
+    {
+        public List<string> Hosts { get; } = [];
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Hosts.Add(request.RequestUri!.Host);
+            return Task.FromResult(responder(request));
+        }
+    }
+
+    [Fact]
+    public async Task ReintentaYPasaAlSiguienteServidorSiOverpassFalla()
+    {
+        var handler = new FakeHandler(r => r.RequestUri!.Host == "uno.test"
+            ? new HttpResponseMessage(System.Net.HttpStatusCode.BadGateway)
+            : new HttpResponseMessage { Content = new StringContent(Overpass) });
+        using var http = new HttpClient(handler);
+        using var doc = await OsmCaminos.DescargarAsync(http, AreaOsm.Campus,
+            ["https://uno.test/api/interpreter", "https://dos.test/api/interpreter"], espera: TimeSpan.Zero);
+        Assert.Equal(["uno.test", "uno.test", "dos.test"], handler.Hosts);
+        Assert.Equal(7, doc.RootElement.GetProperty("elements").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task FallaConMensajeClaroSiNingunServidorResponde()
+    {
+        var handler = new FakeHandler(_ => new HttpResponseMessage
+            { Content = new StringContent("""{"elements":[],"remark":"runtime error: Query timed out"}""") });
+        using var http = new HttpClient(handler);
+        var ex = await Assert.ThrowsAsync<HttpRequestException>(() => OsmCaminos.DescargarAsync(http, AreaOsm.Campus,
+            ["https://uno.test/x"], espera: TimeSpan.Zero));
+        Assert.Contains("Query timed out", ex.Message);
+        Assert.Equal(2, handler.Hosts.Count);
+    }
 }

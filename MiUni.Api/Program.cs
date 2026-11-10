@@ -142,12 +142,13 @@ var areaOsm = builder.Configuration["importar-caminos-osm"];
 if (!string.IsNullOrWhiteSpace(areaOsm))
 {
     var area = AreaOsm.Parse(areaOsm);
-    var overpassUrl = builder.Configuration["osm-overpass-url"] ?? "https://overpass-api.de/api/interpreter";
+    var overpassUrl = builder.Configuration["osm-overpass-url"];
+    var servidores = string.IsNullOrWhiteSpace(overpassUrl) ? OsmCaminos.ServidoresOverpass : [overpassUrl];
     var incluirPrivados = builder.Configuration.GetValue<bool>("osm-incluir-privados");
     using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
     http.DefaultRequestHeaders.UserAgent.ParseAdd("MiUni-importador-caminos/1.0");
     Console.WriteLine($"Descargando caminos de OpenStreetMap ({area.Sur}, {area.Oeste}) - ({area.Norte}, {area.Este})...");
-    using var osm = await OsmCaminos.DescargarAsync(http, area, overpassUrl);
+    using var osm = await OsmCaminos.DescargarAsync(http, area, servidores, Console.WriteLine);
     var segmentos = OsmCaminos.Segmentar(osm.RootElement, incluirPrivados);
     var guardados = await OsmCaminos.GuardarAsync(dataSource, segmentos.Tramos);
     Console.WriteLine($"Importados {guardados} tramos de {segmentos.ViasUsadas} vías OSM. " +
