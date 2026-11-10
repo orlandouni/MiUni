@@ -36,6 +36,8 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
 
     public virtual DbSet<Historialchat> Historialchats { get; set; }
 
+    public virtual DbSet<HorarioClase> HorarioClases { get; set; }
+
     public virtual DbSet<Horariooperacion> Horariooperacions { get; set; }
 
     public virtual DbSet<Lugar> Lugars { get; set; }
@@ -179,6 +181,41 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
             entity.HasOne(d => d.Lugar).WithMany(p => p.Eventotemporals)
                 .HasForeignKey(d => d.LugarId)
                 .HasConstraintName("eventotemporal_lugar_id_fkey");
+        });
+
+        modelBuilder.Entity<HorarioClase>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("horario_clase_pkey");
+
+            entity.ToTable("horario_clase", t =>
+            {
+                t.HasCheckConstraint("horario_clase_dia_check", "dia BETWEEN 1 AND 7");
+                t.HasCheckConstraint("horario_clase_horas_check", "hora_fin > hora_inicio");
+            });
+
+            entity.HasIndex(e => new { e.UsuarioId, e.Dia, e.HoraInicio }, "horario_clase_usuario_dia_idx");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasColumnName("id");
+            entity.Property(e => e.UsuarioId).HasColumnName("usuario_id");
+            entity.Property(e => e.Materia)
+                .HasMaxLength(120)
+                .HasColumnName("materia");
+            entity.Property(e => e.Profesor)
+                .HasMaxLength(120)
+                .HasColumnName("profesor");
+            entity.Property(e => e.Dia).HasColumnName("dia");
+            entity.Property(e => e.HoraInicio).HasColumnName("hora_inicio");
+            entity.Property(e => e.HoraFin).HasColumnName("hora_fin");
+            entity.Property(e => e.Salon)
+                .HasMaxLength(60)
+                .HasColumnName("salon");
+
+            entity.HasOne(d => d.Usuario).WithMany(p => p.HorarioClases)
+                .HasForeignKey(d => d.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("horario_clase_usuario_id_fkey");
         });
 
         modelBuilder.Entity<Favorito>(entity =>
