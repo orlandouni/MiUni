@@ -896,7 +896,7 @@ export function Reportes() {
 
 // ---------- Mi horario ----------
 
-function TarjetaMateria({ grupo, alQuitar }) {
+function TarjetaMateria({ grupo, alQuitar, puedeVincular = false }) {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState("");
 
@@ -956,7 +956,7 @@ function TarjetaMateria({ grupo, alQuitar }) {
         </div>
       </div>
 
-      {alQuitar && grupo.profesor && <VincularBuhoRater grupo={grupo} alGuardar={alQuitar} />}
+      {puedeVincular && alQuitar && grupo.profesor && <VincularBuhoRater grupo={grupo} alGuardar={alQuitar} />}
 
       {error && <p className="com-error" role="alert">{error}</p>}
     </article>
@@ -993,7 +993,7 @@ function VincularBuhoRater({ grupo, alGuardar }) {
   if (!abierto) {
     return (
       <button type="button" className="com-horario-vincular" onClick={() => setAbierto(true)}>
-        {grupo.buhoRaterPerfil ? "Cambiar enlace de BuhoRater" : "Vincular su perfil de BuhoRater"}
+        {grupo.buhoRaterPerfil ? "Admin: cambiar enlace de BuhoRater" : "Admin: cargar su perfil de BuhoRater"}
       </button>
     );
   }
@@ -1162,7 +1162,7 @@ function AgregarClaseManual({ alGuardar }) {
   );
 }
 
-function ContenidoHorario() {
+function ContenidoHorario({ esAdmin = false }) {
   const consulta = useConsulta(obtenerHorario);
   const grupos = consulta.datos ? agruparPorMateria(consulta.datos) : [];
 
@@ -1176,7 +1176,7 @@ function ContenidoHorario() {
           <p className="com-contador">{grupos.length} materias en tu horario</p>
           <div className="com-lista">
             {grupos.map((grupo) => (
-              <TarjetaMateria key={grupo.id} grupo={grupo} alQuitar={consulta.actualizar} />
+              <TarjetaMateria key={grupo.id} grupo={grupo} alQuitar={consulta.actualizar} puedeVincular={esAdmin} />
             ))}
           </div>
           {grupos.length === 0 && (
@@ -1184,7 +1184,7 @@ function ContenidoHorario() {
           )}
           <p className="com-descripcion com-horario-nota">
             Las calificaciones de los profesores están en BuhoRater, un sitio independiente de MiUni.
-            Si alguien ya pegó el perfil del profe, el botón lleva directo a él; si no, abre una búsqueda.
+            El botón abre el perfil del profe en otra pestaña cuando ya está cargado en MiUni; si no, abre una búsqueda.
           </p>
         </>
       )}
@@ -1201,7 +1201,7 @@ export function MiHorario() {
     <Pantalla titulo="Mi horario" subtitulo="Tus clases y tus profes, con acceso a sus reseñas en BuhoRater" conSidebar usuario={sesion.datos}>
       <EstadoConsulta consulta={sesion} />
       {!sesion.cargando && !sesion.error && (
-        sesion.datos ? <ContenidoHorario /> : <SolicitarSesion />
+        sesion.datos ? <ContenidoHorario esAdmin={Boolean(sesion.datos.roles?.includes("Administrador"))} /> : <SolicitarSesion />
       )}
     </Pantalla>
   );

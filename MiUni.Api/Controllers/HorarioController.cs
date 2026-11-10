@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiUni.Api.DTOs;
+using MiUni.Api.Identity;
 using MiUni.Api.Models;
 using MiUni.Api.Services;
 
@@ -130,21 +131,21 @@ public class HorarioController(MiUniDbContext context) : ControllerBase
         return Ok(nuevas.OrderBy(c => c.Dia).ThenBy(c => c.HoraInicio).Select(c => ToDto(c, perfiles)));
     }
 
-    // Guarda (o quita, con el enlace vacío) el perfil de BuhoRater de un profe del horario.
-    // Es compartido: el botón de ese profe lleva a su perfil en el horario de todos.
-    [HttpPut("profesores/buhorater")]
+    // Guarda (o quita, con el enlace vacío) el perfil de BuhoRater de un profe. Solo lo
+    // cargan los administradores; los estudiantes solo ven el botón que lleva directo al perfil.
+    [HttpPut("profesores/buhorater"), Authorize(Roles = AppRoles.Administrador)]
     public async Task<IActionResult> VincularBuhoRater(VincularBuhoRaterRequest request, CancellationToken ct)
     {
         if (!TryGetUsuario(out var usuarioId)) return Unauthorized();
         var clave = BuhoRater.Clave(request.Profesor);
         if (clave is null) return BadRequest(new { message = "Indica el profesor." });
 
-        // Solo se puede vincular a un profe que está en tu propio horario.
+        // Solo profes que aparecen en algún horario, para no llenar la tabla de nombres sueltos.
         var profesores = await context.HorarioClases.AsNoTracking()
-            .Where(c => c.UsuarioId == usuarioId && c.Profesor != null)
+            .Where(c => c.Profesor != null)
             .Select(c => c.Profesor!).Distinct().ToListAsync(ct);
         var nombre = profesores.FirstOrDefault(p => BuhoRater.Clave(p) == clave);
-        if (nombre is null) return NotFound(new { message = "Ese profesor no está en tu horario." });
+        if (nombre is null) return NotFound(new { message = "Ese profesor no está en ningún horario." });
 
         var actual = await context.ProfesorBuhoRaters.SingleOrDefaultAsync(p => p.Clave == clave, ct);
         if (string.IsNullOrWhiteSpace(request.Enlace))

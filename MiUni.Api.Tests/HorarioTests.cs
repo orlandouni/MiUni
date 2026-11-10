@@ -134,7 +134,7 @@ public class HorarioTests
         // Solo se aceptan enlaces de perfil de buhorater.com.
         Assert.IsType<BadRequestObjectResult>(await AsUser(db, ana).VincularBuhoRater(new VincularBuhoRaterRequest
             { Profesor = "SOTO MORA CLAUDIA PAULINA", Enlace = $"https://evil.example/perfil?id={perfil}" }, default));
-        // Y solo para profes de tu propio horario.
+        // Y solo para profes que están en algún horario.
         Assert.IsType<NotFoundObjectResult>(await AsUser(db, ana).VincularBuhoRater(new VincularBuhoRaterRequest
             { Profesor = "Otro Profe", Enlace = perfil.ToString() }, default));
 
@@ -154,6 +154,15 @@ public class HorarioTests
         Assert.IsType<OkObjectResult>(await AsUser(db, beto).VincularBuhoRater(new VincularBuhoRaterRequest
             { Profesor = "Soto Mora Claudia Paulína", Enlace = "" }, default));
         Assert.Empty(db.ProfesorBuhoRaters);
+    }
+
+    [Fact]
+    public void OnlyAdminsCanLoadBuhoRaterProfiles()
+    {
+        var metodo = typeof(HorarioController).GetMethod(nameof(HorarioController.VincularBuhoRater))!;
+        var autorizacion = Assert.Single(metodo.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
+            .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>());
+        Assert.Equal(AppRoles.Administrador, autorizacion.Roles);
     }
 
     [Theory]
