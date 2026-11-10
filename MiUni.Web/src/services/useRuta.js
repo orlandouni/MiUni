@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { calcularRuta } from "./rutas";
+import { calcularRuta, distanciaMetros } from "./rutas";
 import { iniciarUbicacionAutomatica, recordarSolicitud, solicitarUbicacion } from "./ubicacion";
+
+// Con el GPS activo la ruta se recalcula sola cuando te mueves al menos esto.
+export const MOVIMIENTO_RECALCULO_METROS = 15;
+
+// Como en una app de mapas: el origen es tu ubicación, eliges el destino y la ruta se calcula sola.
 export function useRuta() {
   const [origen, setOrigen] = useState(null);
   const [destino, setDestino] = useState(null);
-  const [seleccion, cambiarSeleccion] = useState(null);
+  const [eligiendoOrigen, setEligiendoOrigen] = useState(false);
   const [localizando, setLocalizando] = useState(false);
   const [siguiendo, setSiguiendo] = useState(false);
   const [errorUbicacion, setErrorUbicacion] = useState("");
@@ -13,9 +18,12 @@ export function useRuta() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const solicitud = useRef(null);
+  const ultimoCalculo = useRef(null);
+
   const iniciarGps = useCallback(() => {
     setLocalizando(true);
     setSiguiendo(true);
+    setErrorUbicacion("");
     return solicitarUbicacion(punto => {
       setOrigen(punto);
       setLocalizando(false);
@@ -31,70 +39,79 @@ export function useRuta() {
     return () => { solicitud.current?.abort(); cancelarGps.current?.(); };
   }, [iniciarGps]);
 
-  function cancelarUbicacion() {
+  const cancelarCalculo = useCallback(() => {
+    solicitud.current?.abort();
+    solicitud.current = null;
+    setCargando(false);
+  }, []);
+
+  // Calcula al tener origen y destino; con GPS, sólo vuelve a pedir la ruta si te moviste.
+  useEffect(() => {
+    if (!origen || !destino) return;
+    const previo = ultimoCalculo.current;
+    if (previo && previo.destino === destino
+      && (previo.origen === origen || distanciaMetros(previo.origen, origen) < MOVIMIENTO_RECALCULO_METROS)) return;
+    ultimoCalculo.current = { origen, destino };
+    cancelarCalculo();
+    const controller = new AbortController();
+    solicitud.current = controller;
+    setCargando(true);
+    setError("");
+    calcularRuta(origen, destino, controller.signal)
+      .then(resultado => {
+        if (solicitud.current === controller) setRuta({ ...resultado, origenCalculo: origen, destinoCalculo: destino });
+      })
+      .catch(err => {
+        if (solicitud.current === controller && !controller.signal.aborted) { setRuta(null); setError(err.message); }
+      })
+      .finally(() => {
+        if (solicitud.current === controller) { solicitud.current = null; setCargando(false); }
+      });
+  }, [origen, destino, cancelarCalculo]);
+
+  function detenerGps() {
     cancelarGps.current?.();
     cancelarGps.current = null;
     setLocalizando(false);
     setSiguiendo(false);
-    setErrorUbicacion("");
-  }
-
-  function setSeleccion(valor) {
-    if (valor === "origen") cancelarUbicacion();
-    cambiarSeleccion(valor);
   }
 
   function usarUbicacion() {
-    cancelarUbicacion();
-    cancelar();
-    cambiarSeleccion(null);
+    detenerGps();
+    setEligiendoOrigen(false);
     recordarSolicitud();
     cancelarGps.current = iniciarGps();
   }
 
-  function cancelar() {
-    solicitud.current?.abort();
-    solicitud.current = null;
-    setCargando(false);
+  function reiniciarRuta() {
+    cancelarCalculo();
+    ultimoCalculo.current = null;
     setRuta(null);
     setError("");
   }
 
+  // Mantiene la firma usada por los popups: elegir("origen" | "destino", punto).
   function elegir(tipo, punto) {
-    cancelar();
-    if (tipo === "origen") { cancelarUbicacion(); setOrigen(punto); }
-    else setDestino(punto);
-    setSeleccion(null);
+    reiniciarRuta();
+    if (tipo === "origen") {
+      detenerGps();
+      setErrorUbicacion("");
+      setOrigen({ ...punto, fuente: "manual" });
+    } else setDestino(punto);
+    setEligiendoOrigen(false);
   }
 
-  async function calcular() {
-    if (!origen || !destino || localizando) return;
-    cancelar();
-    setSeleccion(null);
-    const controller = new AbortController();
-    solicitud.current = controller;
-    setCargando(true);
-    try {
-      const resultado = await calcularRuta(origen, destino, controller.signal);
-      if (solicitud.current === controller) setRuta({ ...resultado, origenCalculo: origen });
-    } catch (err) {
-      if (solicitud.current === controller && !controller.signal.aborted) setError(err.message);
-    } finally {
-      if (solicitud.current === controller) {
-        solicitud.current = null;
-        setCargando(false);
-      }
-    }
+  // Un toque en el mapa marca el destino, salvo que se esté eligiendo el punto de partida.
+  function tocarMapa(punto) {
+    elegir(eligiendoOrigen ? "origen" : "destino", punto);
   }
 
-  function limpiar() {
-    cancelar();
-    cancelarUbicacion();
-    setOrigen(null);
+  function quitarDestino() {
+    reiniciarRuta();
     setDestino(null);
-    setSeleccion(null);
+    setEligiendoOrigen(false);
   }
 
-  return { origen, destino, seleccion, setSeleccion, ruta, error, cargando, elegir, calcular, limpiar,
-    localizando, siguiendo, errorUbicacion, usarUbicacion, cancelarUbicacion };
+  return { origen, destino, ruta, error, cargando, localizando, siguiendo, errorUbicacion,
+    eligiendoOrigen, setEligiendoOrigen, elegir, tocarMapa, quitarDestino, usarUbicacion };
 }

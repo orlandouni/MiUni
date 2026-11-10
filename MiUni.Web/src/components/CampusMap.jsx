@@ -144,19 +144,19 @@ function CampusMap() {
           {lugarId && <p className="campus-status" role={errorChat ? "alert" : "status"}>{errorChat || (lugarChat ? `Desde el chat: ${lugarChat.nombre}` : "Cargando lugar del chat…")} <button type="button" onClick={salirDeLugarChat}>Volver a la búsqueda</button></p>}
           {hayFiltro && !cargando && !error && lugares.length > 0 && <div className="campus-results">
             <p className="campus-result-count">{lugares.length} {lugares.length === 1 ? "lugar encontrado" : "lugares encontrados"}</p>
-            {lugares.map(lugar => <button key={lugar.id} className={detalle?.id === lugar.id ? "active" : ""} aria-pressed={detalle?.id === lugar.id} onClick={() => setSeleccionado(lugar)}>
+            {lugares.map(lugar => <button key={lugar.id} className={detalle?.id === lugar.id ? "active" : ""} aria-pressed={detalle?.id === lugar.id} onClick={() => { setSeleccionado(lugar); ruta.elegir("destino", lugar); }}>
               <MapPin size={16} /><span><strong>{lugar.nombre}</strong><small>{lugar.categoria?.nombre}</small></span><ArrowUpRight size={14} />
             </button>)}
           </div>}
         </div>
+        <PanelRuta estado={ruta} />
         {detalle ? <section className="campus-place-card" aria-label="Lugar seleccionado">
           <span className="ui-eyebrow"><MapPin size={12} /> {detalle.categoria?.nombre || "En el campus"}</span>
           <h3>{detalle.nombre}</h3>
           {detalle.descripcion && <p>{detalle.descripcion}</p>}
-          <div className="campus-place-actions"><button type="button" onClick={() => ruta.elegir("origen", detalle)}>Desde aquí</button><button type="button" onClick={() => ruta.elegir("destino", detalle)}><Route size={13} /> Ir aquí</button></div>
+          <div className="campus-place-actions">{ruta.destino?.id !== detalle.id && <button type="button" className="primario" onClick={() => ruta.elegir("destino", detalle)}><Route size={13} /> Cómo llegar</button>}<button type="button" onClick={() => ruta.elegir("origen", detalle)}>Salir desde aquí</button></div>
           <Link to={`/lugares/${detalle.id}`}>Reseñas y favoritos <ArrowUpRight size={13} /></Link>
-        </section> : !hayFiltro && <div className="campus-welcome"><MapPin size={23} /><p>El campus, sin perderte.</p><span>Busca un lugar o elige una categoría para empezar a explorar.</span></div>}
-        <PanelRuta estado={ruta} />
+        </section> : !hayFiltro && !ruta.destino && <div className="campus-welcome"><MapPin size={23} /><p>El campus, sin perderte.</p><span>Busca un lugar o elige una categoría para empezar a explorar.</span></div>}
       </aside>
       <div className="campus-map-stage">
         <div className="campus-map-label"><span /> Universidad de Sonora <small>Campus Hermosillo</small></div>
@@ -167,9 +167,9 @@ function CampusMap() {
           <CapaRuta estado={ruta} />
           {lugarChat && <LugarDesdeChat lugar={lugarChat} elegir={ruta.elegir} icon={crearIcono(lugarChat.categoria?.nombre, true)} />}
           {lugares.filter(lugar => lugar.id !== lugarChat?.id).map(lugar => <Marker key={lugar.id} position={[lugar.latitud, lugar.longitud]}
-            title={lugar.nombre} alt={lugar.nombre} icon={crearIcono(lugar.categoria?.nombre, seleccionado?.id === lugar.id)} eventHandlers={{click: () => setSeleccionado(lugar)}}>
+            title={lugar.nombre} alt={lugar.nombre} icon={crearIcono(lugar.categoria?.nombre, seleccionado?.id === lugar.id)} eventHandlers={{click: () => { setSeleccionado(lugar); ruta.elegir("destino", lugar); }}}>
             <Popup><div className="campus-popup"><span>{lugar.categoria?.nombre}{lugar.esAmbulante ? " · Ambulante (zona aproximada)" : ""}</span><strong>{lugar.nombre}</strong><p>{lugar.descripcion}</p>
-              <div><button type="button" onClick={() => ruta.elegir("origen", lugar)}>Desde aquí</button><button type="button" onClick={() => ruta.elegir("destino", lugar)}>Ir aquí</button></div>
+              <div><button type="button" onClick={() => ruta.elegir("origen", lugar)}>Salir desde aquí</button></div>
               <Link to={`/lugares/${lugar.id}`}>Ver ficha del lugar →</Link>
             </div></Popup>
           </Marker>)}

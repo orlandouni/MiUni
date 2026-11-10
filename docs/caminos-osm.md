@@ -18,6 +18,7 @@ Equivale a `dotnet run --no-launch-profile -- --importar-caminos-osm campus` des
 | `--importar-caminos-osm campus` | Área por defecto: campus de la Unison y ~500 m alrededor (29.0755,-110.975 a 29.0915,-110.9535). |
 | `--importar-caminos-osm 'sur,oeste,norte,este'` | Otra área, en grados decimales (máximo unos 10 km × 10 km). |
 | `--osm-incluir-privados true` | Incluye vías con `access=private` (por ejemplo, si el campus está etiquetado así). |
+| `--osm-archivo <ruta.json>` | No descarga nada: usa un JSON de Overpass guardado antes (ver abajo). |
 | `--osm-overpass-url <url>` | Usa sólo ese servidor Overpass. Sin esta opción se prueban overpass-api.de, overpass.kumi.systems y maps.mail.ru, dos intentos cada uno. |
 
 Volver a correrlo es seguro: en una sola transacción borra sólo los caminos con
@@ -25,6 +26,16 @@ Volver a correrlo es seguro: en una sola transacción borra sólo los caminos co
 conservan; el importador avisa cuántos quedan, porque sólo se conectan a la red si
 sus extremos coinciden exactamente con un nodo OSM. Si la descarga falla o no
 trae caminos, la red existente no se modifica.
+
+## Si la descarga falla (502, 504, tiempo agotado)
+
+El importador ya reintenta y prueba tres servidores. Si aun así falla, descarga el
+archivo desde el navegador y pásalo con `--osm-archivo`:
+
+1. Abre esta URL y guarda la respuesta como `caminos-osm.json` (si la página se
+   queda cargando o marca error, espera un minuto y recarga):
+   <https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A90%5D%3Bway%5B%22highway%22%5D%2829.0755%2C-110.975%2C29.0915%2C-110.9535%29%3Bout%20body%20geom%3B>
+2. `dotnet run -- --importar-caminos-osm campus --osm-archivo C:\ruta\caminos-osm.json`
 
 ## Qué se importa
 

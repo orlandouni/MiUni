@@ -1,68 +1,92 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Circle, CircleMarker, Polyline, Tooltip, useMap, useMapEvents } from "react-leaflet";
+import { Footprints, LocateFixed, MapPin, X } from "lucide-react";
 
-import { posicionesRuta } from "../services/rutas";
+import { minutosCaminando, posicionesRuta } from "../services/rutas";
 
-const etiqueta = punto => punto?.nombre ?? (punto ? `${punto.latitud.toFixed(5)}, ${punto.longitud.toFixed(5)}` : "Sin seleccionar");
+const etiqueta = punto => punto?.nombre ?? (punto ? "Punto en el mapa" : "");
+
+function Origen({ estado }) {
+  const { origen, localizando, siguiendo, errorUbicacion, eligiendoOrigen, setEligiendoOrigen, usarUbicacion } = estado;
+  if (eligiendoOrigen) return <div className="ruta-origen">
+    <span>Toca el mapa en el punto desde donde sales.</span>
+    <button type="button" onClick={() => setEligiendoOrigen(false)}>Cancelar</button>
+  </div>;
+  if (origen?.fuente === "gps") return <div className="ruta-origen">
+    <span><LocateFixed size={14} aria-hidden="true" /> Desde tu ubicación{origen.precision > 0 && <small> · ±{Math.ceil(origen.precision)} m</small>}</span>
+    <button type="button" onClick={() => setEligiendoOrigen(true)}>Cambiar</button>
+  </div>;
+  if (localizando) return <div className="ruta-origen"><span><LocateFixed size={14} aria-hidden="true" /> Buscando tu ubicación…</span></div>;
+  if (origen) return <div className="ruta-origen">
+    <span><MapPin size={14} aria-hidden="true" /> Desde {etiqueta(origen)}</span>
+    <button type="button" onClick={usarUbicacion}>Usar mi ubicación</button>
+  </div>;
+  return <div className="ruta-origen ruta-origen-falta">
+    <span>{errorUbicacion || "Activa tu ubicación para saber desde dónde sales."}</span>
+    <div>
+      {!siguiendo && <button type="button" onClick={usarUbicacion}>Usar mi ubicación</button>}
+      <button type="button" onClick={() => setEligiendoOrigen(true)}>Elegir en el mapa</button>
+    </div>
+  </div>;
+}
 
 export function PanelRuta({ estado }) {
-  const { origen, destino, seleccion, setSeleccion, ruta, error, cargando, calcular, limpiar,
-    localizando, siguiendo, errorUbicacion, usarUbicacion, cancelarUbicacion } = estado;
-  const origenCambio = ruta?.origenCalculo && origen && (ruta.origenCalculo.latitud !== origen.latitud || ruta.origenCalculo.longitud !== origen.longitud);
+  const { origen, destino, ruta, error, cargando, quitarDestino } = estado;
   return (
-    <section className="ruta-panel" aria-label="Ruta por el campus">
-      <div className="ruta-panel-heading"><div><span className="ruta-kicker">ASISTENTE DE RUTA</span><h2>Ruta por el campus</h2></div><button className="ruta-clear" type="button" onClick={limpiar}>Limpiar</button></div>
-      <p className="ruta-help">Elige los puntos en el mapa o utiliza los botones de un lugar.</p>
-      <div className="ruta-gps">
-        <p className="ruta-help">Con tu permiso, tu ubicación se actualiza mientras usas el mapa. Sólo enviamos las coordenadas a MiUni cuando calculas una ruta; esta función no guarda tu recorrido.</p>
-        <button type="button" onClick={usarUbicacion} disabled={siguiendo}>Usar mi ubicación como punto A</button>
-        {siguiendo && <><p role="status">{localizando ? "Obteniendo tu ubicación…" : "Ubicación continua activa. La ruta se calcula sólo cuando lo solicitas."}</p><button type="button" onClick={cancelarUbicacion}>Detener ubicación</button></>}
-        {errorUbicacion && <p className="ruta-error" role="alert">{errorUbicacion}</p>}
-      </div>
-      <div className="ruta-actions">
-        <button type="button" className={seleccion === "origen" ? "ruta-selected" : ""} aria-pressed={seleccion === "origen"} onClick={() => setSeleccion(seleccion === "origen" ? null : "origen")}>Elegir origen</button>
-        <button type="button" className={seleccion === "destino" ? "ruta-selected" : ""} aria-pressed={seleccion === "destino"} onClick={() => setSeleccion(seleccion === "destino" ? null : "destino")}>Elegir destino</button>
-        <button type="button" className="ruta-calculate" disabled={!origen || !destino || cargando || localizando} onClick={calcular}>{cargando ? "Calculando…" : "Calcular ruta"}</button>
-      </div>
-      <div className="ruta-points"><span><b>Origen</b>{etiqueta(origen)}</span><span><b>Destino</b>{etiqueta(destino)}</span></div>
-      <div role="status" aria-live="polite">
-        {origen?.fuente === "gps" && <p>Precisión aproximada del punto A: {Math.ceil(origen.precision)} m. {origen.precision > 100 ? "La ubicación es poco precisa; elige el origen en el mapa si no coincide contigo." : "Comprueba que el origen coincide contigo."} {!siguiendo && "Ubicación detenida: se muestra la última posición recibida."}</p>}
-        {origenCambio && <p>Tu ubicación cambió desde el último cálculo. El recorrido y la distancia corresponden al origen anterior; pulsa «Calcular ruta» para actualizarlos.</p>}
-        {seleccion && <p>Haz clic en el mapa para marcar el {seleccion}.</p>}
-        {cargando && <p>Buscando una ruta transitable…</p>}
-        {ruta && <>
-          <p>Distancia por los caminos: <strong>{Math.round(ruta.distanciaMetros)} m</strong>.</p>
-          {ruta.geometria.type === "Point" && <p>Ambos puntos conectan al mismo nodo de la red; no hay un tramo de camino entre ellos.</p>}
-          <p>Separación hasta la red: origen {Math.round(ruta.distanciaConexionAMetros)} m; destino {Math.round(ruta.distanciaConexionBMetros)} m. Estos accesos no están incluidos en la distancia ni representan caminos verificados.</p>
-        </>}
-      </div>
-      {error && <p className="ruta-error" role="alert">{error}</p>}
+    <section className="ruta-panel" aria-label="Cómo llegar">
+      {destino ? <>
+        <div className="ruta-destino">
+          <div><span className="ruta-kicker">CÓMO LLEGAR A</span><h2>{etiqueta(destino)}</h2></div>
+          <button className="ruta-quitar" type="button" onClick={quitarDestino} aria-label="Quitar destino"><X size={16} /></button>
+        </div>
+        <div role="status" aria-live="polite" className="ruta-resultado">
+          {cargando && !ruta && <p>Buscando el mejor camino…</p>}
+          {ruta && <p className="ruta-tiempo"><Footprints size={18} aria-hidden="true" />
+            <strong>{minutosCaminando(ruta)} min</strong> <span>· {Math.round(ruta.distanciaMetros)} m a pie</span></p>}
+          {!origen && !cargando && <p>Falta tu punto de partida.</p>}
+        </div>
+        {error && <p className="ruta-error" role="alert">{error}</p>}
+      </> : <p className="ruta-help">Toca el mapa o busca un lugar y te mostramos cómo llegar.</p>}
+      <Origen estado={estado} />
     </section>
   );
 }
 
 export function CapaRuta({ estado }) {
-  const { origen, destino, seleccion, elegir, ruta } = estado;
+  const { origen, destino, eligiendoOrigen, tocarMapa, ruta } = estado;
   const map = useMap();
-  useMapEvents({ click(event) {
-    if (seleccion) elegir(seleccion, { latitud: event.latlng.lat, longitud: event.latlng.lng });
-  } });
+  const encuadrado = useRef(null);
+  useMapEvents({ click(event) { tocarMapa({ latitud: event.latlng.lat, longitud: event.latlng.lng }); } });
+  // Encuadra la ruta sólo la primera vez para cada destino; si el GPS la recalcula, no mueve el mapa.
   useEffect(() => {
-    if (ruta) map.fitBounds(posicionesRuta(ruta.geometria), { padding: [40, 40], maxZoom: 18, animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
+    if (!ruta || encuadrado.current === ruta.destinoCalculo) return;
+    encuadrado.current = ruta.destinoCalculo;
+    map.fitBounds([...posicionesRuta(ruta.geometria), [ruta.origenCalculo.latitud, ruta.origenCalculo.longitud],
+      [ruta.destinoCalculo.latitud, ruta.destinoCalculo.longitud]],
+      { padding: [50, 50], maxZoom: 18, animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
   }, [ruta, map]);
   useEffect(() => {
     const container = map.getContainer();
     const anterior = container.style.cursor;
-    if (seleccion) container.style.cursor = "crosshair";
+    container.style.cursor = "crosshair";
     return () => { container.style.cursor = anterior; };
-  }, [seleccion, map]);
+  }, [eligiendoOrigen, map]);
+  const fijo = { interactive: false, bubblingMouseEvents: false };
+  const linea = ruta?.geometria.type === "LineString" ? posicionesRuta(ruta.geometria) : null;
+  const tramos = ruta && [
+    [[ruta.origenCalculo.latitud, ruta.origenCalculo.longitud], [ruta.origenConectado.latitud, ruta.origenConectado.longitud]],
+    [[ruta.destinoConectado.latitud, ruta.destinoConectado.longitud], [ruta.destinoCalculo.latitud, ruta.destinoCalculo.longitud]],
+  ];
   return <>
-    {origen?.fuente === "gps" && <Circle center={[origen.latitud, origen.longitud]} radius={origen.precision} interactive={false} pathOptions={{ color: "#15803d", fillOpacity: 0.1, weight: 1 }} />}
-    {ruta?.geometria.type === "LineString" && <Polyline positions={posicionesRuta(ruta.geometria)} pathOptions={{ color: "#2563eb", weight: 6, opacity: 0.9 }} />}
-    {ruta?.geometria.type === "Point" && <CircleMarker center={posicionesRuta(ruta.geometria)[0]} radius={6} pathOptions={{ color: "#2563eb" }}><Tooltip>Nodo compartido</Tooltip></CircleMarker>}
-    {[ ["A · Origen", origen, "#15803d"], ["B · Destino", destino, "#b91c1c"] ].map(([nombre, punto, color]) => punto &&
-      <CircleMarker key={nombre} center={[punto.latitud, punto.longitud]} radius={9} pathOptions={{ color, fillOpacity: 0.8 }}>
-        <Tooltip permanent direction="top">{nombre}</Tooltip>
-      </CircleMarker>)}
+    {origen?.fuente === "gps" && <Circle center={[origen.latitud, origen.longitud]} radius={origen.precision} {...fijo} pathOptions={{ color: "#245bdf", fillOpacity: 0.08, weight: 1 }} />}
+    {tramos?.map((t, i) => <Polyline key={i} positions={t} {...fijo} pathOptions={{ color: "#245bdf", weight: 3, opacity: 0.7, dashArray: "2 8" }} />)}
+    {linea && <Polyline positions={linea} {...fijo} pathOptions={{ color: "#ffffff", weight: 10, opacity: 0.9 }} />}
+    {linea && <Polyline positions={linea} {...fijo} pathOptions={{ color: "#245bdf", weight: 6, opacity: 0.95 }} />}
+    {origen && (origen.fuente === "gps"
+      ? <CircleMarker center={[origen.latitud, origen.longitud]} radius={8} {...fijo} pathOptions={{ color: "#ffffff", weight: 3, fillColor: "#245bdf", fillOpacity: 1 }} />
+      : <CircleMarker center={[origen.latitud, origen.longitud]} radius={8} {...fijo} pathOptions={{ color: "#ffffff", weight: 3, fillColor: "#287967", fillOpacity: 1 }}><Tooltip direction="top">Salida</Tooltip></CircleMarker>)}
+    {destino && <CircleMarker center={[destino.latitud, destino.longitud]} radius={10} {...fijo} pathOptions={{ color: "#ffffff", weight: 3, fillColor: "#ae3b37", fillOpacity: 1 }}>
+      <Tooltip permanent direction="top">{etiqueta(destino)}</Tooltip>
+    </CircleMarker>}
   </>;
 }
