@@ -520,6 +520,7 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
                 .HasConstraintName("resena_usuario_id_fkey");
         });
 
+        ConfigurarKardex(modelBuilder);
         OnModelCreatingPartial(modelBuilder);
     }
 

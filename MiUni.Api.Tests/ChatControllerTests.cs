@@ -219,6 +219,61 @@ public class ChatControllerTests
         Assert.Equal(request.Mensaje, (await db.Historialchats.SingleAsync(h => h.Rol == "user")).Contenido);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ChatIncludesOnlyTheCurrentUsersAcademicProfile(bool streaming)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var carrera = new Carrera { Id = Guid.NewGuid(), Nombre = "Ingeniería en Sistemas", Facultad = "Ingeniería" };
+        db.Carreras.Add(carrera);
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Prueba", CarreraId = carrera.Id, Semestre = 3 });
+        db.Users.Add(new ApplicationUser { Id = other, Nombre = "Otro" });
+        db.KardexMaterias.Add(new KardexMateria
+        {
+            Id = Guid.NewGuid(), UsuarioId = user, Materia = "Cálculo I", Calificacion = 91,
+            Creditos = 8, Semestre = 1, Estado = MiUni.Api.Enums.EstadoMateria.Aprobada
+        });
+        db.KardexMaterias.Add(new KardexMateria
+        {
+            Id = Guid.NewGuid(), UsuarioId = other, Materia = "MATERIA_DE_OTRO", Creditos = 8,
+            Estado = MiUni.Api.Enums.EstadoMateria.Cursando
+        });
+        db.HorarioClases.Add(new HorarioClase
+        {
+            Id = Guid.NewGuid(), UsuarioId = user, Materia = "Bases de Datos", Profesor = "Ana López",
+            Dia = 2, HoraInicio = new TimeOnly(9, 0), HoraFin = new TimeOnly(10, 0), Salon = "5K-201"
+        });
+        db.HorarioClases.Add(new HorarioClase
+        {
+            Id = Guid.NewGuid(), UsuarioId = other, Materia = "CLASE_DE_OTRO", Dia = 1,
+            HoraInicio = new TimeOnly(7, 0), HoraFin = new TimeOnly(8, 0)
+        });
+        await db.SaveChangesAsync();
+        var rag = new FakeRagClient("Respuesta");
+        var controller = AsUser(new ChatController(db, rag), user);
+        controller.Response.Body = new MemoryStream();
+        var request = new ChatRequest { Mensaje = "¿Qué clase tengo el martes?" };
+
+        if (streaming) await controller.Stream(request, default);
+        else await controller.Send(request, default);
+
+        Assert.Contains("PERFIL ACADÉMICO", rag.LastQuestion);
+        Assert.Contains("Ingeniería en Sistemas", rag.LastQuestion);
+        Assert.Contains("\"semestre\":3", rag.LastQuestion);
+        Assert.Contains("Cálculo I", rag.LastQuestion);
+        Assert.Contains("\"creditosAprobados\":8", rag.LastQuestion);
+        Assert.Contains("Bases de Datos", rag.LastQuestion);
+        Assert.Contains("\"dia\":\"martes\"", rag.LastQuestion);
+        Assert.Contains("5K-201", rag.LastQuestion);
+        Assert.Contains("FECHA Y HORA ACTUAL", rag.LastQuestion);
+        Assert.DoesNotContain("MATERIA_DE_OTRO", rag.LastQuestion);
+        Assert.DoesNotContain("CLASE_DE_OTRO", rag.LastQuestion);
+        Assert.Equal(request.Mensaje, (await db.Historialchats.SingleAsync(h => h.Rol == "user")).Contenido);
+    }
+
     private static Historialchat Message(Guid session, Guid user, string role, string content, DateTime createdAt) =>
         new()
         {

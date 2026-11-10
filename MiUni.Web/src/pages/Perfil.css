@@ -59,3 +59,16 @@
 .home-account:focus-visible { outline:3px solid var(--blue); outline-offset:4px; border-radius:var(--radius-pill); }
 @media(max-width:900px) { .perfil-secciones { gap:12px; } .perfil-seccion { padding:14px; } }
 @media(max-width:700px) { .perfil-heading { margin-bottom:17px; } .perfil-banner { align-items:flex-start; flex-wrap:wrap; padding:19px; gap:12px; } .perfil-banner-avatar { width:52px; height:52px; } .perfil-banner-identidad { flex-basis:calc(100% - 70px); } .perfil-banner-identidad h2 { font-size:23px; } .perfil-editar { margin-left:64px; } .perfil-academico { grid-template-columns:1fr; gap:8px; margin-bottom:20px; } .perfil-academico article { min-height:0; grid-template-columns:minmax(110px,.7fr) 1fr; align-items:center; gap:10px; padding:13px; } .perfil-edicion,.perfil-secciones { grid-template-columns:1fr; } .perfil-seccion:last-child { grid-column:auto; } .perfil-seccion { padding:14px; } }
+.perfil-kardex { margin-bottom:16px; }
+.perfil-kardex-ayuda { margin:-6px 0 14px; color:var(--muted); font-size:12px; }
+.perfil-kardex-resumen { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+.perfil-kardex-resumen article { display:grid; gap:4px; padding:11px 13px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--canvas); }
+.perfil-kardex-resumen span { color:var(--muted); font-size:9px; font-weight:700; letter-spacing:.1em; }
+.perfil-kardex-resumen strong { color:var(--navy); font:600 22px/1 var(--font-display); }
+.perfil-kardex-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:14px; padding:14px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--canvas); }
+.perfil-kardex-ancho { grid-column:1/-1; }
+.perfil-kardex-form .perfil-guardar { border:0; }
+.perfil-kardex .perfil-cancelar { font:600 12px var(--font-body); }
+.perfil-kardex-agregar { display:inline-flex; align-items:center; gap:7px; margin-bottom:14px; }
+.perfil-kardex-detalle { display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+@media(max-width:700px) { .perfil-kardex-resumen { grid-template-columns:repeat(2,minmax(0,1fr)); } .perfil-kardex-form { grid-template-columns:1fr; } }

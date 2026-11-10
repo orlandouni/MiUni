@@ -497,6 +497,68 @@ namespace MiUni.Api.Migrations
                     b.ToTable("horariooperacion", (string)null);
                 });
 
+            modelBuilder.Entity("MiUni.Api.Models.KardexMateria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<decimal?>("Calificacion")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("calificacion");
+
+                    b.Property<string>("Clave")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("clave");
+
+                    b.Property<short>("Creditos")
+                        .HasColumnType("smallint")
+                        .HasColumnName("creditos");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("Materia")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("materia");
+
+                    b.Property<string>("Periodo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("periodo");
+
+                    b.Property<short?>("Semestre")
+                        .HasColumnType("smallint")
+                        .HasColumnName("semestre");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id")
+                        .HasName("kardex_materia_pkey");
+
+                    b.HasIndex(new[] { "UsuarioId", "Semestre" }, "kardex_materia_usuario_semestre_idx");
+
+                    b.ToTable("kardex_materia", null, t =>
+                        {
+                            t.HasCheckConstraint("kardex_materia_calificacion_check", "calificacion BETWEEN 0 AND 100");
+
+                            t.HasCheckConstraint("kardex_materia_creditos_check", "creditos BETWEEN 0 AND 30");
+
+                            t.HasCheckConstraint("kardex_materia_semestre_check", "semestre BETWEEN 1 AND 12");
+                        });
+                });
+
             modelBuilder.Entity("MiUni.Api.Models.Lugar", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1059,6 +1121,18 @@ namespace MiUni.Api.Migrations
                     b.Navigation("Lugar");
                 });
 
+            modelBuilder.Entity("MiUni.Api.Models.KardexMateria", b =>
+                {
+                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "Usuario")
+                        .WithMany("KardexMaterias")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("kardex_materia_usuario_id_fkey");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("MiUni.Api.Models.Lugar", b =>
                 {
                     b.HasOne("MiUni.Api.Models.Categorium", "Categoria")
@@ -1211,6 +1285,8 @@ namespace MiUni.Api.Migrations
                     b.Navigation("Historialchats");
 
                     b.Navigation("HorarioClases");
+
+                    b.Navigation("KardexMaterias");
 
                     b.Navigation("Reporteusuarios");
 
