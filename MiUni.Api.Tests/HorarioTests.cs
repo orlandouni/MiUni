@@ -122,6 +122,52 @@ public class HorarioTests
     }
 
     [Fact]
+    public async Task LinkedBuhoRaterProfileIsSharedAcrossStudents()
+    {
+        await using var db = Database();
+        var ana = await SeedUser(db);
+        var beto = await SeedUser(db);
+        var perfil = Guid.Parse("0136eb39-3a7c-4b75-af52-92ff2283d434");
+        await AsUser(db, ana).Create(Clase("Cultura", "SOTO MORA CLAUDIA PAULINA", 1, 7), default);
+        await AsUser(db, beto).Create(Clase("Cultura", "Soto  Mora Claudia Paulína", 2, 7), default);
+
+        // Solo se aceptan enlaces de perfil de buhorater.com.
+        Assert.IsType<BadRequestObjectResult>(await AsUser(db, ana).VincularBuhoRater(new VincularBuhoRaterRequest
+            { Profesor = "SOTO MORA CLAUDIA PAULINA", Enlace = $"https://evil.example/perfil?id={perfil}" }, default));
+        // Y solo para profes de tu propio horario.
+        Assert.IsType<NotFoundObjectResult>(await AsUser(db, ana).VincularBuhoRater(new VincularBuhoRaterRequest
+            { Profesor = "Otro Profe", Enlace = perfil.ToString() }, default));
+
+        var ok = Assert.IsType<OkObjectResult>(await AsUser(db, ana).VincularBuhoRater(new VincularBuhoRaterRequest
+            { Profesor = "SOTO MORA CLAUDIA PAULINA", Enlace = $" www.buhorater.com/perfil?id={perfil} " }, default));
+        var dto = Assert.IsType<PerfilBuhoRaterDto>(ok.Value);
+        Assert.True(dto.BuhoRaterPerfil);
+        Assert.Equal(BuhoRater.UrlPerfil(perfil), dto.BuhoRaterUrl);
+
+        // Beto escribe el nombre distinto (acentos, espacios), pero es el mismo profe.
+        var clases = Assert.IsAssignableFrom<IEnumerable<HorarioClaseDto>>(
+            Assert.IsType<OkObjectResult>(await AsUser(db, beto).GetAll(default)).Value).ToList();
+        Assert.Equal("https://www.buhorater.com/perfil?id=0136eb39-3a7c-4b75-af52-92ff2283d434", clases.Single().BuhoRaterUrl);
+        Assert.True(clases.Single().BuhoRaterPerfil);
+
+        // Quitar el vínculo regresa a la búsqueda.
+        Assert.IsType<OkObjectResult>(await AsUser(db, beto).VincularBuhoRater(new VincularBuhoRaterRequest
+            { Profesor = "Soto Mora Claudia Paulína", Enlace = "" }, default));
+        Assert.Empty(db.ProfesorBuhoRaters);
+    }
+
+    [Theory]
+    [InlineData("https://www.buhorater.com/perfil?id=0136eb39-3a7c-4b75-af52-92ff2283d434", true)]
+    [InlineData("http://buhorater.com/perfil/?id=0136EB39-3A7C-4B75-AF52-92FF2283D434&x=1", true)]
+    [InlineData("0136eb39-3a7c-4b75-af52-92ff2283d434", true)]
+    [InlineData("https://www.buhorater.com.evil.mx/perfil?id=0136eb39-3a7c-4b75-af52-92ff2283d434", false)]
+    [InlineData("https://www.buhorater.com/otra?id=0136eb39-3a7c-4b75-af52-92ff2283d434", false)]
+    [InlineData("javascript:alert(1)", false)]
+    [InlineData("https://www.buhorater.com/perfil?id=no-es-uuid", false)]
+    public void ReadsOnlyBuhoRaterProfileLinks(string enlace, bool valido) =>
+        Assert.Equal(valido, BuhoRater.TryLeerPerfil(enlace, out _));
+
+    [Fact]
     public void BuhoRaterLinkSearchesOnlyThatSite()
     {
         Assert.Null(BuhoRater.UrlBusqueda("   "));

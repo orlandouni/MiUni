@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MiUni.Api.DTOs;
 
 public record HorarioClaseDto(Guid Id, string Materia, string? Profesor, short Dia,
-    TimeOnly HoraInicio, TimeOnly HoraFin, string? Salon, string? BuhoRaterUrl);
+    TimeOnly HoraInicio, TimeOnly HoraFin, string? Salon, string? BuhoRaterUrl, bool BuhoRaterPerfil);
 
 public class GuardarHorarioClaseRequest
 {
@@ -26,4 +26,17 @@ public class GuardarHorarioClaseRequest
 }
 
 public record ClaseImportadaDto(string Materia, string? Profesor, short Dia,
-    TimeOnly HoraInicio, TimeOnly HoraFin, string? Salon, string? BuhoRaterUrl);
+    TimeOnly HoraInicio, TimeOnly HoraFin, string? Salon, string? BuhoRaterUrl, bool BuhoRaterPerfil);
+
+public record PerfilBuhoRaterDto(string Profesor, string? BuhoRaterUrl, bool BuhoRaterPerfil);
+
+public class VincularBuhoRaterRequest
+{
+    [Required(ErrorMessage = "Indica el profesor.")]
+    [StringLength(120)]
+    public string Profesor { get; set; } = "";
+
+    // Enlace del perfil (https://www.buhorater.com/perfil?id=...). Vacío quita el vínculo.
+    [StringLength(300)]
+    public string? Enlace { get; set; }
+}

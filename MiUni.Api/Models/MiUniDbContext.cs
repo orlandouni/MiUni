@@ -38,6 +38,8 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
 
     public virtual DbSet<HorarioClase> HorarioClases { get; set; }
 
+    public virtual DbSet<ProfesorBuhoRater> ProfesorBuhoRaters { get; set; }
+
     public virtual DbSet<Horariooperacion> Horariooperacions { get; set; }
 
     public virtual DbSet<Lugar> Lugars { get; set; }
@@ -181,6 +183,30 @@ public partial class MiUniDbContext : IdentityDbContext<ApplicationUser, Identit
             entity.HasOne(d => d.Lugar).WithMany(p => p.Eventotemporals)
                 .HasForeignKey(d => d.LugarId)
                 .HasConstraintName("eventotemporal_lugar_id_fkey");
+        });
+
+        modelBuilder.Entity<ProfesorBuhoRater>(entity =>
+        {
+            entity.HasKey(e => e.Clave).HasName("profesor_buhorater_pkey");
+
+            entity.ToTable("profesor_buhorater");
+
+            entity.Property(e => e.Clave)
+                .HasMaxLength(120)
+                .HasColumnName("clave");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(120)
+                .HasColumnName("nombre");
+            entity.Property(e => e.PerfilId).HasColumnName("perfil_id");
+            entity.Property(e => e.ActualizadoPorId).HasColumnName("actualizado_por_id");
+            entity.Property(e => e.FechaActualizacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_actualizacion");
+
+            entity.HasOne(d => d.ActualizadoPor).WithMany()
+                .HasForeignKey(d => d.ActualizadoPorId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("profesor_buhorater_actualizado_por_id_fkey");
         });
 
         modelBuilder.Entity<HorarioClase>(entity =>

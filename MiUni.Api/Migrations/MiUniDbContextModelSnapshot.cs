@@ -671,6 +671,41 @@ namespace MiUni.Api.Migrations
                     b.ToTable("productomenu", (string)null);
                 });
 
+            modelBuilder.Entity("MiUni.Api.Models.ProfesorBuhoRater", b =>
+                {
+                    b.Property<string>("Clave")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("clave");
+
+                    b.Property<Guid?>("ActualizadoPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actualizado_por_id");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha_actualizacion")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nombre");
+
+                    b.Property<Guid>("PerfilId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("perfil_id");
+
+                    b.HasKey("Clave")
+                        .HasName("profesor_buhorater_pkey");
+
+                    b.HasIndex("ActualizadoPorId");
+
+                    b.ToTable("profesor_buhorater", (string)null);
+                });
+
             modelBuilder.Entity("MiUni.Api.Models.Puntointeresinterno", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1158,6 +1193,17 @@ namespace MiUni.Api.Migrations
                         .HasConstraintName("productomenu_lugar_id_fkey");
 
                     b.Navigation("Lugar");
+                });
+
+            modelBuilder.Entity("MiUni.Api.Models.ProfesorBuhoRater", b =>
+                {
+                    b.HasOne("MiUni.Api.Identity.ApplicationUser", "ActualizadoPor")
+                        .WithMany()
+                        .HasForeignKey("ActualizadoPorId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("profesor_buhorater_actualizado_por_id_fkey");
+
+                    b.Navigation("ActualizadoPor");
                 });
 
             modelBuilder.Entity("MiUni.Api.Models.Puntointeresinterno", b =>

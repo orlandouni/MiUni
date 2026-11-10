@@ -462,3 +462,8 @@
   .com-horario-tarjeta .com-favorito-acciones { flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
   .com-horario-tarjeta .com-peligro { margin-left: auto; }
 }
+.com-horario-vincular { margin-top: 12px; padding: 0; border: 0; background: none; color: var(--com-azul); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: left; }
+.com-horario-enlace { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--com-borde); }
+.com-horario-enlace fieldset { display: grid; gap: 10px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.com-horario-enlace label { display: grid; gap: 7px; font-weight: 600; }
+.com-horario-enlace input { width: 100%; padding: 10px 12px; border: 1px solid var(--com-borde); border-radius: 10px; color: var(--com-texto); background: white; font: inherit; }

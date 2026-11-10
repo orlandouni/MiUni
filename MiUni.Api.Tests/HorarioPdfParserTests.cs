@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MiUni.Api.Controllers;
 using MiUni.Api.DTOs;
 using MiUni.Api.Services;
@@ -55,7 +56,9 @@ public class HorarioPdfParserTests
     [Fact]
     public async Task ImportEndpointRejectsNonPdfAndReturnsPreviewForPdf()
     {
-        var controller = new HorarioController(null!);
+        await using var db = new MiUni.Api.Models.MiUniDbContext(new Microsoft.EntityFrameworkCore.DbContextOptionsBuilder<MiUni.Api.Models.MiUniDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        var controller = new HorarioController(db);
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
