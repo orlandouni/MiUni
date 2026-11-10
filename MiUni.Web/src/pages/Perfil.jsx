@@ -5,6 +5,7 @@ import api, { clearSession, getMe } from "../services/api";
 import { obtenerFavoritos, obtenerLugares, obtenerResenas, editarResena, eliminarResena, mensajeError } from "../services/comunidad";
 import CampusSidebar from "../components/CampusSidebar";
 import KardexSeccion from "../components/KardexSeccion";
+import HorarioSeccion from "../components/HorarioSeccion";
 import "./Home.css";
 import "./Perfil.css";
 
@@ -89,6 +90,7 @@ export default function Perfil() {
             <article><span><BookOpen size={16}/> SEMESTRE</span><strong>{datos.semestre ? `${datos.semestre}° semestre` : "Sin especificar"}</strong></article>
             <article><span><Clock3 size={16}/> EN MIUNI DESDE</span><strong>{fecha(datos.fechaRegistro)}</strong></article>
           </div>}
+          <HorarioSeccion />
           <KardexSeccion />
           <div className="perfil-secciones">
             <section id="mis-favoritos" className="perfil-seccion"><header><h2><Bookmark size={18}/> Mis favoritos</h2><span>{favoritos.length}</span></header>{favoritos.length ? <div className="perfil-lista">{favoritos.map(f=><Link className="perfil-item" key={f.lugarId} to={`/lugares/${f.lugarId}`}><span className="perfil-item-icon"><Star size={17}/></span><span className="perfil-item-text"><strong>{nombreLugar(f.lugarId)}</strong><small>Guardado {fecha(f.fechaAgregado)}</small></span><ChevronRight size={17}/></Link>)}</div> : <p className="perfil-vacio">Aún no guardas lugares. Marca tus favoritos desde el mapa.</p>}</section>

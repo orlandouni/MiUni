@@ -17,7 +17,6 @@ namespace MiUni.Api.Migrations
                 .Annotation("Npgsql:PostgresExtension:pgcrypto", ",,")
                 .Annotation("Npgsql:PostgresExtension:pgrouting", ",,")
                 .Annotation("Npgsql:PostgresExtension:postgis", ",,")
-                .Annotation("Npgsql:PostgresExtension:vector", ",,")
                 .OldAnnotation("Npgsql:Enum:estado_reporte", "Pendiente,Revisado,Descartado")
                 .OldAnnotation("Npgsql:Enum:rol_usuario", "Estudiante,Administrador")
                 .OldAnnotation("Npgsql:PostgresExtension:pgcrypto", ",,")
@@ -55,23 +54,35 @@ namespace MiUni.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // pgvector es opcional: si el servidor no lo tiene instalado (por ejemplo, un
+            // PostgreSQL local en Windows), la migración sigue sin la columna embedding y
+            // la búsqueda léxica (search_tsv) funciona igual. Con el Postgres de Docker
+            // (docker-compose.yml) la extensión sí existe y se crea todo.
             migrationBuilder.Sql(@"
-                ALTER TABLE rag_chunk
-                ADD COLUMN embedding vector(1024);
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'vector') THEN
+                        CREATE EXTENSION IF NOT EXISTS vector;
+                        ALTER TABLE rag_chunk ADD COLUMN embedding vector(1024);
+                        COMMENT ON COLUMN rag_chunk.embedding IS 'Dense bge-m3 embedding. Expected dimension: 1024.';
+                        CREATE INDEX idx_rag_chunk_embedding_hnsw ON rag_chunk USING hnsw (embedding vector_cosine_ops);
+                    ELSE
+                        RAISE NOTICE 'pgvector no está instalado: rag_chunk se crea sin la columna embedding.';
+                    END IF;
+                END
+                $$;
+            ");
 
+            migrationBuilder.Sql(@"
                 ALTER TABLE rag_chunk
                 ADD COLUMN search_tsv tsvector GENERATED ALWAYS AS (
                     to_tsvector('spanish', coalesce(content, ''))
                 ) STORED;
 
-                COMMENT ON COLUMN rag_chunk.embedding IS 'Dense bge-m3 embedding. Expected dimension: 1024.';
                 COMMENT ON COLUMN rag_chunk.search_tsv IS 'Spanish lexical search vector used by hybrid search.';
 
                 CREATE INDEX idx_rag_chunk_search_tsv
                 ON rag_chunk USING gin (search_tsv);
-
-                CREATE INDEX idx_rag_chunk_embedding_hnsw
-                ON rag_chunk USING hnsw (embedding vector_cosine_ops);
             ");
             migrationBuilder.CreateIndex(
                 name: "idx_rag_chunk_category",
