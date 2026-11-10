@@ -24,3 +24,6 @@ public class GuardarHorarioClaseRequest
     [StringLength(60, ErrorMessage = "El salón no puede pasar de 60 caracteres.")]
     public string? Salon { get; set; }
 }
+
+public record ClaseImportadaDto(string Materia, string? Profesor, short Dia,
+    TimeOnly HoraInicio, TimeOnly HoraFin, string? Salon, string? BuhoRaterUrl);

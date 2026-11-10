@@ -102,6 +102,26 @@ public class HorarioTests
     }
 
     [Fact]
+    public async Task ReplaceSwapsWholeScheduleForThatUserOnly()
+    {
+        await using var db = Database();
+        var user = await SeedUser(db);
+        var other = await SeedUser(db);
+        await AsUser(db, user).Create(Clase("Vieja", null, 1, 7), default);
+        await AsUser(db, other).Create(Clase("Ajena", null, 1, 7), default);
+
+        var ok = Assert.IsType<OkObjectResult>(await AsUser(db, user).Reemplazar(
+            [Clase("Química", "Ana López", 2, 9), Clase("Física", null, 1, 8)], default));
+        var dtos = Assert.IsAssignableFrom<IEnumerable<HorarioClaseDto>>(ok.Value).ToList();
+        Assert.Equal(["Física", "Química"], dtos.Select(c => c.Materia));
+        Assert.Equal(["Ajena", "Física", "Química"], db.HorarioClases.Select(c => c.Materia).OrderBy(m => m));
+
+        var invalida = Clase("Mala", null, 9, 8);
+        Assert.IsType<BadRequestObjectResult>(await AsUser(db, user).Reemplazar([invalida], default));
+        Assert.Equal(3, db.HorarioClases.Count());
+    }
+
+    [Fact]
     public void BuhoRaterLinkSearchesOnlyThatSite()
     {
         Assert.Null(BuhoRater.UrlBusqueda("   "));
