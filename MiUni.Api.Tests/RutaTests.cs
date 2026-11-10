@@ -68,7 +68,27 @@ public class RutaTests
         Assert.Null(await Consultar(0, 0.002, vacia: true));
     }
 
-    private static async Task<(double distancia, JsonElement geo)?> Consultar(double a, double b, bool vacia = false)
+    [RoutingFact]
+    public async Task ConectaPuntosAMediaCalleSinIrHastaLaEsquina()
+    {
+        // A queda ~11 m al norte de la mitad del primer tramo: la ruta parte de su proyección.
+        var ruta = await Consultar(0.0005, 0.002, latA: 0.0001);
+        Assert.NotNull(ruta);
+        Assert.InRange(ruta.Value.distancia, 165, 169);
+        Assert.Equal(0.0005, ruta.Value.geo.GetProperty("coordinates")[0][0].GetDouble(), 9);
+        Assert.Equal(0, ruta.Value.geo.GetProperty("coordinates")[0][1].GetDouble(), 9);
+    }
+
+    [RoutingFact]
+    public async Task ConectaDosPuntosDelMismoTramo()
+    {
+        var ruta = await Consultar(0.0002, 0.0007);
+        Assert.NotNull(ruta);
+        Assert.InRange(ruta.Value.distancia, 54, 57);
+        Assert.Equal(2, ruta.Value.geo.GetProperty("coordinates").GetArrayLength());
+    }
+
+    private static async Task<(double distancia, JsonElement geo)?> Consultar(double a, double b, bool vacia = false, double latA = 0)
     {
         await using var connection = new NpgsqlConnection(Environment.GetEnvironmentVariable("MIUNI_ROUTING_TEST_CONNECTION"));
         await connection.OpenAsync();
@@ -96,12 +116,16 @@ public class RutaTests
             .GetField(name, BindingFlags.NonPublic | BindingFlags.Static)!.GetRawConstantValue()!;
         await using (var graph = new NpgsqlCommand(Sql("CrearGrafo").Replace("public.camino", "pg_temp.camino"), connection, transaction))
             await graph.ExecuteNonQueryAsync();
+        await using (var connect = new NpgsqlCommand(Sql("ConectarPuntos"), connection, transaction))
+        {
+            connect.Parameters.AddWithValue("lonA", a);
+            connect.Parameters.AddWithValue("lonB", b);
+            connect.Parameters.AddWithValue("latA", latA);
+            connect.Parameters.AddWithValue("latB", 0d);
+            connect.Parameters.AddWithValue("radio", 100d);
+            await connect.ExecuteNonQueryAsync();
+        }
         await using var query = new NpgsqlCommand(Sql("CalcularRuta"), connection, transaction);
-        query.Parameters.AddWithValue("lonA", a);
-        query.Parameters.AddWithValue("lonB", b);
-        query.Parameters.AddWithValue("latA", 0d);
-        query.Parameters.AddWithValue("latB", 0d);
-        query.Parameters.AddWithValue("radio", 100d);
         await using var reader = await query.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return null;
         using var json = JsonDocument.Parse(reader.GetString(1));

@@ -1,6 +1,8 @@
 param(
-    [ValidateSet('init', 'check', 'migrate', 'api')]
+    [ValidateSet('init', 'check', 'migrate', 'api', 'caminos')]
     [string]$Action = 'check',
+    # Para -Action caminos: 'campus' o 'sur,oeste,norte,este'.
+    [string]$Area = 'campus',
     [string]$EnvPath = ''
 )
 
@@ -98,6 +100,8 @@ Push-Location (Join-Path $projectRoot 'MiUni.Api')
 try {
     if ($Action -eq 'migrate') {
         & dotnet ef database update
+    } elseif ($Action -eq 'caminos') {
+        & dotnet run --no-launch-profile -- --importar-caminos-osm $Area
     } else {
         & dotnet run --no-launch-profile --urls http://localhost:5124
     }

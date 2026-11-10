@@ -3,6 +3,8 @@ import { Circle, CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } f
 import { Crosshair, MapPin } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import "./SelectorUbicacion.css";
+import { LIMITES_MAPA, TESELAS } from "./mapaBase";
+import LimitarAlCampus from "./LimitarAlCampus";
 
 const CENTRO_CAMPUS = [29.0833, -110.9627];
 
@@ -40,8 +42,9 @@ export default function SelectorUbicacion({ valor, onCambio, ambulante = false }
       </span>
       <button type="button" onClick={usarMiUbicacion}><Crosshair size={15} aria-hidden="true" /> Usar mi ubicación</button>
     </div>
-    <MapContainer center={posicion} zoom={17} scrollWheelZoom={false} className="sel-ubicacion-mapa">
-      <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <MapContainer center={posicion} zoom={17} scrollWheelZoom={false} className="sel-ubicacion-mapa" {...LIMITES_MAPA}>
+      <TileLayer {...TESELAS} />
+          <LimitarAlCampus />
       <ClicEnMapa onElegir={onCambio} />
       <Centrar posicion={posicion} version={gps.version} />
       {valor && ambulante && <Circle center={valor} radius={45} pathOptions={{ color: "#245bdf", fillColor: "#245bdf", fillOpacity: 0.15, weight: 2, dashArray: "6 6" }} />}

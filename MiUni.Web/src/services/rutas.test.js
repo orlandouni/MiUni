@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import axios from "axios";
-import { calcularRuta, posicionesRuta } from "./rutas.js";
+import { calcularRuta, distanciaMetros, minutosCaminando, posicionesRuta } from "./rutas.js";
 
 test("convierte GeoJSON a Leaflet conservando orden y puntos intermedios", () => {
   assert.deepEqual(posicionesRuta({ type: "LineString", coordinates: [[-110.96, 29.08], [-110.97, 29.09]] }), [[29.08, -110.96], [29.09, -110.97]]);
@@ -32,4 +32,11 @@ test("distingue red sin conexión, puntos inválidos y API inaccesible", async (
     controller.abort();
     await assert.rejects(calcularRuta({}, {}, controller.signal), error => axios.isCancel(error));
   } finally { axios.defaults.adapter = anterior; }
+});
+
+test("mide distancias y estima minutos a pie", () => {
+  const metros = distanciaMetros({ latitud: 29.083, longitud: -110.964 }, { latitud: 29.084, longitud: -110.964 });
+  assert.ok(metros > 110 && metros < 112);
+  assert.equal(minutosCaminando({ distanciaMetros: 700, distanciaConexionAMetros: 30, distanciaConexionBMetros: 20 }), 10);
+  assert.equal(minutosCaminando({ distanciaMetros: 0, distanciaConexionAMetros: 0, distanciaConexionBMetros: 0 }), 1);
 });

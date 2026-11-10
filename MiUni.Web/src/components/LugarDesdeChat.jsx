@@ -16,8 +16,8 @@ export default function LugarDesdeChat({ lugar, elegir, icon }) {
       <Popup>
         <strong>{lugar.nombre}</strong>
         {lugar.descripcion && <p>{lugar.descripcion}</p>}
-        <p><button type="button" onClick={() => elegir("origen", lugar)}>Usar como origen</button>{" "}
-          <button type="button" onClick={() => elegir("destino", lugar)}>Usar como destino</button></p>
+        <p><button type="button" onClick={() => elegir("destino", lugar)}>Cómo llegar</button>{" "}
+          <button type="button" onClick={() => elegir("origen", lugar)}>Salir desde aquí</button></p>
         <Link to={`/lugares/${lugar.id}`}>Ver reseñas y guardar favorito</Link>
       </Popup>
     </Marker>

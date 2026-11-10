@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using MiUni.Api.Enums;
 using MiUni.Api.Models;
@@ -134,6 +135,35 @@ if (!string.IsNullOrWhiteSpace(adminEmail))
         if (!result.Succeeded) throw new InvalidOperationException("No se pudo asignar el rol de administrador.");
     }
     Console.WriteLine("Rol de administrador asignado a la cuenta indicada.");
+    return;
+}
+
+// Importa la red peatonal de OpenStreetMap a public.camino y termina, sin levantar la API.
+var areaOsm = builder.Configuration["importar-caminos-osm"];
+if (!string.IsNullOrWhiteSpace(areaOsm))
+{
+    var area = AreaOsm.Parse(areaOsm);
+    var overpassUrl = builder.Configuration["osm-overpass-url"];
+    var servidores = string.IsNullOrWhiteSpace(overpassUrl) ? OsmCaminos.ServidoresOverpass : [overpassUrl];
+    var incluirPrivados = builder.Configuration.GetValue<bool>("osm-incluir-privados");
+    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+    http.DefaultRequestHeaders.UserAgent.ParseAdd("MiUni-importador-caminos/1.0");
+    if (string.IsNullOrWhiteSpace(builder.Configuration["osm-archivo"]))
+        Console.WriteLine($"Descargando caminos de OpenStreetMap ({area.Sur}, {area.Oeste}) - ({area.Norte}, {area.Este})...");
+    // Con --osm-archivo se usa un JSON de Overpass ya descargado (por ejemplo desde el navegador).
+    var archivoOsm = builder.Configuration["osm-archivo"];
+    using var osm = string.IsNullOrWhiteSpace(archivoOsm)
+        ? await OsmCaminos.DescargarAsync(http, area, servidores, Console.WriteLine)
+        : JsonDocument.Parse(await File.ReadAllTextAsync(archivoOsm));
+    var segmentos = OsmCaminos.Segmentar(osm.RootElement, incluirPrivados);
+    var guardados = await OsmCaminos.GuardarAsync(dataSource, segmentos.Tramos);
+    Console.WriteLine($"Importados {guardados} tramos de {segmentos.ViasUsadas} vías OSM. " +
+        $"Descartados {segmentos.TramosAislados} tramos aislados de la red principal.");
+    var manuales = await OsmCaminos.ContarManualesAsync(dataSource);
+    if (manuales > 0)
+        Console.WriteLine($"Aviso: quedan {manuales} caminos manuales; sólo se conectan si sus extremos coinciden con la red OSM. " +
+            "Para quitarlos: DELETE FROM public.camino WHERE osm_way_id IS NULL;");
+    Console.WriteLine("Datos © colaboradores de OpenStreetMap (ODbL).");
     return;
 }
 

@@ -227,24 +227,39 @@ Requiere PostgreSQL con las extensiones `postgis` y `pgrouting`, y caminos carga
 en `public.camino` (tabla creada por la migración inicial). El usuario de conexión
 necesita SELECT sobre esa tabla y permiso TEMP sobre la base de datos.
 
-La API conecta cada punto al extremo transitable más cercano, hasta 100 metros
-por defecto (radio permitido: 1–1000 m). Construye una instantánea temporal del
+### Cargar los caminos desde OpenStreetMap
+
+Los caminos ya no se dibujan a mano: se importan de OpenStreetMap (andadores,
+banquetas, escaleras y calles del campus y sus alrededores). Después de `migrate`:
+
+```powershell
+powershell -NoProfile -File .\scripts\dev.ps1 -Action caminos
+# Otra zona: -Area 'sur,oeste,norte,este', por ejemplo -Area '29.07,-110.98,29.09,-110.95'
+```
+
+Necesita salida a internet hacia `overpass-api.de`. Detalles, filtros y cómo
+corregir huecos del mapa: [docs/caminos-osm.md](docs/caminos-osm.md).
+
+### Cálculo
+
+La API proyecta cada punto sobre el tramo transitable más cercano, hasta 100 metros
+por defecto (radio permitido: 1–1000 m), y parte ese tramo ahí, así la ruta empieza
+a media calle y no en la esquina más próxima. Construye una instantánea temporal del
 grafo y ejecuta `pgr_dijkstra` sin dirección, con longitud geodésica en metros como
 costo. Los caminos se consideran bidireccionales. Sólo conecta extremos con las
-mismas coordenadas: los caminos deben estar divididos en cada intersección real.
-No conecta automáticamente cruces geométricos ni proyecta puntos al interior de
-un tramo. La construcción por solicitud es apropiada para una red de campus;
-una red grande requeriría topología persistida e índices específicos.
+mismas coordenadas: los caminos deben estar divididos en cada intersección real
+(el importador de OSM ya lo hace). La construcción por solicitud es apropiada para
+una red de campus; una red grande requeriría topología persistida e índices específicos.
 
 La respuesta 200 incluye `distanciaMetros`, `geometria` GeoJSON (coordenadas
 `[longitud, latitud]`), `origenConectado`, `destinoConectado` y las distancias
 de conexión A/B. La distancia de ruta sólo incluye caminos, sin sumar la
 separación entre los puntos solicitados y la red; esos accesos no son rutas
-peatonales verificadas. Si ambos puntos conectan al mismo nodo, devuelve distancia
+peatonales verificadas. Si ambos puntos conectan al mismo lugar de la red, devuelve distancia
 cero y geometría `Point`; en los demás casos devuelve `LineString` orientado de A a B.
 
 - 400: puntos ausentes, coordenadas fuera de rango o radio inválido.
-- 404: red vacía, punto fuera del radio o nodos sin conexión transitable.
+- 404: red vacía, punto fuera del radio o puntos sin conexión transitable.
 
 Ejemplo ejecutable: `MiUni.Api/Ruta.http` (ajustar puerto y coordenadas).
 

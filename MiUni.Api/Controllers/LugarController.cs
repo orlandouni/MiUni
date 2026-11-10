@@ -24,12 +24,14 @@ public class LugarController : ControllerBase
 // GET /api/Lugar?categoria=Comida
 // GET /api/Lugar?q=5k
 // GET /api/Lugar?q=biblio&categoria=Biblioteca
+// GET /api/Lugar?abierto=true  (sólo lugares con horario publicado y abiertos ahora)
 [HttpGet]
-public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuery] string? q)
+public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuery] string? q, [FromQuery] bool abierto = false)
 {
     var query = _context.Lugars
         .AsNoTracking()
         .Include(l => l.Categoria)
+        .Include(l => l.Horariooperacions)
         .Where(l => l.Activo);
 
     if (!string.IsNullOrWhiteSpace(categoria))
@@ -49,6 +51,7 @@ public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuer
     var lugaresEntidades = await query.OrderBy(l => l.Nombre).ToListAsync();
 
     // Mapeo a DTO en memoria (evita el problema de st_y con geography)
+    var ahora = MiUni.Api.Services.HorarioLugar.AhoraEnCampus();
     var lugares = lugaresEntidades.Select(l => new LugarDto
     {
         Id = l.Id,
@@ -58,13 +61,14 @@ public async Task<IActionResult> GetAll([FromQuery] string? categoria, [FromQuer
         Latitud = l.Ubicacion.Y,
         Longitud = l.Ubicacion.X,
         EsAmbulante = l.EsAmbulante,
+        AbiertoAhora = l.Horariooperacions.Count == 0 ? null : MiUni.Api.Services.HorarioLugar.EstaAbierto(l.Horariooperacions, ahora),
         Categoria = new CategoriaDto
         {
             Id = l.Categoria.Id,
             Nombre = l.Categoria.Nombre,
             Icono = l.Categoria.Icono
         }
-    }).ToList();
+    }).Where(l => !abierto || l.AbiertoAhora == true).ToList();
 
     return Ok(lugares);
 }

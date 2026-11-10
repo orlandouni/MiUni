@@ -1,5 +1,11 @@
 # Origen por ubicación del dispositivo
 
+> Desde noviembre de 2026 el mapa funciona como una app de mapas: el origen es tu
+> ubicación, un toque en el mapa (o elegir un lugar) marca el destino y la ruta se
+> calcula sola. Con el GPS activo se recalcula cuando te mueves 15 m o más, sin
+> volver a encuadrar el mapa. «Cambiar» o «Salir desde aquí» fijan un origen manual.
+> Lo de abajo describe el permiso y el seguimiento, que no cambiaron.
+
 Al entrar al mapa se solicita el permiso nativo del navegador. Si ya está concedido,
 el seguimiento se inicia automáticamente. Se recuerda sólo que ya se intentó pedir
 el permiso (localStorage), nunca una autorización ni coordenadas. Si se deniega o
