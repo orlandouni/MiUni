@@ -137,6 +137,29 @@ if (!string.IsNullOrWhiteSpace(adminEmail))
     return;
 }
 
+// Importa la red peatonal de OpenStreetMap a public.camino y termina, sin levantar la API.
+var areaOsm = builder.Configuration["importar-caminos-osm"];
+if (!string.IsNullOrWhiteSpace(areaOsm))
+{
+    var area = AreaOsm.Parse(areaOsm);
+    var overpassUrl = builder.Configuration["osm-overpass-url"] ?? "https://overpass-api.de/api/interpreter";
+    var incluirPrivados = builder.Configuration.GetValue<bool>("osm-incluir-privados");
+    using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+    http.DefaultRequestHeaders.UserAgent.ParseAdd("MiUni-importador-caminos/1.0");
+    Console.WriteLine($"Descargando caminos de OpenStreetMap ({area.Sur}, {area.Oeste}) - ({area.Norte}, {area.Este})...");
+    using var osm = await OsmCaminos.DescargarAsync(http, area, overpassUrl);
+    var segmentos = OsmCaminos.Segmentar(osm.RootElement, incluirPrivados);
+    var guardados = await OsmCaminos.GuardarAsync(dataSource, segmentos.Tramos);
+    Console.WriteLine($"Importados {guardados} tramos de {segmentos.ViasUsadas} vías OSM. " +
+        $"Descartados {segmentos.TramosAislados} tramos aislados de la red principal.");
+    var manuales = await OsmCaminos.ContarManualesAsync(dataSource);
+    if (manuales > 0)
+        Console.WriteLine($"Aviso: quedan {manuales} caminos manuales; sólo se conectan si sus extremos coinciden con la red OSM. " +
+            "Para quitarlos: DELETE FROM public.camino WHERE osm_way_id IS NULL;");
+    Console.WriteLine("Datos © colaboradores de OpenStreetMap (ODbL).");
+    return;
+}
+
 if (app.Environment.IsDevelopment())
 {
     await DevelopmentAdminSeeder.SeedAsync(app.Services, app.Environment, app.Configuration);

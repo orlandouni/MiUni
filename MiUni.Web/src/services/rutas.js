@@ -15,7 +15,7 @@ export async function calcularRuta(origen, destino, signal) {
     return data;
   } catch (error) {
     if (signal?.aborted) throw error;
-    if (error.response?.status === 404) throw new Error("No hay una ruta disponible entre esos puntos. Prueba puntos más cercanos a los caminos cargados (hasta 100 m de sus extremos).", { cause: error });
+    if (error.response?.status === 404) throw new Error("No hay una ruta disponible entre esos puntos. Prueba puntos a menos de 100 m de una calle o andador del mapa.", { cause: error });
     if (error.response?.status === 400) throw new Error("No se pudieron usar esos puntos. Selecciona de nuevo el origen y el destino.", { cause: error });
     throw new Error("No se pudo calcular la ruta. Comprueba la conexión con la API e inténtalo de nuevo.", { cause: error });
   }
