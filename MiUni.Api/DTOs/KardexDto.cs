@@ -6,6 +6,9 @@ namespace MiUni.Api.DTOs;
 public record KardexMateriaDto(Guid Id, string Materia, string? Clave, string? Periodo, short? Semestre,
     decimal? Calificacion, short Creditos, EstadoMateria Estado);
 
+public record KardexMateriaImportadaDto(string Materia, string? Clave, string? Periodo, short? Semestre,
+    decimal? Calificacion, short Creditos, EstadoMateria Estado);
+
 // Promedio de las materias con calificación final (aprobadas y reprobadas).
 public record KardexResumenDto(int CreditosAprobados, decimal? Promedio, int MateriasAprobadas,
     int MateriasReprobadas, int MateriasCursando);

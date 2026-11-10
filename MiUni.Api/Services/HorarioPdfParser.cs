@@ -59,14 +59,14 @@ public static partial class HorarioPdfParser
         .DistinctBy(c => (c.Materia.ToUpperInvariant(), c.Dia, c.HoraInicio, c.HoraFin))
         .OrderBy(c => c.Dia).ThenBy(c => c.HoraInicio).ToList();
 
-    private static List<List<PalabraPdf>> AgruparLineas(IEnumerable<PalabraPdf> palabras)
+    internal static List<List<PalabraPdf>> AgruparLineas(IEnumerable<PalabraPdf> palabras, double tolerancia = 1.5)
     {
         // En PDF la Y crece hacia arriba: se recorre de arriba hacia abajo.
         var lineas = new List<List<PalabraPdf>>();
         foreach (var palabra in palabras.Where(p => !string.IsNullOrWhiteSpace(p.Texto))
                      .OrderByDescending(p => p.Y).ThenBy(p => p.X))
         {
-            if (lineas.Count > 0 && Math.Abs(lineas[^1][0].Y - palabra.Y) <= 1.5) lineas[^1].Add(palabra);
+            if (lineas.Count > 0 && Math.Abs(lineas[^1][0].Y - palabra.Y) <= tolerancia) lineas[^1].Add(palabra);
             else lineas.Add([palabra]);
         }
         foreach (var linea in lineas) linea.Sort((a, b) => a.X.CompareTo(b.X));
@@ -200,7 +200,7 @@ public static partial class HorarioPdfParser
     private static string? Recortar(string? texto, int maximo) =>
         texto is null ? null : texto.Length <= maximo ? texto : texto[..maximo].TrimEnd();
 
-    private static string Normalizar(string texto)
+    internal static string Normalizar(string texto)
     {
         var sinAcentos = new StringBuilder();
         foreach (var c in texto.Normalize(NormalizationForm.FormD))

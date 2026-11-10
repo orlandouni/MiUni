@@ -77,3 +77,10 @@
 .perfil-horario-buho:hover { text-decoration:underline; }
 .perfil-horario-ir { display:inline-flex; align-items:center; gap:6px; margin-top:12px; color:var(--navy); font-size:13px; font-weight:600; text-decoration:none; }
 .perfil-horario-ir:hover { text-decoration:underline; }
+.perfil-kardex-botones { display:flex; flex-wrap:wrap; gap:8px; }
+.perfil-kardex-archivo { position:relative; cursor:pointer; }
+.perfil-kardex-archivo input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.perfil-kardex-archivo:focus-within { outline:3px solid var(--blue); outline-offset:2px; }
+.perfil-kardex-vista { display:grid; gap:12px; margin-bottom:6px; }
+.perfil-kardex-vista .perfil-lista { max-height:420px; overflow-y:auto; }
+.perfil-kardex-confirmar .perfil-guardar { border:0; }
