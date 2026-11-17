@@ -1,0 +1,19 @@
+# MIUNI_DOMAIN: tu dominio, o una dirección gratuita como 3-120-45-67.sslip.io.
+# Caddy saca el certificado HTTPS de Let's Encrypt automáticamente.
+{$MIUNI_DOMAIN} {
+	encode zstd gzip
+
+	handle /api/* {
+		# flush_interval -1: el chat llega en streaming, sin esperar al final.
+		reverse_proxy api:8080 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /srv
+		# Rutas de React Router (/mapa, /horario...) caen en index.html.
+		try_files {path} /index.html
+		file_server
+	}
+}
