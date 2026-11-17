@@ -5,6 +5,7 @@ import api, { clearSession, getMe, getToken } from "../services/api";
 import { streamChat } from "../services/chatStream";
 import LugaresDelMensaje from "../components/LugaresDelMensaje";
 import ChatAnswer from "../components/ChatAnswer";
+import ConfirmarEliminarChat from "../components/ConfirmarEliminarChat";
 import "./Chat.css";
 import MascotaIlustrada from "../components/MascotaIlustrada";
 
@@ -32,6 +33,9 @@ export default function Chat() {
   const [receiving, setReceiving] = useState(false);
   useEffect(() => () => streamRef.current?.abort(), []);
   const [deleting, setDeleting] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+  const deleteLock = useRef(false);
   const [opening, setOpening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => window.matchMedia("(min-width: 701px)").matches);
   const busy = sending || opening || deleting !== null;
@@ -133,27 +137,32 @@ export default function Chat() {
   }
 
   async function eliminarSesion(session) {
-    if (busy || !window.confirm("¿Eliminar esta conversación y todos sus mensajes? Esta acción no se puede deshacer.")) return;
+    if (busy || deleteLock.current) return;
+    deleteLock.current = true;
+    setDeleteError("");
     setDeleting(session.sesionId); setError("");
     try {
       await api.delete(`/api/Chat/sessions/${session.sesionId}`);
       setSessions(actual => actual.filter(item => item.sesionId !== session.sesionId));
       if (sessionId === session.sesionId) { setSessionId(null); setMessages([]); setDraft(""); }
-    } catch { setError("No se pudo eliminar la conversación. Inténtalo de nuevo."); }
-    finally { setDeleting(null); }
+      setDeleteTarget(null);
+    } catch { setDeleteError("No se pudo eliminar la conversación. Inténtalo de nuevo."); }
+    finally { setDeleting(null); deleteLock.current = false; }
   }
 
   const initials = (user?.nombre || user?.email || "U").slice(0, 2).toUpperCase();
   const suggestionIcons = [MapPin, Coffee, Building2];
   const chooseSuggestion = value => { setDraft(value); composerRef.current?.focus(); };
   return <main className="chat-page">
+    {deleteTarget && <ConfirmarEliminarChat session={deleteTarget} busy={deleting !== null} error={deleteError} fallbackRef={composerRef}
+      onCancel={() => { if (!deleteLock.current) setDeleteTarget(null); }} onConfirm={() => eliminarSesion(deleteTarget)} />}
     <a href="#chat-input" className="skip-link">Saltar a escribir un mensaje</a>
     <aside id="chat-sidebar" className={`chat-sidebar ${sidebarOpen ? "abierta" : ""}`}>
       <div className="chat-side-brand"><span className="chat-side-logo">M</span><div><strong>MIUNI</strong><small>Tu campus, a la mano</small></div><button className="chat-close" onClick={() => setSidebarOpen(false)} aria-label="Cerrar historial"><X size={18} /></button></div>
       <Link to="/" className="chat-back"><ArrowLeft size={16} /> Volver al inicio</Link>
       <button className="chat-new" disabled={busy} onClick={nuevaConversacion}><Plus size={17} /> Nueva conversación</button>
       <div className="chat-history"><span className="chat-history-label">Tus conversaciones</span>
-        {loading ? <div className="chat-history-loading" role="status">Cargando historial…</div> : historyError ? <div className="chat-history-error" role="alert"><p>{historyError}</p><button type="button" onClick={() => { setLoading(true); setHistoryAttempt(value => value + 1); }}>Reintentar</button></div> : sessions.length === 0 ? <div className="chat-history-empty"><Clock3 size={20} /><p>Un nuevo comienzo.</p><small>Tus conversaciones aparecerán aquí.</small></div> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={15} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => eliminarSesion(session)} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}
+        {loading ? <div className="chat-history-loading" role="status">Cargando historial…</div> : historyError ? <div className="chat-history-error" role="alert"><p>{historyError}</p><button type="button" onClick={() => { setLoading(true); setHistoryAttempt(value => value + 1); }}>Reintentar</button></div> : sessions.length === 0 ? <div className="chat-history-empty"><Clock3 size={20} /><p>Un nuevo comienzo.</p><small>Tus conversaciones aparecerán aquí.</small></div> : sessions.map(session => <div className="chat-history-row" key={session.sesionId}><button className={session.sesionId === sessionId ? "seleccionada" : ""} disabled={busy} onClick={() => abrirSesion(session.sesionId)}><Clock3 size={15} /><span>{session.preview || "Conversación sin título"}</span></button><button className="chat-delete" disabled={busy} onClick={() => { setDeleteError(""); setDeleteTarget(session); }} aria-label={`Eliminar conversación: ${session.preview || "Sin título"}`} title="Eliminar conversación"><Trash2 size={15} /></button></div>)}
       </div>
       <Link className="chat-map-link" to="/mapa"><Map size={19} /><span>¿Prefieres explorar?<strong>Abrir el mapa del campus</strong></span><ArrowUpRight size={15} /></Link>
     </aside>
