@@ -10,3 +10,4 @@ MiUni.Web/src/services/ApiKey.env
 bin/
 obj/
 *.user
+deploy/respaldos/

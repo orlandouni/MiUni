@@ -12,6 +12,7 @@ using System.Text;
 using MiUni.Api.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,7 +39,20 @@ builder.Services
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<MiUniDbContext>()
     .AddDefaultTokenProviders();
-builder.Services.AddDataProtection();
+// En producción las llaves se guardan en un volumen para que los enlaces de
+// verificación de correo sigan sirviendo después de reiniciar el contenedor.
+var dataProtection = builder.Services.AddDataProtection();
+var llavesDataProtection = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrWhiteSpace(llavesDataProtection))
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(llavesDataProtection));
+
+// Detrás de Caddy (docker-compose.prod.yml) el esquema real (https) llega en X-Forwarded-Proto.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 // Los enlaces de verificación de correo vencen en 24 horas.
 builder.Services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
 
@@ -138,6 +152,16 @@ if (!string.IsNullOrWhiteSpace(adminEmail))
     return;
 }
 
+// Aplica las migraciones pendientes y termina (despliegue: docker compose run --rm api --migrar true).
+if (builder.Configuration.GetValue<bool>("migrar"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<MiUniDbContext>();
+    await db.Database.MigrateAsync();
+    Console.WriteLine("Migraciones aplicadas.");
+    return;
+}
+
 // Importa la red peatonal de OpenStreetMap a public.camino y termina, sin levantar la API.
 var areaOsm = builder.Configuration["importar-caminos-osm"];
 if (!string.IsNullOrWhiteSpace(areaOsm))
@@ -176,6 +200,7 @@ if (app.Environment.IsDevelopment())
     app.MapGet("/", () => Results.Redirect("/swagger"));
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -61,6 +61,10 @@ Dejar `VITE_API_URL=` vacío para usar el proxy del frontend. Para probar el cha
 iniciar también `rag-miuni` con su configuración e índice. Compose levanta únicamente
 PostgreSQL; Python, backend y frontend se ejecutan por separado.
 
+## Producción
+
+Guía para publicar MiUni en un servidor EC2 de AWS con HTTPS: [docs/despliegue-aws.md](docs/despliegue-aws.md).
+
 ## Uso diario
 
 ```powershell
