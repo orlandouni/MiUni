@@ -133,6 +133,15 @@ Abre `https://<ip-con-guiones>.sslip.io`.
 
 El alias dura solo esa sesión SSH; para que se quede, agrégalo a `~/.bashrc`.
 
+### Lugares del mapa
+
+`seed_lugares.sql` se puede correr varias veces: solo agrega los lugares nuevos. Para
+cargarlo (o actualizarlo después de un `git pull`):
+
+```bash
+miuni exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < seed_lugares.sql
+```
+
 ## 8. Cuenta de administrador
 
 Regístrate en la página con tu correo. Si no configuraste Gmail, confirma el correo a mano:
