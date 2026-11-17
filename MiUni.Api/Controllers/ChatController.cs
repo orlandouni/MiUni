@@ -38,8 +38,10 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
         string answer;
         try
         {
-            var question = await BuildCampusQuestion(validation.UsuarioId, validation.Mensaje, ct);
-            answer = await ragClient.GetAnswerAsync(question, GetAuthorizationHeader(), ct);
+            answer = await BuildFastPlaceAnswer(validation.Mensaje, ct)
+                ?? await ragClient.GetAnswerAsync(
+                    await BuildCampusQuestion(validation.UsuarioId, validation.Mensaje, ct),
+                    GetAuthorizationHeader(), ct);
         }
         catch (Exception)
         {
@@ -72,16 +74,28 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
 
         try
         {
-            var question = await BuildCampusQuestion(validation.UsuarioId, validation.Mensaje, ct);
-            await foreach (var chunk in ragClient.StreamAnswerAsync(question, GetAuthorizationHeader(), ct))
+            var fastAnswer = await BuildFastPlaceAnswer(validation.Mensaje, ct);
+            if (fastAnswer is not null)
             {
-                if (string.IsNullOrEmpty(chunk)) continue;
-
-                if (!wroteChunk) Response.ContentType = "text/plain; charset=utf-8";
+                Response.ContentType = "text/plain; charset=utf-8";
                 wroteChunk = true;
-                answer.Append(chunk);
-                await Response.WriteAsync(chunk, ct);
+                answer.Append(fastAnswer);
+                await Response.WriteAsync(fastAnswer, ct);
                 await Response.Body.FlushAsync(ct);
+            }
+            else
+            {
+                var question = await BuildCampusQuestion(validation.UsuarioId, validation.Mensaje, ct);
+                await foreach (var chunk in ragClient.StreamAnswerAsync(question, GetAuthorizationHeader(), ct))
+                {
+                    if (string.IsNullOrEmpty(chunk)) continue;
+
+                    if (!wroteChunk) Response.ContentType = "text/plain; charset=utf-8";
+                    wroteChunk = true;
+                    answer.Append(chunk);
+                    await Response.WriteAsync(chunk, ct);
+                    await Response.Body.FlushAsync(ct);
+                }
             }
         }
         catch (Exception)
@@ -255,6 +269,23 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient) : Cont
             "\nPERFIL ACADÉMICO:\n" + System.Text.Json.JsonSerializer.Serialize(profile, ProfileJson) +
             "\nFECHA Y HORA ACTUAL: " + PerfilAcademico.FechaHoraCampus(DateTime.UtcNow) +
             "\nCONSULTA DEL USUARIO:\n" + question;
+    }
+
+    private async Task<string?> BuildFastPlaceAnswer(string question, CancellationToken ct)
+    {
+        var places = await context.Lugars.AsNoTracking()
+            .Where(place => place.Activo)
+            .OrderBy(place => place.Nombre)
+            .Select(place => new { place.Nombre, Categoria = place.Categoria.Nombre, place.Ubicacion })
+            .ToListAsync(ct);
+
+        // Filter in memory after the small catalog query: geography X/Y SQL casts
+        // differ by provider, while map eligibility must stay identical in tests.
+        var mapPlaces = places.Where(place => place.Ubicacion is { IsEmpty: false }
+                && place.Ubicacion.X >= -180 && place.Ubicacion.X <= 180
+                && place.Ubicacion.Y >= -90 && place.Ubicacion.Y <= 90)
+            .Select(place => new ChatPlace(place.Nombre, place.Categoria));
+        return ChatPlaceRouter.TryBuildAnswer(question, mapPlaces);
     }
 
     private record ValidatedChatRequest(

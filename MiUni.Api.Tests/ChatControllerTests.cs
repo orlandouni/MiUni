@@ -220,6 +220,62 @@ public class ChatControllerTests
     }
 
     [Theory]
+    [InlineData(181.0, 29.0)]
+    [InlineData(-110.0, 91.0)]
+    public async Task InvalidMapCoordinatesKeepRagFallback(double longitude, double latitude)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        var category = new Categorium { Id = Guid.NewGuid(), Nombre = "Bibliotecas" };
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Coordinate probe" });
+        db.Categoria.Add(category);
+        db.Lugars.Add(new Lugar
+        {
+            Id = Guid.NewGuid(), Nombre = "Biblioteca Central", Categoria = category,
+            CategoriaId = category.Id, Activo = true,
+            Ubicacion = new NetTopologySuite.Geometries.Point(longitude, latitude)
+        });
+        await db.SaveChangesAsync();
+        var rag = new FakeRagClient("Documentary fallback");
+        var controller = AsUser(new ChatController(db, rag), user);
+        await controller.Send(new ChatRequest { Mensaje = "Donde esta Biblioteca Central" }, default);
+        Assert.NotEmpty(rag.LastQuestion);
+        var assistant = await db.Historialchats.SingleAsync(message => message.Rol == "assistant");
+        Assert.Equal("Documentary fallback", assistant.Contenido);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LocationQuestionUsesFastPathWithoutCallingRag(bool streaming)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        var category = new Categorium { Id = Guid.NewGuid(), Nombre = "Bibliotecas" };
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Prueba" });
+        db.Categoria.Add(category);
+        db.Lugars.Add(new Lugar
+        {
+            Id = Guid.NewGuid(), Nombre = "Biblioteca Central", Categoria = category,
+            CategoriaId = category.Id, Activo = true,
+            Ubicacion = new NetTopologySuite.Geometries.Point(-110.96, 29.08)
+        });
+        await db.SaveChangesAsync();
+
+        var rag = new FakeRagClient("La respuesta lenta del RAG");
+        var controller = AsUser(new ChatController(db, rag), user);
+        controller.Response.Body = new MemoryStream();
+        var request = new ChatRequest { Mensaje = "¿Dónde está la Biblioteca Central?" };
+
+        if (streaming) await controller.Stream(request, default);
+        else await controller.Send(request, default);
+
+        Assert.Empty(rag.LastQuestion);
+        var assistant = await db.Historialchats.SingleAsync(h => h.Rol == "assistant");
+        Assert.Contains("Biblioteca Central", assistant.Contenido);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ChatIncludesOnlyTheCurrentUsersAcademicProfile(bool streaming)
