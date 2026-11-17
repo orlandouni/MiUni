@@ -38,21 +38,12 @@ Si ya tienes EF CLI de otra versión, actualizarlo con `dotnet tool update --glo
 La base queda en `127.0.0.1:5433` por defecto, con PostgreSQL 16, pgvector, PostGIS y pgRouting.
 Las migraciones crean las tablas e índices RAG; los documentos y embeddings se cargan aparte desde `rag-miuni`.
 
-### Cargar los lugares del mapa
+### Lugares del mapa
 
-Las migraciones dejan el mapa vacío. Los lugares del campus (edificios, laboratorios,
-bibliotecas, comida, estacionamientos, etc.) se cargan con `seed_lugares.sql`, después de migrar:
-
-```powershell
-docker compose cp seed_lugares.sql db:/tmp/seed_lugares.sql
-docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -f /tmp/seed_lugares.sql'
-```
-
-Con un PostgreSQL local en lugar de Docker: `psql -U postgres -d MiUni -f seed_lugares.sql`.
-
-Se puede correr las veces que sea: solo agrega los lugares que falten (por nombre) y al final
-muestra cuántos hay por categoría. **Vuelve a correrlo cada vez que `seed_lugares.sql` cambie
-en `main`.** El archivo se genera desde OpenStreetMap; ver `scripts/mapa/README.md`.
+La migración `LugaresCampus` carga los lugares del campus (edificios, laboratorios,
+bibliotecas, comida, estacionamientos, etc.), así que llegan con el mismo `migrate` de arriba.
+No borra ni duplica nada: si ya tenías lugares con el mismo nombre, los deja como están.
+Para agregar o corregir lugares, ver `scripts/mapa/README.md` (no editar la migración a mano).
 
 ## Backend y frontend
 

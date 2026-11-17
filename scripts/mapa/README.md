@@ -1,9 +1,11 @@
 # Lugares del mapa (seed_lugares.sql)
 
-`seed_lugares.sql` (en la raíz) se genera con:
+Los lugares se cargan con la migración `MiUni.Api/Migrations/20261117160000_LugaresCampus.cs`.
+Esa migración y `seed_lugares.sql` (el mismo SQL, para revisarlo o correrlo con psql)
+se generan con:
 
 ```bash
-python scripts/mapa/generar_seed_lugares.py > seed_lugares.sql
+python scripts/mapa/generar_seed_lugares.py
 ```
 
 Fuentes:
@@ -30,5 +32,6 @@ Reglas del generador:
   cercano ("Caseta de alimentos junto al 3K3").
 - Categorías nuevas: Laboratorio, Baños, Estacionamiento y Plazas y áreas verdes.
 
-Para agregar más lugares, vuelve a correr la consulta, actualiza el CSV y
-regenera el SQL. El seed se puede correr varias veces: omite los nombres que ya existen.
+Para agregar más lugares después de que la migración ya esté en `main`, no la regeneres:
+las bases que ya la aplicaron no la vuelven a correr. Crea una migración nueva con los
+lugares nuevos (el SQL es idempotente: omite los nombres que ya existen).

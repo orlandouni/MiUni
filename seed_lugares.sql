@@ -16,7 +16,6 @@
 --     (nombre oficial del edificio con su clave, p. ej. 5A1). Datos
 --     © colaboradores de OpenStreetMap, licencia ODbL.
 -- =========================================================
-
 -- 1) Categorías
 UPDATE categoria
 SET nombre = 'Edificio académico', icono = 'edificio-academico.svg'

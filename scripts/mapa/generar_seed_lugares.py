@@ -1,6 +1,8 @@
 """Genera seed_lugares.sql: los 51 lugares originales + lugares de OpenStreetMap.
 
-Uso:  python scripts/mapa/generar_seed_lugares.py > seed_lugares.sql
+Uso:  python scripts/mapa/generar_seed_lugares.py
+Escribe seed_lugares.sql (raíz) y la migración MiUni.Api/Migrations/20261117160000_LugaresCampus.cs,
+que es como se cargan los lugares: `dotnet ef database update`.
 
 Entrada: scripts/mapa/lugares_osm.csv, exportado de la API Overpass el 2026-11-17
 (bbox del campus 29.079,-110.9712,29.088,-110.9572; ver scripts/mapa/README.md).
@@ -217,13 +219,18 @@ def main():
         elif nombre == 'Instituto de Geología (UNAM)':
             agregar('Instituto de Geología (UNAM), Estación Regional del Noroeste', 'Edificio académico', r)
 
-    print(SQL_CABECERA.format(total=len(filas)))
     ancho = min(max(len(sql_texto(f[0])) for f in filas) + 1, 72)
     lineas = []
     for n, c, la, lo, fu in filas:
         lineas.append(f"  ({sql_texto(n) + ',':<{ancho}} {sql_texto(c) + ',':<26} {la:.7f}, {lo:.7f}, {sql_texto(fu)})")
-    print(',\n'.join(lineas))
-    print(SQL_PIE.format(total=len(filas)))
+    cuerpo = SQL_CUERPO + '\n' + ',\n'.join(lineas) + '\n' + SQL_FIN
+    raiz = os.path.dirname(os.path.dirname(AQUI))
+    with open(os.path.join(raiz, 'seed_lugares.sql'), 'w', encoding='utf-8', newline='\n') as f:
+        f.write(SQL_CABECERA.format(total=len(filas)) + '\n' + cuerpo + '\n' + SQL_VERIFICAR.format(total=len(filas)) + '\n')
+    ruta = os.path.join(raiz, 'MiUni.Api', 'Migrations', '20261117160000_LugaresCampus.cs')
+    with open(ruta, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(MIGRACION.replace('@@TOTAL@@', str(len(filas))).replace('@@SQL@@', cuerpo))
+    print(f'{len(filas)} lugares -> seed_lugares.sql y {os.path.relpath(ruta, raiz)}')
 
 
 def sql_texto(s):
@@ -247,9 +254,9 @@ SQL_CABECERA = """-- =========================================================
 --   * "OpenStreetMap way/123": https://www.openstreetmap.org/way/123
 --     (nombre oficial del edificio con su clave, p. ej. 5A1). Datos
 --     © colaboradores de OpenStreetMap, licencia ODbL.
--- =========================================================
+-- ========================================================="""
 
--- 1) Categorías
+SQL_CUERPO = """-- 1) Categorías
 UPDATE categoria
 SET nombre = 'Edificio académico', icono = 'edificio-academico.svg'
 WHERE nombre = 'Ingeniería';
@@ -278,15 +285,53 @@ SELECT
   true
 FROM (VALUES"""
 
-SQL_PIE = """) AS v(nombre, categoria, lat, lon, fuente)
+SQL_FIN = """) AS v(nombre, categoria, lat, lon, fuente)
 JOIN categoria c ON c.nombre = v.categoria
-WHERE NOT EXISTS (SELECT 1 FROM lugar l WHERE l.nombre = v.nombre);
+WHERE NOT EXISTS (SELECT 1 FROM lugar l WHERE l.nombre = v.nombre);"""
 
+SQL_VERIFICAR = """
 -- 3) Verificar: en una BD limpia deben aparecer estos {total} lugares
 SELECT c.nombre AS categoria, count(*) AS lugares
 FROM lugar l JOIN categoria c ON c.id = l.categoria_id
 GROUP BY c.nombre
 ORDER BY c.nombre;"""
+
+MIGRACION = """// ARCHIVO GENERADO por scripts/mapa/generar_seed_lugares.py: no editar a mano.
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using MiUni.Api.Models;
+
+#nullable disable
+
+namespace MiUni.Api.Migrations
+{
+    /// <summary>
+    /// Carga los @@TOTAL@@ lugares del campus (los 51 del seed original y los de OpenStreetMap)
+    /// y sus categorías. Idempotente: omite los lugares que ya existen por nombre, así que
+    /// sirve igual en una base vacía que en una donde ya se corrió seed_lugares.sql.
+    /// Fuente de cada lugar: columna `fuente` del SQL (ver scripts/mapa/README.md).
+    /// </summary>
+    [DbContext(typeof(MiUniDbContext))]
+    [Migration("20261117160000_LugaresCampus")]
+    public partial class LugaresCampus : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(\"\"\"\"
+@@SQL@@
+\"\"\"\");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            // Sin cambios: los lugares pueden tener reseñas, favoritos o fotos de usuarios,
+            // así que revertir la migración no los borra.
+        }
+    }
+}
+"""
 
 if __name__ == '__main__':
     main()
