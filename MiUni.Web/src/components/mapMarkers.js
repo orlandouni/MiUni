@@ -7,6 +7,9 @@ export const categoryStyle = {
   Oficinas: {color: '#287e94', label: 'OF'},
   Deportes: {color: '#a84a48', label: 'DP'},
   Baños: {color: '#64748b', label: 'WC'},
+  Laboratorio: {color: '#7a4fb3', label: 'LB'},
+  Estacionamiento: {color: '#3f4a5a', label: 'P'},
+  'Plazas y áreas verdes': {color: '#4f8a3a', label: 'PZ'},
 };
 export function crearIcono(categoria, selected = false) {
   const {color, label} = categoryStyle[categoria] || {color: '#52677f', label: 'LU'};

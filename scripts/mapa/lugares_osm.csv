@@ -1,0 +1,197 @@
+@type|@id|@lat|@lon|name|ref|amenity|building|shop|leisure|sport|addr:housenumber
+node|3420657734|29.0861755|-110.9691014|Banorte||bank|||||
+way|232208757|29.0854797|-110.9670900|(7B) Gimnasio Universitario|||yes||sports_hall|multi|
+way|253353262|29.0820315|-110.9688685|Campo de Sóftbol|||||pitch|baseball|
+way|253353265|29.0816100|-110.9668410|Alberca Unison|||||swimming_pool|swimming|
+way|253353267|29.0844454|-110.9683361||||||pitch|basketball|
+way|253353268|29.0844459|-110.9685281||||||pitch|basketball|
+way|253353269|29.0838078|-110.9682016||||||pitch|basketball|
+way|253353270|29.0838109|-110.9688965||||||pitch|basketball|
+way|253353271|29.0838094|-110.9684018||||||pitch|basketball|
+way|253353272|29.0830349|-110.9684100||||||pitch|soccer|
+way|253353273|29.0833485|-110.9689774||||||pitch|tennis|
+way|253353274|29.0833525|-110.9695491||||||pitch|tennis|
+way|253353275|29.0841209|-110.9688129||||||pitch|basketball|
+way|253353276|29.0838104|-110.9686124||||||pitch|basketball|
+way|253353277|29.0841221|-110.9686187||||||pitch|basketball|
+way|253353278|29.0833494|-110.9691600||||||pitch|tennis|
+way|253353279|29.0838112|-110.9690921||||||pitch|basketball|
+way|253353280|29.0833508|-110.9693515||||||pitch|tennis|
+way|334943501|29.0861655|-110.9690974|Banorte||bank|yes||||
+way|424636472|29.0822644|-110.9700500|Campo de Béisbol|||||pitch|baseball|
+way|424636551|29.0831690|-110.9671173|Campo de Béisbol|||||pitch|baseball|
+way|424637459|29.0821694|-110.9679732|||parking|||||
+way|424637460|29.0817699|-110.9680183|(7K) Odontología. Aulas y Laboratorios|||university||||
+way|424638721|29.0854649|-110.9675612|(7M) Cultura Física y Deportes|||university||||
+way|424638722|29.0848232|-110.9671285|||parking|||||
+way|424648335|29.0813879|-110.9705174|Instituto de Geología (UNAM)|||university||||
+way|424648962|29.0817913|-110.9675310|||parking|||||
+way|424648964|29.0809416|-110.9677856|||parking|||||
+way|424663661|29.0811643|-110.9696323|(7G) DICTUS. Laboratorios y Aulas|||university||||
+way|424663663|29.0810982|-110.9690825|(7J) Biología|||university||||
+way|424667244|29.0814068|-110.9691921|(7H) Biología|||university||||
+way|424667245|29.0813307|-110.9686168|"(7E) Medicina, Biblioteca y Auditorio"|||university||||
+way|424667479|29.0809428|-110.9681022|"(7C) Medicina. Oficinas, Aulas y Anfiteatro"|||university||||
+way|424667713|29.0813440|-110.9680011|"(7D) Medicina, Laboratorios"|||university||||
+way|424667714|29.0815082|-110.9682359|(7I) Cafetería y Librería|||university||||
+way|424667717|29.0815538|-110.9678310|(7R) Medicina. Cuarto de Máquinas|||university||||
+way|424667971|29.0805871|-110.9669429|(7F) Unidad Integral de Posgrados|||university||||
+way|424668705|29.0804952|-110.9664036|(7A) Maestría en Administración|||university||||
+way|424669315|29.0825586|-110.9677595|(7P) Edificio Campo de Béisbol Hodgers|||university||||
+way|424669560|29.0815294|-110.9706092|||parking|||||
+way|424833762|29.0813114|-110.9645244||||||pitch|soccer|
+way|424834395|29.0807102|-110.9639069|(06-EM102)||parking|||||
+way|424834770|29.0820448|-110.9655468|(6C) Talleres Gráficos|||university||||
+way|424835955|29.0822230|-110.9639443|(6B) Recolección de Desechos Tóxicos|||university||||
+way|424837176|29.0805872|-110.9631386|(5P) DIPA|||university||||
+way|424837177|29.0806764|-110.9625655|(5A1) Ingeniería Química y Metalurgia. Ciencias Químico Biológicas y DIPA|||university||||
+way|424837465|29.0806855|-110.9620017|(5A2) Biblioteca del Departamento de Ciencias Químico - Biológicas|||university||||
+way|424838007|29.0805513|-110.9623335|(5S) Laboratorio de Células Madres|||university||||
+way|424839838|29.0812528|-110.9632756|(5Q) Ingeniería Química y Metalurgia. Laboratorios|||university||||
+way|424839894|29.0811151|-110.9627507|(5D) Ingeniería Química y Metalurgia. Aulas|||university||||
+way|424840150|29.0812250|-110.9622359|(5B) Auditorio Rivera Zamudio. Ingeniería Química y Metalurgia. Jefatura|||university||||
+way|424840600|29.0813818|-110.9628070|(5E) CS. Químico Biológicas. Oficinas y Aulas. ING. Química Metalurgia. Aulas|||university||||
+way|424840675|29.0814604|-110.9623065|(5F) Aulas y Laboratorios de IQM y CQB|||university||||
+way|424840826|29.0815943|-110.9631762|(5H) DIPA. Laboratorios|||university||||
+way|424840888|29.0816444|-110.9626850|(5G) Ingeniería Industrial|||university||||
+way|424840950|29.0818982|-110.9622638|(5N) Ciencias Químico Biológicas. Laboratorios|||university||||
+way|424844018|29.0817638|-110.9633003|(5I) Ingeniería Química y Metalurgia|||university||||
+way|424844815|29.0818593|-110.9628797|(5J) Ingeniería Industrial|||university||||
+way|424844816|29.0821271|-110.9628625|(5O) Ingeniería Industrial|||university||||
+way|424844817|29.0820719|-110.9631276|||parking|||||
+way|424844840|29.0821912|-110.9623593|"(5M) División Ingeniería, Ing. Industrial. Aulas y Cubículos"|||university||||
+way|424844972|29.0824339|-110.9623955|"(5K) Ingeniería Industrial, División de Ingenierías"|||university||||
+way|424845265|29.0823759|-110.9628165|(5L) Depto. Ingeniería Civil y Minas (Lic. En Minas)|||university||||
+way|424845266|29.0823366|-110.9633116|"(5R) Ing. Industrial, Mecatrónica. Aulas y Laboratorios"|||university||||
+way|425015261|29.0816758|-110.9673716|(7Q) Adquisiciones. Depósito de Bienes|||university||||
+way|425015262|29.0821130|-110.9671405|(7N) Baños Alberca||toilets|yes||||
+way|425015946|29.0822183|-110.9675243|(7L) Planta Tratadora de Aguas Residuales|||yes||||
+way|425015947|29.0817614|-110.9666191|(7O) Cuarto de Máquinas Alberca|||university||||
+way|425024372|29.0807963|-110.9608967|(3K 1) Div. de Cs. Exactas y Naturales - Biblioteca Departamento de Matemáticas|||university||||
+way|425411814|29.0807171|-110.9605153|(3K 4) Ciencias de la Computación|||university||||
+way|425415404|29.0810643|-110.9610909|(3K 2) Matemáticas. Cubículos y Centro de Cómputo|||university||||
+way|426235939|29.0809325|-110.9599719|(03-EM104)||parking|||||
+way|426236821|29.0809578|-110.9588905|"(3J) Centro de las Artes, Depto. de Bellas Artes"|||university||||
+way|426238655|29.0816111|-110.9588644|(03-EM101)||parking|||||
+way|426238981|29.0811192|-110.9591606|Caseta de Alimentos||fast_food|yes||||
+way|426246124|29.0815985|-110.9605667|(03-EM105)||parking|||||
+way|426247017|29.0819920|-110.9595482|(3N) Música|||university||||
+way|426247427|29.0821658|-110.9590322|"(3T) División de Humanidades y Bellas Artes, Biblioteca y Artes Plásticas"|||university||||
+way|426692742|29.0823034|-110.9592942|(3W) DICTUS. Oficinas|||university||||
+way|426692810|29.0823865|-110.9594697|(3X) Infraestructura. Bodega|||university||||
+way|426692991|29.0823577|-110.9598262|(3Y) Infraestructura. Cuarto de Máquinas|||university||||
+way|426693583|29.0825210|-110.9589118|"(3U) Direcciones de: Infraestructura, Adquisiciones y Patrimonio, Investigación y Posgrado, Desarrollo Académico"|||university||||
+way|426693584|29.0827416|-110.9590491|(3B) Consultorio Médico - Recursos Humanos - CULTUREST|||university||||
+way|426693847|29.0815098|-110.9604575|(3L) DIFUS. Cubículos|||university||||
+way|426694018|29.0814648|-110.9608244|"(3I) DIFUS. Administración, Aulas y Laboratorios"|||university||||
+way|426694019|29.0814294|-110.9613044|(3M) DIFUS. Laboratorio de Estado Sólido|||university||||
+way|426694020|29.0814079|-110.9615651|(3S) DIFUS. Laboratorio de Ionización|||university||||
+way|426694092|29.0816844|-110.9605988|(3H) DIFUS. Estación de Observación Solar|||university||||
+way|426694252|29.0816417|-110.9611661|"(3G) Polímeros. Oficinas, Laboratorios y Cubículo"|||university||||
+way|426694253|29.0817779|-110.9613187|(3F) Física. Oficinas y Cubículos|||university||||
+way|426694254|29.0818921|-110.9605923|(3P) Geología. Laboratorios y Cubículos|||university||||
+way|426694299|29.0821558|-110.9604269|(3R) Física. Laboratorios y Cubículos|||university||||
+way|426694435|29.0823557|-110.9604075|(3Q) Letras y Lingüística. Aulas|||university||||
+way|426694436|29.0821013|-110.9608971|(3D) Física. Taller de Máquinas y Herramientas|||university||||
+way|426694463|29.0820452|-110.9612836|"(3E) Física. Aulas, Laboratorios, Centro de Cómputo"|||university||||
+way|426694464|29.0822463|-110.9613165|(3C) Geología|||university||||
+way|426694953|29.0826644|-110.9610834|(3V) Prestaciones. Oficinas|||university||||
+way|426695111|29.0824776|-110.9611043|||parking|||||
+way|426913157|29.0828224|-110.9654842|(8E) Estacionamiento Multinivel||parking|parking||||
+way|426913940|29.0831694|-110.9648988|(8C) Direcciones: Informática - Innovación Educativa|||university||||
+way|426915134|29.0832914|-110.9643937|(8D) Mecatrónica. Aulas y Laboratorios|||university||||
+way|426915135|29.0828131|-110.9641979|(8A) Direcciones: Escolares - Estudiantiles|||university||||
+way|426915853|29.0828350|-110.9635613|(12E) Ingeniería Civil. Laboratorio|||university||||
+way|426915854|29.0827827|-110.9632241|(12B) Ingeniería Civil. Laboratorio|||university||||
+way|426916223|29.0828322|-110.9626025|(12A) Ingeniería Civil. Jefatura y Aulas|||university||||
+way|426916224|29.0830939|-110.9626129|(12C) Ingeniería Civil. Aulas y Cubículos|||university||||
+way|426916398|29.0834595|-110.9624661|(12D) Comedor Universitario - Tesorería - Aulas de uso General|||university||||
+way|426916920|29.0832977|-110.9631561|(12F) Dirección de Servicios Universitarios - Biblioteca Central - Laboratorio Central de Informática|||university||||
+way|426918203|29.0834619|-110.9604937|(2A) Edificio Principal. Rectoría y Adm. Central|||university||||
+way|426919266|29.0841177|-110.9608412|(11B) Vicerrectoría Unidad Regional Centro|||university||||
+way|426919669|29.0840865|-110.9620103|(11A) Vigilancia - Almacén General|||university||||
+way|426921663|29.0837307|-110.9580923|(1A) Museo Unison y Biblioteca|||yes||||
+way|426922510|29.0855753|-110.9592243|(14A) Promoción Financiera|||university||||
+way|426922838|29.0801386|-110.9590377|||parking|||||
+way|426922839|29.0802839|-110.9597400|(16A) Centro de Desarrollo Infantil|||university||||
+way|426922971|29.0790844|-110.9590568|(13A) Lenguas Extranjeras. Aulas y CAALE|||university||||
+way|426922972|29.0795256|-110.9591513|(13B) Lenguas Extranjeras. Jefatura y Aulas|||university||||
+way|426923766|29.0839516|-110.9626698|(10H) Economía. Aulas|||university||||
+way|426923767|29.0839156|-110.9630153|(10L) Negocios y Comercios Internacionales|||university||||
+way|426923768|29.0838696|-110.9634157|(10G) Contabilidad y Administración. Aulas|||university||||
+way|426923844|29.0842605|-110.9625935|(10J) División de Ciencias Económicas y Administrativas - Economía. Biblioteca|||university||||
+way|426923845|29.0842424|-110.9630600|(10E) Contabilidad y Administración. Aulas|||university||||
+way|426923846|29.0841252|-110.9634308|(10F) Contabilidad y Administración. Cubículos|||university||||
+way|426925660|29.0847375|-110.9634292|(10 I) División de Ciencias Sociales - Derecho|||university||||
+way|426926470|29.0853922|-110.9630742|(10D) Enfermería y Trabajo Social. Aulas|||university||||
+way|426926471|29.0853905|-110.9637867|(10C) Trabajo Social. Jefatura y Aulas|||university||||
+way|426926472|29.0856351|-110.9632247|(10B) Enfermería. Jefatura y Aulas|||university||||
+way|426926542|29.0857886|-110.9632537|(10K) División de Ciencias Biológicas y De la Salud - Enfermería|||university||||
+way|426926543|29.0857922|-110.9637877|(10A) Enfermería. Aulas|||university||||
+way|426926653|29.0840246|-110.9646061|(9Q 3) Secretaría Administrativa. Salas de Contabilidad y Administración. Jefatura|||university||||
+way|427100073|29.0837838|-110.9651932|(9Q 2) Contabilidad y Administración. Aulas|||university||||
+way|427100074|29.0843093|-110.9651805|(9Q 1) Contabilidad y Administración. Aulas|||university||||
+way|427101863|29.0838759|-110.9657856|||parking|||||
+way|427104279|29.0850794|-110.9652392|||parking|||||
+way|427104280|29.0854001|-110.9658612||||||pitch|basketball|
+way|427104567|29.0861638|-110.9659410|||parking|||||
+way|427106408|29.0846384|-110.9655020|(9P) Psicología y Ciencias de la Comunicación|||university||||
+way|427106409|29.0846265|-110.9650956|(9J) Bufete Jurídico|||university||||
+way|427106411|29.0846246|-110.9647714|(9L) Bufete Jurídico|||university||||
+way|427106412|29.0848180|-110.9645682|(9K) Posgrado en Derecho|||university||||
+way|427107147|29.0849975|-110.9654332|(9I) Ciencias de la Comunicación. Cubículos y Talleres|||university||||
+way|427107148|29.0851688|-110.9652994|(9H) Maestría en Psicología|||university||||
+way|427108885|29.0854151|-110.9652231|(9E) Psicología y Ciencias de la Comunicación|||university||||
+way|427108886|29.0854098|-110.9645534|(9G) Psicología|||university||||
+way|427108887|29.0856516|-110.9653492|(9D) Ciencias de la Comunicación|||university||||
+way|427108888|29.0858994|-110.9653618|(9C) Psicología y Ciencias de la Comunicación|||university||||
+way|427108889|29.0861300|-110.9652959|"(9B) Sociología, Historia y Admon. Pública. Jefatura y Aulas"|||university||||
+way|427108890|29.0862731|-110.9654077|(9O) Sociología y Administración Pública. Aulas|||university||||
+way|427109497|29.0861374|-110.9657995|(9N) Sociología y Administración Pública. Cubículos|||university||||
+way|427109498|29.0859375|-110.9658150|(9M) Sociología y Administración Pública. Centro de Cómputo|||university||||
+way|427109499|29.0864202|-110.9649011|(9A) Historia y Antropología|||university||||
+way|558911994|29.0827655|-110.9582180|Plaza de los 100 años|||||park||
+way|643182628|29.0833140|-110.9615376|Plaza Del Estudiante|||||park||
+way|644604137|29.0835488|-110.9592257|Plaza Emiliana de Zubeldia|||||park||
+way|644604155|29.0826884|-110.9596461|Plaza de Letras|||||park||
+way|644696440|29.0828154|-110.9692764|Campo de Beisbol|||||pitch|baseball|
+way|644696441|29.0847231|-110.9683292||||||pitch|beachvolleyball|
+way|644709848|29.0852264|-110.9680604||||||fitness_station|fitness|
+way|645129075|29.0851466|-110.9648085|9F Psicologia y Ciencias de la Comunicación|||university||||
+way|645129120|29.0836786|-110.9666745||||||pitch|baseball|
+way|645896530|29.0818909|-110.9608631||||||pitch|basketball|
+way|648546362|29.0825324|-110.9617507|Caffenio||cafe|yes||||
+way|649611652|29.0837727|-110.9641633|Caffenio||cafe|yes||||
+way|658985699|29.0793353|-110.9591918|UNISON Lenguas Extranjeras||language_school|||||
+way|661932642|29.0835074|-110.9688675|Unidad Deportiva Universidad De Sonora|||||sports_centre||
+way|661932645|29.0843220|-110.9679663||||||pitch|soccer|
+way|662550754|29.0811024|-110.9606020|(3K 3) Matemáticas. Aulas|||university||||
+way|662550755|29.0811295|-110.9603571|Caseta de Alimentos||fast_food|yes||||
+way|662550756|29.0845746|-110.9625088|Caseta de Alimentos||fast_food|yes||||
+way|662550759|29.0826671|-110.9601717|(3A) Letras y Lingüística. Oficinas y Aulas|||university||||
+way|662554626|29.0824528|-110.9628925|Caseta de Alimentos||fast_food|yes||||
+way|662593322|29.0825559|-110.9609813|Caseta de Alimentos||fast_food|yes||||
+way|662593323|29.0846899|-110.9642242|Caseta de Alimentos||fast_food|yes||||
+way|662593324|29.0857404|-110.9644380|Caseta de Alimentos||fast_food|yes||||
+way|662593325|29.0852924|-110.9634607|Caseta de Alimentos||fast_food|yes||||
+way|662593326|29.0815770|-110.9634151|Caseta de Alimentos||fast_food|yes||||
+way|662720335|29.0847323|-110.9657029|Caseta de Alimentos||fast_food|yes||||
+way|664042933|29.0809236|-110.9632250|(5C) Ingeniería Química y Metalurgia. Taller|||university||||
+way|664898209|29.0848503|-110.9584914|RADIO UNIVERSIDAD 107.5 FM||studio|yes||||
+way|675479174|29.0806831|-110.9609060|Plaza LCC|||||park||
+way|868861283|29.0823941|-110.9693315||||yes|kiosk|||
+way|1095283811|29.0833028|-110.9686438||||||track|running|
+way|1126564948|29.0811333|-110.9655375|(6H) Campo de Tiro con Arco y Atletismo|||||pitch|archery;athletics|
+way|1126598495|29.0827824|-110.9658314|(08-EM101)||parking|||||
+way|1126619228|29.0822050|-110.9647310|(6G) Centro de Acopio de Reciclaje|||university||||
+way|1126632438|29.0821703|-110.9650218|(6I) Rectoría. Caja de Ahorro|||university||||
+way|1127374002|29.0817373|-110.9585182|(03-EM103)||parking|||||
+way|1127374003|29.0814989|-110.9585357|(03-EM102)||parking|||||
+way|1293748474|29.0812598|-110.9692371|Área verde biología|||||park||
+way|1300063189|29.0813033|-110.9645794|"Estadio ""Miguel Castro Servín"""|||||stadium||
+way|1300063191|29.0809448|-110.9652445|Gimnasio STATUS UNISON|||yes||sports_hall||
+way|1300073531|29.0810976|-110.9637519|(6J) Taller de Muestras Ing. en Metalurgia|||yes||||
+way|1300082337|29.0843262|-110.9676434||||||pitch|soccer|
+relation|15083305|29.0819862|-110.9652468|(06-EM103)||parking|||||
+relation|15090603|29.0815517|-110.9597049|(3O) Arquitectura y Diseño Gráfico|||university||||
+relation|17810407|29.0828954|-110.9647647|"(8B) Ciencias, Ingeniería Industrial y Electrónica"|||university||||
