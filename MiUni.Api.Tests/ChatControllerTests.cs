@@ -211,8 +211,8 @@ public class ChatControllerTests
         var request = new ChatRequest { Mensaje = "Donde jugar baseball?" };
         if (streaming) await controller.Stream(request, default);
         else await controller.Send(request, default);
-        Assert.Contains("Campo de beisbol", rag.LastQuestion);
-        Assert.Contains("Deportes", rag.LastQuestion);
+        // Python reads the canonical active map catalog separately; never pollute the search question.
+        Assert.Equal(request.Mensaje, rag.LastQuestion);
         Assert.DoesNotContain("Lugar oculto", rag.LastQuestion);
         Assert.DoesNotContain("DESCRIPCION_PRIVADA_NO_ENVIAR", rag.LastQuestion);
         Assert.Contains(request.Mensaje, rag.LastQuestion);
@@ -278,7 +278,7 @@ public class ChatControllerTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ChatIncludesOnlyTheCurrentUsersAcademicProfile(bool streaming)
+    public async Task ChatAnswersOwnedScheduleWithoutSendingAcademicProfileToRag(bool streaming)
     {
         await using var db = Database();
         var user = Guid.NewGuid();
@@ -316,17 +316,13 @@ public class ChatControllerTests
         if (streaming) await controller.Stream(request, default);
         else await controller.Send(request, default);
 
-        Assert.Contains("PERFIL ACADÉMICO", rag.LastQuestion);
-        Assert.Contains("Ingeniería en Sistemas", rag.LastQuestion);
-        Assert.Contains("\"semestre\":3", rag.LastQuestion);
-        Assert.Contains("Cálculo I", rag.LastQuestion);
-        Assert.Contains("\"creditosAprobados\":8", rag.LastQuestion);
-        Assert.Contains("Bases de Datos", rag.LastQuestion);
-        Assert.Contains("\"dia\":\"martes\"", rag.LastQuestion);
-        Assert.Contains("5K-201", rag.LastQuestion);
-        Assert.Contains("FECHA Y HORA ACTUAL", rag.LastQuestion);
-        Assert.DoesNotContain("MATERIA_DE_OTRO", rag.LastQuestion);
-        Assert.DoesNotContain("CLASE_DE_OTRO", rag.LastQuestion);
+        Assert.Equal("", rag.LastQuestion);
+        var saved = await db.Historialchats.SingleAsync(h => h.Rol == "assistant");
+        Assert.Contains("Bases de Datos", saved.Contenido);
+        Assert.Contains("5K-201", saved.Contenido);
+        Assert.Contains("/horario", saved.Contenido);
+        Assert.DoesNotContain("MATERIA_DE_OTRO", saved.Contenido);
+        Assert.DoesNotContain("CLASE_DE_OTRO", saved.Contenido);
         Assert.Equal(request.Mensaje, (await db.Historialchats.SingleAsync(h => h.Rol == "user")).Contenido);
     }
 

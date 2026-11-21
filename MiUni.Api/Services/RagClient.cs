@@ -5,7 +5,10 @@ namespace MiUni.Api.Services;
 
 public class RagClient(HttpClient httpClient) : IRagClient
 {
-    public async Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct)
+    public Task<string> GetAnswerAsync(string question, string? authorizationHeader, CancellationToken ct) =>
+        GetAnswerAsync(new RagChatInput(question, []), authorizationHeader, ct);
+
+    public async Task<string> GetAnswerAsync(RagChatInput question, string? authorizationHeader, CancellationToken ct)
     {
         using var request = CreateRequest(HttpMethod.Post, "chat", question, authorizationHeader);
 
@@ -21,8 +24,11 @@ public class RagClient(HttpClient httpClient) : IRagClient
         return body.Answer;
     }
 
+    public IAsyncEnumerable<string> StreamAnswerAsync(string question, string? authorizationHeader, CancellationToken ct) =>
+        StreamAnswerAsync(new RagChatInput(question, []), authorizationHeader, ct);
+
     public async IAsyncEnumerable<string> StreamAnswerAsync(
-        string question,
+        RagChatInput question,
         string? authorizationHeader,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -50,12 +56,12 @@ public class RagClient(HttpClient httpClient) : IRagClient
     private static HttpRequestMessage CreateRequest(
         HttpMethod method,
         string requestUri,
-        string question,
+        RagChatInput question,
         string? authorizationHeader)
     {
         var request = new HttpRequestMessage(method, requestUri)
         {
-            Content = JsonContent.Create(new RagQueryRequest(question))
+            Content = JsonContent.Create(question)
         };
 
         if (!string.IsNullOrWhiteSpace(authorizationHeader))
@@ -65,8 +71,6 @@ public class RagClient(HttpClient httpClient) : IRagClient
 
         return request;
     }
-
-    private record RagQueryRequest(string Question);
 
     private record RagQueryResponse(string Query, string Answer);
 }

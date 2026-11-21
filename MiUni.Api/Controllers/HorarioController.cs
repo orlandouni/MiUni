@@ -20,10 +20,7 @@ public class HorarioController(MiUniDbContext context) : ControllerBase
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         if (!TryGetUsuario(out var usuarioId)) return Unauthorized();
-        var clases = await context.HorarioClases.AsNoTracking()
-            .Where(c => c.UsuarioId == usuarioId)
-            .OrderBy(c => c.Dia).ThenBy(c => c.HoraInicio).ThenBy(c => c.Materia)
-            .ToListAsync(ct);
+        var clases = await PersonalSchedule.Read(context, usuarioId, ct);
         var perfiles = await Perfiles(clases.Select(c => c.Profesor), ct);
         return Ok(clases.Select(c => ToDto(c, perfiles)));
     }
