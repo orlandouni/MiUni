@@ -1,0 +1,100 @@
+# Producción en un solo servidor (ver docs/despliegue-aws.md).
+#   docker compose -f docker-compose.prod.yml --env-file deploy/production.env up -d --build
+name: miuni-prod
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: docker/postgres/Dockerfile
+    image: miuni/postgres-rag:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MIUNI_POSTGRES_DB:?Define MIUNI_POSTGRES_DB}
+      POSTGRES_USER: ${MIUNI_POSTGRES_USER:?Define MIUNI_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${MIUNI_POSTGRES_PASSWORD:?Define MIUNI_POSTGRES_PASSWORD}
+    # Sin "ports": la base solo es visible dentro de la red de Docker.
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./deploy/respaldos:/respaldos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    image: miuni/api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__MiUniDb: Host=db;Port=5432;Database=${MIUNI_POSTGRES_DB};Username=${MIUNI_POSTGRES_USER};Password=${MIUNI_POSTGRES_PASSWORD}
+      Jwt__Key: ${JWT_KEY:?Define JWT_KEY}
+      Rag__BaseUrl: http://rag:8000/api/v1/
+      App__FrontendUrl: https://${MIUNI_DOMAIN:?Define MIUNI_DOMAIN}
+      Correo__Host: ${SMTP_HOST:-}
+      Correo__Port: ${SMTP_PORT:-587}
+      Correo__Usuario: ${SMTP_USUARIO:-}
+      Correo__Contrasena: ${SMTP_CONTRASENA:-}
+      Correo__Remitente: ${SMTP_REMITENTE:-}
+    volumes:
+      - api-llaves:/data/llaves
+
+  rag:
+    # Repo aparte: git clone https://github.com/angluisb/MiUni-RAG.git ../MiUni-RAG
+    build:
+      context: ${MIUNI_RAG_PATH:-../MiUni-RAG}
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        WORKDIR /app
+        # PyTorch solo CPU: evita descargar varios GB de CUDA.
+        RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+        COPY requirements.txt requirements-rag.txt ./
+        RUN pip install --no-cache-dir -r requirements.txt -r requirements-rag.txt
+        COPY . .
+        EXPOSE 8000
+        CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+    image: miuni/rag
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      API_KEY: ${GEMINI_API_KEY:?Define GEMINI_API_KEY}
+      DATABASE_URL: postgresql://${MIUNI_POSTGRES_USER}:${MIUNI_POSTGRES_PASSWORD}@db:5432/${MIUNI_POSTGRES_DB}
+      RAG_ENABLED: "true"
+      RAG_MODEL_DEVICE: cpu
+      RAG_MODEL_CACHE: /modelos
+    volumes:
+      # Los pesos de BGE-M3 (~2 GB) se descargan una vez y se conservan.
+      - rag-modelos:/modelos
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+    image: miuni/web
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      MIUNI_DOMAIN: ${MIUNI_DOMAIN:?Define MIUNI_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  db-data:
+  api-llaves:
+  rag-modelos:
+  caddy-data:
+  caddy-config:

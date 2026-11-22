@@ -38,6 +38,13 @@ Si ya tienes EF CLI de otra versión, actualizarlo con `dotnet tool update --glo
 La base queda en `127.0.0.1:5433` por defecto, con PostgreSQL 16, pgvector, PostGIS y pgRouting.
 Las migraciones crean las tablas e índices RAG; los documentos y embeddings se cargan aparte desde `rag-miuni`.
 
+### Lugares del mapa
+
+La migración `LugaresCampus` carga los lugares del campus (edificios, laboratorios,
+bibliotecas, comida, estacionamientos, etc.), así que llegan con el mismo `migrate` de arriba.
+No borra ni duplica nada: si ya tenías lugares con el mismo nombre, los deja como están.
+Para agregar o corregir lugares, ver `scripts/mapa/README.md` (no editar la migración a mano).
+
 ## Backend y frontend
 
 Configurar en `.env` la conexión PostgreSQL, `JWT_KEY` y
@@ -60,6 +67,10 @@ npm run dev
 Dejar `VITE_API_URL=` vacío para usar el proxy del frontend. Para probar el chat,
 iniciar también `rag-miuni` con su configuración e índice. Compose levanta únicamente
 PostgreSQL; Python, backend y frontend se ejecutan por separado.
+
+## Producción
+
+Guía para publicar MiUni en un servidor EC2 de AWS con HTTPS: [docs/despliegue-aws.md](docs/despliegue-aws.md).
 
 ## Uso diario
 

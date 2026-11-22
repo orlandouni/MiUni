@@ -8,10 +8,10 @@ const direccion = { id: "direccion", nombre: "Dirección de Servicios Estudianti
 const edificio = { id: "edificio", nombre: "5K", latitud: 29.07, longitud: -110.95 };
 const catalogo = [biblioteca, direccion, edificio];
 
-test("genera enlaces para cada uno de los 51 lugares del catálogo inicial", () => {
+test("genera enlaces para cada uno de los 182 lugares del catálogo inicial", () => {
   const sql = readFileSync(new URL("../../../seed_lugares.sql", import.meta.url), "utf8");
   const nombres = [...sql.matchAll(/\('([^']+)',\s*'[^']+',\s*29\./g)].map(match => match[1]);
-  assert.equal(nombres.length, 51);
+  assert.equal(nombres.length, 182);
   const lugares = nombres.map((nombre, index) => ({ ...biblioteca, id: String(index), nombre }));
   for (const lugar of lugares) {
     const encontrados = detectarLugares(`Puedes ir a **${lugar.nombre}**.`, lugares);
