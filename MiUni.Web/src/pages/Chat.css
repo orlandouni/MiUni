@@ -3,6 +3,7 @@
 /* Assistant answers have room for sources, lists and tables; user bubbles stay compact. */
 .chat-message { min-width: 0; }
 .chat-message.asistente .chat-bubble {
+  position: relative;
   box-sizing: border-box;
   min-width: 0;
   max-width: min(100%, 760px);
