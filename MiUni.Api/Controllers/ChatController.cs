@@ -41,7 +41,9 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient, TimePr
         {
             var schedule = await PersonalSchedule.Resolve(context, validation.UsuarioId, validation.Mensaje,
                 (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime, ct);
-            answer = schedule.Answer ?? await BuildFastPlaceAnswer(validation.Mensaje, ct)
+            answer = schedule.Answer
+                ?? await PersonalKardex.Resolve(context, validation.UsuarioId, validation.Mensaje, ct)
+                ?? await BuildFastPlaceAnswer(validation.Mensaje, ct)
                 ?? await ragClient.GetAnswerAsync(new RagChatInput(validation.Mensaje, history, schedule.Context),
                     GetAuthorizationHeader(), ct);
             if (string.IsNullOrWhiteSpace(answer)) throw new InvalidOperationException("Empty assistant answer");
@@ -89,7 +91,9 @@ public class ChatController(MiUniDbContext context, IRagClient ragClient, TimePr
         {
             var schedule = await PersonalSchedule.Resolve(context, validation.UsuarioId, validation.Mensaje,
                 (clock ?? TimeProvider.System).GetUtcNow().UtcDateTime, ct);
-            var fastAnswer = schedule.Answer ?? await BuildFastPlaceAnswer(validation.Mensaje, ct);
+            var fastAnswer = schedule.Answer
+                ?? await PersonalKardex.Resolve(context, validation.UsuarioId, validation.Mensaje, ct)
+                ?? await BuildFastPlaceAnswer(validation.Mensaje, ct);
             if (fastAnswer is not null)
             {
                 Response.ContentType = "text/plain; charset=utf-8";

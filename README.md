@@ -5,7 +5,7 @@ Universidad de Sonora (campus Hermosillo): encuentra cualquier lugar del campus,
 traza la ruta a pie hasta él y pregúntale a ChatMuni, un asistente que conoce el
 reglamento, los trámites y tu propio horario.
 
-**Demo:** https://35-93-65-247.sslip.io
+**Demo:** https://34-208-39-63.sslip.io
 
 ![Inicio de MiUni](docs/capturas/inicio.png)
 
