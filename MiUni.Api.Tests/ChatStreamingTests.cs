@@ -45,6 +45,32 @@ public class ChatStreamingTests
         Assert.Equal(session, saved.SesionId);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InterruptedStreamDoesNotPersistPartialAssistant(bool cancel)
+    {
+        await using var db = Database();
+        using var cancellation = new CancellationTokenSource();
+        var rag = new InterruptedRag(cancel, cancellation);
+        var controller = await Controller(db, rag);
+
+        var result = await controller.Stream(
+            new ChatRequest { Mensaje = "Streaming cancellation probe" }, cancellation.Token);
+
+        Assert.IsType<EmptyResult>(result);
+        controller.Response.Body.Position = 0;
+        var delivered = await new StreamReader(controller.Response.Body).ReadToEndAsync();
+        Assert.Equal("Partial answer", delivered);
+        var messages = await db.Historialchats.ToListAsync();
+        Assert.Single(messages);
+        Assert.Equal("user", messages[0].Rol);
+        Assert.DoesNotContain(messages, message => message.Rol == "assistant");
+        Assert.True(rag.WasDisposed);
+        Assert.Equal(cancellation.Token, rag.ObservedToken);
+        Assert.Equal(cancel, cancellation.IsCancellationRequested);
+    }
+
     private static MiUniDbContext Database() => new(new DbContextOptionsBuilder<MiUniDbContext>()
         .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
@@ -58,6 +84,36 @@ public class ChatStreamingTests
             [new Claim(ClaimTypes.NameIdentifier, user.ToString())], "test"));
         http.Response.Body = new MemoryStream();
         return new ChatController(db, rag) { ControllerContext = new ControllerContext { HttpContext = http } };
+    }
+
+    private sealed class InterruptedRag(bool cancel, CancellationTokenSource source) : IRagClient
+    {
+        public bool WasDisposed { get; private set; }
+        public CancellationToken ObservedToken { get; private set; }
+
+        public Task<string> GetAnswerAsync(string q, string? auth, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public async IAsyncEnumerable<string> StreamAnswerAsync(
+            string q, string? auth, [EnumeratorCancellation] CancellationToken ct)
+        {
+            ObservedToken = ct;
+            try
+            {
+                await Task.Yield();
+                yield return "Partial answer";
+                if (cancel)
+                {
+                    source.Cancel();
+                    ct.ThrowIfCancellationRequested();
+                }
+                throw new HttpRequestException("Upstream interrupted after first chunk");
+            }
+            finally
+            {
+                WasDisposed = true;
+            }
+        }
     }
 
     private sealed class StreamRag(bool fail, bool empty) : IRagClient

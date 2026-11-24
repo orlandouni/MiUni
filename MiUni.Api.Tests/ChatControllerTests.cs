@@ -211,8 +211,8 @@ public class ChatControllerTests
         var request = new ChatRequest { Mensaje = "Donde jugar baseball?" };
         if (streaming) await controller.Stream(request, default);
         else await controller.Send(request, default);
-        Assert.Contains("Campo de beisbol", rag.LastQuestion);
-        Assert.Contains("Deportes", rag.LastQuestion);
+        // Python reads the canonical active map catalog separately; never pollute the search question.
+        Assert.Equal(request.Mensaje, rag.LastQuestion);
         Assert.DoesNotContain("Lugar oculto", rag.LastQuestion);
         Assert.DoesNotContain("DESCRIPCION_PRIVADA_NO_ENVIAR", rag.LastQuestion);
         Assert.Contains(request.Mensaje, rag.LastQuestion);
@@ -220,9 +220,65 @@ public class ChatControllerTests
     }
 
     [Theory]
+    [InlineData(181.0, 29.0)]
+    [InlineData(-110.0, 91.0)]
+    public async Task InvalidMapCoordinatesKeepRagFallback(double longitude, double latitude)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        var category = new Categorium { Id = Guid.NewGuid(), Nombre = "Bibliotecas" };
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Coordinate probe" });
+        db.Categoria.Add(category);
+        db.Lugars.Add(new Lugar
+        {
+            Id = Guid.NewGuid(), Nombre = "Biblioteca Central", Categoria = category,
+            CategoriaId = category.Id, Activo = true,
+            Ubicacion = new NetTopologySuite.Geometries.Point(longitude, latitude)
+        });
+        await db.SaveChangesAsync();
+        var rag = new FakeRagClient("Documentary fallback");
+        var controller = AsUser(new ChatController(db, rag), user);
+        await controller.Send(new ChatRequest { Mensaje = "Donde esta Biblioteca Central" }, default);
+        Assert.NotEmpty(rag.LastQuestion);
+        var assistant = await db.Historialchats.SingleAsync(message => message.Rol == "assistant");
+        Assert.Equal("Documentary fallback", assistant.Contenido);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task ChatIncludesOnlyTheCurrentUsersAcademicProfile(bool streaming)
+    public async Task LocationQuestionUsesFastPathWithoutCallingRag(bool streaming)
+    {
+        await using var db = Database();
+        var user = Guid.NewGuid();
+        var category = new Categorium { Id = Guid.NewGuid(), Nombre = "Bibliotecas" };
+        db.Users.Add(new ApplicationUser { Id = user, Nombre = "Prueba" });
+        db.Categoria.Add(category);
+        db.Lugars.Add(new Lugar
+        {
+            Id = Guid.NewGuid(), Nombre = "Biblioteca Central", Categoria = category,
+            CategoriaId = category.Id, Activo = true,
+            Ubicacion = new NetTopologySuite.Geometries.Point(-110.96, 29.08)
+        });
+        await db.SaveChangesAsync();
+
+        var rag = new FakeRagClient("La respuesta lenta del RAG");
+        var controller = AsUser(new ChatController(db, rag), user);
+        controller.Response.Body = new MemoryStream();
+        var request = new ChatRequest { Mensaje = "¿Dónde está la Biblioteca Central?" };
+
+        if (streaming) await controller.Stream(request, default);
+        else await controller.Send(request, default);
+
+        Assert.Empty(rag.LastQuestion);
+        var assistant = await db.Historialchats.SingleAsync(h => h.Rol == "assistant");
+        Assert.Contains("Biblioteca Central", assistant.Contenido);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ChatAnswersOwnedScheduleWithoutSendingAcademicProfileToRag(bool streaming)
     {
         await using var db = Database();
         var user = Guid.NewGuid();
@@ -260,17 +316,13 @@ public class ChatControllerTests
         if (streaming) await controller.Stream(request, default);
         else await controller.Send(request, default);
 
-        Assert.Contains("PERFIL ACADÉMICO", rag.LastQuestion);
-        Assert.Contains("Ingeniería en Sistemas", rag.LastQuestion);
-        Assert.Contains("\"semestre\":3", rag.LastQuestion);
-        Assert.Contains("Cálculo I", rag.LastQuestion);
-        Assert.Contains("\"creditosAprobados\":8", rag.LastQuestion);
-        Assert.Contains("Bases de Datos", rag.LastQuestion);
-        Assert.Contains("\"dia\":\"martes\"", rag.LastQuestion);
-        Assert.Contains("5K-201", rag.LastQuestion);
-        Assert.Contains("FECHA Y HORA ACTUAL", rag.LastQuestion);
-        Assert.DoesNotContain("MATERIA_DE_OTRO", rag.LastQuestion);
-        Assert.DoesNotContain("CLASE_DE_OTRO", rag.LastQuestion);
+        Assert.Equal("", rag.LastQuestion);
+        var saved = await db.Historialchats.SingleAsync(h => h.Rol == "assistant");
+        Assert.Contains("Bases de Datos", saved.Contenido);
+        Assert.Contains("5K-201", saved.Contenido);
+        Assert.Contains("/horario", saved.Contenido);
+        Assert.DoesNotContain("MATERIA_DE_OTRO", saved.Contenido);
+        Assert.DoesNotContain("CLASE_DE_OTRO", saved.Contenido);
         Assert.Equal(request.Mensaje, (await db.Historialchats.SingleAsync(h => h.Rol == "user")).Contenido);
     }
 

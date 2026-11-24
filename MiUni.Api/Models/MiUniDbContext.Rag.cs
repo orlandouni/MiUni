@@ -10,6 +10,30 @@ public partial class MiUniDbContext
     {
         modelBuilder.HasPostgresExtension("vector");
 
+        modelBuilder.Entity<Documentofuente>(entity =>
+        {
+            entity.ToTable("documentofuente", table =>
+            {
+                table.HasCheckConstraint("ck_documentofuente_temporal_status",
+                    "temporal_status IN ('vigente', 'reemplazado', 'historico', 'desconocido')");
+                table.HasCheckConstraint("ck_documentofuente_document_year",
+                    "document_year IS NULL OR document_year BETWEEN 1000 AND 9999");
+            });
+            entity.Property(e => e.TemporalStatus).IsRequired().HasColumnType("text")
+                .HasColumnName("temporal_status").HasDefaultValue("desconocido");
+            entity.Property(e => e.DocumentYear).HasColumnName("document_year");
+            entity.Property(e => e.AcademicPeriod).HasColumnType("text").HasColumnName("academic_period");
+            entity.Property(e => e.EffectiveFrom).HasColumnType("timestamp with time zone").HasColumnName("effective_from");
+            entity.Property(e => e.EffectiveTo).HasColumnType("timestamp with time zone").HasColumnName("effective_to");
+            entity.Property(e => e.LastVerifiedAt).HasColumnType("timestamp with time zone").HasColumnName("last_verified_at");
+            entity.Property(e => e.SupersededBy).HasColumnName("superseded_by");
+            entity.HasIndex(e => e.TemporalStatus, "idx_documentofuente_temporal_status");
+            entity.HasIndex(e => e.AcademicPeriod, "idx_documentofuente_academic_period");
+            entity.HasIndex(e => e.SupersededBy, "idx_documentofuente_superseded_by");
+            entity.HasOne<Documentofuente>().WithMany().HasForeignKey(e => e.SupersededBy)
+                .OnDelete(DeleteBehavior.Restrict).HasConstraintName("documentofuente_superseded_by_fkey");
+        });
+
         modelBuilder.Entity<Ragchunk>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("rag_chunk_pkey");

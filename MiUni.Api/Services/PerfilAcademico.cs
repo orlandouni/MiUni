@@ -85,11 +85,16 @@ public static class PerfilAcademico
     // como "¿qué clase tengo ahora?".
     public static string FechaHoraCampus(DateTime utcNow)
     {
+        var local = CampusLocalTime(utcNow);
+        var dia = Dias[((int)local.DayOfWeek + 6) % 7];
+        return $"{dia} {local:yyyy-MM-dd HH:mm} (hora de Hermosillo)";
+    }
+
+    public static DateTime CampusLocalTime(DateTime utcNow)
+    {
         TimeZoneInfo zona;
         try { zona = TimeZoneInfo.FindSystemTimeZoneById("America/Hermosillo"); }
         catch (Exception) { zona = TimeZoneInfo.CreateCustomTimeZone("MiUni-7", TimeSpan.FromHours(-7), "UTC-7", "UTC-7"); }
-        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utcNow, DateTimeKind.Utc), zona);
-        var dia = Dias[((int)local.DayOfWeek + 6) % 7];
-        return $"{dia} {local:yyyy-MM-dd HH:mm} (hora de Hermosillo)";
+        return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utcNow, DateTimeKind.Utc), zona);
     }
 }
