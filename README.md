@@ -1,5 +1,51 @@
 # MiUni
 
+**Tu campus, a la mano.** MiUni es una aplicación web para estudiantes de la
+Universidad de Sonora (campus Hermosillo): encuentra cualquier lugar del campus,
+traza la ruta a pie hasta él y pregúntale a ChatMuni, un asistente que conoce el
+reglamento, los trámites y tu propio horario.
+
+**Demo:** https://35-93-65-247.sslip.io
+
+![Inicio de MiUni](docs/capturas/inicio.png)
+
+## Funciones
+
+- **Mapa del campus** con 182 lugares (edificios, laboratorios, bibliotecas,
+  comida, baños, estacionamientos) tomados de OpenStreetMap, filtro "Abierto ahora"
+  y ficha de cada lugar con horario y menú.
+- **Rutas a pie** desde tu ubicación GPS hasta el destino, calculadas con pgRouting
+  sobre los caminos reales del campus.
+- **ChatMuni**, asistente con RAG (servicio Python `rag-miuni`) que responde con los
+  documentos de la universidad y con tu perfil académico: horario, kárdex y créditos.
+- **Mi horario y kárdex** cargados desde los PDF del portal de alumnos de la UNISON,
+  con enlace a las reseñas de cada profesor en BuhoRater.
+- **Comunidad:** favoritos, reseñas y reportes de lugares.
+- **Negocios del campus:** cualquier estudiante puede solicitar registrar un negocio;
+  el administrador lo aprueba y el dueño edita su información.
+- **Panel de administración:** usuarios, lugares, categorías, negocios, reseñas y reportes.
+- Registro con correo `@unison.mx` y verificación por correo.
+
+| Mapa y rutas | ChatMuni |
+| --- | --- |
+| ![Mapa del campus](docs/capturas/mapa.png) | ![ChatMuni](docs/capturas/chatmuni.png) |
+
+## Tecnologías
+
+- **Frontend:** React + Vite, Leaflet.
+- **Backend:** ASP.NET Core (.NET 10), Entity Framework Core, ASP.NET Identity con JWT.
+- **Base de datos:** PostgreSQL 16 con PostGIS, pgRouting y pgvector.
+- **Asistente:** servicio Python [MiUni-RAG](https://github.com/angluisb/MiUni-RAG) (FastAPI, embeddings BGE-M3 y Gemini).
+- **Producción:** Docker Compose en AWS EC2 con Caddy (HTTPS).
+
+## Equipo
+
+orlandouni, angluisb, DiegoFrsL y Arturo Córdova.
+
+---
+
+# Guía para desarrollo
+
 Backend .NET y frontend React. El chat consume el servicio Python `rag-miuni`.
 
 ## Requisitos
@@ -111,7 +157,7 @@ Los comandos `dotnet` de esta sección usan esa misma terminal y configuración.
 
 Al arrancar en **Development**, el seed crea automáticamente esta cuenta local:
 
-- Correo: `admin.dev@unison.mx`
+- Correo: `admin.dev@miuni.mx`
 - Contraseña de prueba: `MiUni.Dev2026!`
 - Roles: `Estudiante` y `Administrador`
 
@@ -180,9 +226,8 @@ o revocación surte efecto incluso con un token anterior. Recargar la pantalla
 actualiza las opciones visibles. El backend devuelve 401 sin sesión y 403 sin
 permiso. Ocultar botones en el frontend no es la barrera de autorización.
 
-El panel visual inicial incluye solicitudes/aprobaciones y edición básica de
-negocios. El backend de reportes y administración está documentado arriba; su
-interfaz visual y la edición de menús/horarios quedan pendientes.
+El panel de administración (`/admin`) incluye resumen, usuarios, lugares, categorías,
+negocios (solicitudes y aprobaciones), reseñas y reportes.
 
 Pruebas HTTP de permisos: definir `MIUNI_AUTH_TEST_URL` con la URL de una API
 actualizada y `MIUNI_ROUTING_TEST_CONNECTION` con su misma base migrada, y ejecutar

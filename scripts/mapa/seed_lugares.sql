@@ -1,7 +1,7 @@
 -- =========================================================
 -- MiUni: categorías y lugares del campus Hermosillo, Universidad de Sonora
 -- (182 lugares). ARCHIVO GENERADO: no editar a mano, sino
---   python scripts/mapa/generar_seed_lugares.py > seed_lugares.sql
+--   python scripts/mapa/generar_seed_lugares.py
 --
 -- REQUISITO: tener las migraciones aplicadas
 --   (cd MiUni.Api && dotnet ef database update)

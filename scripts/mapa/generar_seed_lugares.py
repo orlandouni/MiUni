@@ -1,7 +1,7 @@
 """Genera seed_lugares.sql: los 51 lugares originales + lugares de OpenStreetMap.
 
 Uso:  python scripts/mapa/generar_seed_lugares.py
-Escribe seed_lugares.sql (raíz) y la migración MiUni.Api/Migrations/20261117160000_LugaresCampus.cs,
+Escribe scripts/mapa/seed_lugares.sql y la migración MiUni.Api/Migrations/20261117160000_LugaresCampus.cs,
 que es como se cargan los lugares: `dotnet ef database update`.
 
 Entrada: scripts/mapa/lugares_osm.csv, exportado de la API Overpass el 2026-11-17
@@ -225,12 +225,12 @@ def main():
         lineas.append(f"  ({sql_texto(n) + ',':<{ancho}} {sql_texto(c) + ',':<26} {la:.7f}, {lo:.7f}, {sql_texto(fu)})")
     cuerpo = SQL_CUERPO + '\n' + ',\n'.join(lineas) + '\n' + SQL_FIN
     raiz = os.path.dirname(os.path.dirname(AQUI))
-    with open(os.path.join(raiz, 'seed_lugares.sql'), 'w', encoding='utf-8', newline='\n') as f:
+    with open(os.path.join(AQUI, 'seed_lugares.sql'), 'w', encoding='utf-8', newline='\n') as f:
         f.write(SQL_CABECERA.format(total=len(filas)) + '\n' + cuerpo + '\n' + SQL_VERIFICAR.format(total=len(filas)) + '\n')
     ruta = os.path.join(raiz, 'MiUni.Api', 'Migrations', '20261117160000_LugaresCampus.cs')
     with open(ruta, 'w', encoding='utf-8', newline='\n') as f:
         f.write(MIGRACION.replace('@@TOTAL@@', str(len(filas))).replace('@@SQL@@', cuerpo))
-    print(f'{len(filas)} lugares -> seed_lugares.sql y {os.path.relpath(ruta, raiz)}')
+    print(f'{len(filas)} lugares -> scripts/mapa/seed_lugares.sql y {os.path.relpath(ruta, raiz)}')
 
 
 def sql_texto(s):
@@ -240,7 +240,7 @@ def sql_texto(s):
 SQL_CABECERA = """-- =========================================================
 -- MiUni: categorías y lugares del campus Hermosillo, Universidad de Sonora
 -- ({total} lugares). ARCHIVO GENERADO: no editar a mano, sino
---   python scripts/mapa/generar_seed_lugares.py > seed_lugares.sql
+--   python scripts/mapa/generar_seed_lugares.py
 --
 -- REQUISITO: tener las migraciones aplicadas
 --   (cd MiUni.Api && dotnet ef database update)

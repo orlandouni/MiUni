@@ -12,3 +12,7 @@ obj/
 *.user
 deploy/respaldos/*
 !deploy/respaldos/.gitkeep
+
+# Archivos temporales y personales
+tmp/
+output/pdf/
