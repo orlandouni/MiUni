@@ -10,4 +10,5 @@ MiUni.Web/src/services/ApiKey.env
 bin/
 obj/
 *.user
-deploy/respaldos/
+deploy/respaldos/*
+!deploy/respaldos/.gitkeep
