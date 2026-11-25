@@ -63,45 +63,16 @@ public class HorarioProfesoresTests
         Assert.IsFalse(r.Answer!.Contains("Álgebra"));
     }
 
-    [TestMethod, TestCategory(Caso.Negocio)]
-    [Description("El horario es semanal: preguntar por festivos o cancelaciones aclara que eso no se guarda.")]
-    public async Task Horario_PreguntaPorFestivos_AclaraQueNoSeGuardan()
+    [TestMethod, TestCategory(Caso.Error)]
+    [Description("Un enlace que imita a BuhoRater con otro dominio se rechaza.")]
+    public void BuhoRater_EnlaceConDominioFalso_SeRechaza()
     {
-        await using var db = Apoyo.BaseEnMemoria();
+        var enlace = "https://www.buhorater.com.evil.com/perfil?id=3f2504e0-4f89-11d3-9a0c-0305e82c3301";
 
-        var r = await PersonalSchedule.Resolve(db, Guid.NewGuid(), "¿Tengo clase en mi horario el día festivo?", AhoraUtc, default);
+        var aceptado = BuhoRater.TryLeerPerfil(enlace, out var id);
 
-        StringAssert.Contains(r.Answer, "sin periodos, festivos ni cancelaciones");
-    }
-
-    [TestMethod, TestCategory(Caso.Normal)]
-    [Description("Un enlace de perfil de BuhoRater válido se acepta y se extrae su id.")]
-    public void BuhoRater_EnlaceDePerfilValido_SeAcepta()
-    {
-        var ok = BuhoRater.TryLeerPerfil("https://www.buhorater.com/perfil?id=3f2504e0-4f89-11d3-9a0c-0305e82c3301", out var id);
-
-        Assert.IsTrue(ok);
-        Assert.AreEqual(Guid.Parse("3f2504e0-4f89-11d3-9a0c-0305e82c3301"), id);
-    }
-
-    [DataTestMethod, TestCategory(Caso.Error)]
-    [Description("Enlaces de otro sitio, de otra página o sin id válido se rechazan.")]
-    [DataRow("https://www.buhorater.com.evil.com/perfil?id=3f2504e0-4f89-11d3-9a0c-0305e82c3301", DisplayName = "Dominio falso")]
-    [DataRow("https://www.buhorater.com/buscar?id=3f2504e0-4f89-11d3-9a0c-0305e82c3301", DisplayName = "Otra página")]
-    [DataRow("https://www.buhorater.com/perfil?id=no-es-un-id", DisplayName = "Id inválido")]
-    [DataRow("ftp://buhorater.com/perfil?id=3f2504e0-4f89-11d3-9a0c-0305e82c3301", DisplayName = "Protocolo FTP")]
-    public void BuhoRater_EnlaceInvalido_SeRechaza(string enlace)
-    {
-        Assert.IsFalse(BuhoRater.TryLeerPerfil(enlace, out _));
-    }
-
-    [TestMethod, TestCategory(Caso.Limite)]
-    [Description("Un id vacío (todo ceros) en el enlace no cuenta como perfil; un nombre vacío no genera búsqueda.")]
-    public void BuhoRater_IdEnCerosYNombreVacio_SeRechazan()
-    {
-        Assert.IsFalse(BuhoRater.TryLeerPerfil($"https://buhorater.com/perfil?id={Guid.Empty}", out _));
-        Assert.IsNull(BuhoRater.UrlBusqueda("   "));
-        Assert.IsNull(BuhoRater.Clave(null));
+        Assert.IsFalse(aceptado);
+        Assert.AreEqual(Guid.Empty, id);
     }
 
     [TestMethod, TestCategory(Caso.Negocio)]

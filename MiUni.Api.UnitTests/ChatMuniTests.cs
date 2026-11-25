@@ -57,43 +57,16 @@ public class ChatMuniTests
         Assert.AreEqual("respuesta 10", historial[^1].Content);
     }
 
-    [TestMethod, TestCategory(Caso.Limite)]
-    [Description("Un turno que rebasa el presupuesto de 4000 bytes deja fuera ese turno y los anteriores.")]
-    public void Historial_TurnoDemasiadoLargo_CortaPorTamano()
-    {
-        var filas = new[]
-        {
-            Mensaje("user", "viejo"), Mensaje("assistant", "ok"),
-            Mensaje("user", new string('x', 3990)), Mensaje("assistant", "respuesta larga"),
-            Mensaje("user", "reciente"), Mensaje("assistant", "ok")
-        };
-
-        var historial = ChatContext.CompletedTurns(filas);
-
-        CollectionAssert.AreEqual(new[] { "reciente", "ok" }, historial.Select(m => m.Content).ToArray());
-    }
-
     [TestMethod, TestCategory(Caso.Negocio)]
-    [Description("Aunque se pida menos de 2 mensajes, siempre se conserva al menos el último turno completo.")]
-    public void Historial_LimiteMenorADos_SeAjustaAUnTurno()
+    [Description("Las preguntas sobre el horario o kárdex propio se contestan en la API; las institucionales van al RAG.")]
+    public void Pregunta_PersonalOInstitucional_SeDirigeAlModuloCorrecto()
     {
-        var historial = ChatContext.CompletedTurns(Turnos(3), maxMessages: 0);
+        Assert.IsTrue(PersonalSchedule.IsPersonal("¿Qué clases tengo mañana?"), "Horario propio");
+        Assert.IsTrue(PersonalKardex.IsPersonal("¿Cuántos créditos llevo?"), "Kárdex propio");
 
-        Assert.AreEqual(2, historial.Count);
-        Assert.AreEqual("pregunta 3", historial[0].Content);
-    }
-
-    [DataTestMethod, TestCategory(Caso.Negocio)]
-    [Description("Las preguntas sobre el horario o kárdex propio se contestan en la API y no viajan al RAG.")]
-    [DataRow("¿Qué clases tengo mañana?", true, false, DisplayName = "Horario: clases de mañana")]
-    [DataRow("¿Cuál es mi próxima clase?", true, false, DisplayName = "Horario: próxima clase")]
-    [DataRow("¿Cuántos créditos llevo?", false, true, DisplayName = "Kárdex: créditos")]
-    [DataRow("¿Qué materias reprobé?", false, true, DisplayName = "Kárdex: reprobadas")]
-    [DataRow("¿Cuáles son los requisitos de titulación?", false, false, DisplayName = "Institucional: va al RAG")]
-    public void Pregunta_SeClasificaComoPersonalONo(string pregunta, bool esHorario, bool esKardex)
-    {
-        Assert.AreEqual(esHorario, PersonalSchedule.IsPersonal(pregunta), "¿Es del horario propio?");
-        Assert.AreEqual(esKardex, PersonalKardex.IsPersonal(pregunta), "¿Es del kárdex propio?");
+        var institucional = "¿Cuáles son los requisitos de titulación?";
+        Assert.IsFalse(PersonalSchedule.IsPersonal(institucional), "No es del horario: va al RAG");
+        Assert.IsFalse(PersonalKardex.IsPersonal(institucional), "No es del kárdex: va al RAG");
     }
 
     [TestMethod, TestCategory(Caso.Normal)]

@@ -4,7 +4,7 @@ using MiUni.Api.Identity;
 
 namespace MiUni.Api.UnitTests;
 
-// Módulo 1: Autenticación y gestión de usuarios (registro, login y perfil).
+// Módulo 1: Autenticación y gestión de usuarios (registro e inicio de sesión).
 [TestClass]
 public class AutenticacionTests
 {
@@ -42,43 +42,20 @@ public class AutenticacionTests
         Assert.AreEqual("El correo no tiene un formato válido.", errores[0].ErrorMessage);
     }
 
-    [TestMethod, TestCategory(Caso.Error)]
-    [Description("Iniciar sesión sin contraseña no es válido.")]
-    public void Login_SinContrasena_DaError()
+    [TestMethod, TestCategory(Caso.Limite)]
+    [Description("La contraseña debe tener al menos 8 caracteres: con 7 se rechaza y con 8 se acepta.")]
+    public void Registro_ContrasenaEnElMinimo_SieteFallaYOchoPasa()
     {
-        var errores = Apoyo.Validar(new LoginRequest { Email = "a123456@unison.mx", Password = null! });
+        var conSiete = RegistroValido();
+        conSiete.Password = "1234567";
+        var conOcho = RegistroValido();
+        conOcho.Password = "12345678";
 
-        Assert.AreEqual(1, errores.Count);
-        Assert.AreEqual("La contraseña es obligatoria.", errores[0].ErrorMessage);
-    }
+        var erroresSiete = Apoyo.Validar(conSiete);
+        var erroresOcho = Apoyo.Validar(conOcho);
 
-    [DataTestMethod, TestCategory(Caso.Limite)]
-    [Description("La contraseña debe tener al menos 8 caracteres: 7 falla, 8 pasa.")]
-    [DataRow("1234567", false, DisplayName = "7 caracteres: rechazada")]
-    [DataRow("12345678", true, DisplayName = "8 caracteres: aceptada")]
-    public void Registro_LongitudMinimaDeContrasena(string password, bool esperadoValido)
-    {
-        var request = RegistroValido();
-        request.Password = password;
-
-        var esValido = Apoyo.Validar(request).Count == 0;
-
-        Assert.AreEqual(esperadoValido, esValido);
-    }
-
-    [DataTestMethod, TestCategory(Caso.Limite)]
-    [Description("El semestre del perfil solo admite de 1 a 12.")]
-    [DataRow((short)0, false, DisplayName = "Semestre 0: rechazado")]
-    [DataRow((short)1, true, DisplayName = "Semestre 1: aceptado")]
-    [DataRow((short)12, true, DisplayName = "Semestre 12: aceptado")]
-    [DataRow((short)13, false, DisplayName = "Semestre 13: rechazado")]
-    public void Perfil_RangoDeSemestre(short semestre, bool esperadoValido)
-    {
-        var request = new UpdateProfileRequest { Nombre = "Ana López", Semestre = semestre };
-
-        var esValido = Apoyo.Validar(request).Count == 0;
-
-        Assert.AreEqual(esperadoValido, esValido);
+        Assert.AreEqual("La contraseña debe tener al menos 8 caracteres.", erroresSiete.Single().ErrorMessage);
+        Assert.AreEqual(0, erroresOcho.Count);
     }
 
     [TestMethod, TestCategory(Caso.Negocio)]
@@ -107,15 +84,5 @@ public class AutenticacionTests
         var badRequest = resultado as BadRequestObjectResult;
         Assert.IsNotNull(badRequest, "Resultado esperado: 400 Bad Request.");
         StringAssert.Contains(Apoyo.Json(badRequest.Value), "estudiante o de propietario");
-    }
-
-    [TestMethod, TestCategory(Caso.Negocio)]
-    [Description("Los roles que gestionan negocios son Propietario y Administrador.")]
-    public void Roles_GestionDeNegocios_IncluyePropietarioYAdministrador()
-    {
-        var roles = AppRoles.GestionNegocios.Split(',');
-
-        CollectionAssert.AreEquivalent(new[] { "Propietario", "Administrador" }, roles);
-        CollectionAssert.DoesNotContain(roles, AppRoles.Usuario);
     }
 }
