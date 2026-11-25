@@ -19,8 +19,8 @@ dotnet test MiUni.Api.UnitTests --tl:off --logger "console;verbosity=detailed"
 dotnet test MiUni.Api.UnitTests --tl:off --filter "FullyQualifiedName~AutenticacionTests" --logger "console;verbosity=detailed"
 ```
 
-Las clases de cada módulo son `AutenticacionTests`, `KardexTests`, `MapaTests`,
-`HorarioProfesoresTests` y `ChatMuniTests`. En Visual Studio también aparecen en el
+Las clases de cada módulo son `AutenticacionTests`, `KardexTests`, `MapaTests`
+y `ChatMuniTests`. En Visual Studio también aparecen en el
 **Explorador de pruebas** (Prueba → Explorador de pruebas), agrupables por *Rasgo* (categoría).
 
 Cada prueba tiene una categoría (`TestCategory`): **Caso normal**, **Caso de error**,
@@ -29,7 +29,7 @@ Todas siguen el patrón Arrange / Act / Assert.
 
 ## Módulos y pruebas
 
-5 módulos con 5 pruebas cada uno (25 en total): 24 pasan y 1 falla a propósito (ver abajo).
+4 módulos con 5 pruebas cada uno (20 en total): 19 pasan y 1 falla a propósito (ver abajo).
 
 ### 1. Autenticación y gestión de usuarios (`AutenticacionTests.cs`)
 | Prueba | Tipo | Resultado esperado |
@@ -58,16 +58,7 @@ Todas siguen el patrón Arrange / Act / Assert.
 | Ruta_RadioDeConexion_SoloEntre1Y1000Metros | Límite | 1 y 1000 m válidos; 0 y 1000.5 m inválidos |
 | Lugar_HorarioQueCruzaMedianoche_SigueAbiertoAlDiaSiguiente | Negocio | 22:00–02:00: abierto a la 01:00, cerrado a las 02:00 |
 
-### 4. Horario y profesores (`HorarioProfesoresTests.cs`)
-| Prueba | Tipo | Resultado esperado |
-|---|---|---|
-| Horario_ClasesDeHoy_ListaSoloLasDelDia | Normal | Solo las clases del miércoles |
-| Horario_AlumnoSinHorario_LeIndicaCapturarlo | Error | "No tienes un horario guardado." |
-| Horario_ClaseActual_EnElCambioDeHora | Límite | A las 10:00 cuenta la clase de 10–11, no la de 9–10 |
-| BuhoRater_EnlaceConDominioFalso_SeRechaza | Error | Enlace rechazado |
-| BuhoRater_MismoProfesorEscritoDistinto_TieneLaMismaClave | Negocio | Misma clave sin importar orden ni acentos |
-
-### 5. ChatMuni (`ChatMuniTests.cs`)
+### 4. ChatMuni (`ChatMuniTests.cs`)
 | Prueba | Tipo | Resultado esperado |
 |---|---|---|
 | Historial_TurnosCompletos_SeConservanEnOrden | Normal | user, assistant, user, assistant |
